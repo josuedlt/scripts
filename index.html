@@ -1,0 +1,180 @@
+<html>
+
+<head>
+    <title>GPS Coordinate Test</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta name="theme-color" content="#000000">
+
+    <!-- jQuery -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+    <!-- Semantic UI  -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
+
+    <!-- AngularjJS -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+
+    <!-- Mapbox GL JS -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+
+    <style>
+        .marker {
+            display: block;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 4px;
+            background-color: white;
+            color: #222;
+        }
+
+        .right.floated {
+            float: right !important;
+        }
+    </style>
+</head>
+
+<body class="ui" ng-app="app" ng-controller="locations">
+    <div class="ui top inverted fixed menu">
+        <a class="item"><i class="ui content icon toggle-sidebar"></i></a>
+        <a class="item" ng-click="loadLocations()">Load Locations</a>
+        <div class="right menu">
+            <a class="item" ng-show="!coords" ng-click="geolocation.start()">Locate</a>
+            <a class="item" ng-show="coords" ng-click="flyTo(coords, 12)" ng-bind="(coords.latitude | number: 6) + ', ' + (coords.longitude | number: 6)"></a>
+        </div>
+    </div>
+    <div class="ui left vertical inverted sidebar menu" style="width: 360px">
+        <div class="item toggle-sidebar" style="margin-top: 40px;">
+            <h3 class="header">Locations</h3>
+            <!-- <div class="menu ">
+                <a class="item" ng-click="flyTo(location, 16)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
+                    ng-class="{ 'active': location.distance < 0.5 }">
+                    <div class="content">
+                        <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
+                        <span class="header" ng-bind="location.name"></span>
+                    </div>
+                </a>
+            </div> -->
+        </div>
+    </div>
+    <div class="pusher">
+        <div class="ui">
+            <div map id="map" style="height: 50vh;"></div>
+            <div style="height: 50vh; overflow: auto;">
+                <table class="ui single line selectable basic table" style="margin: 0px;">
+                    <tr class="item" ng-click="flyTo(location, 17)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
+                        ng-class="{ 'active': location.distance < 0.5 }">
+                        <td class="content">
+                            <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
+                            <span ng-bind="location.name"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script src="patterns.js"></script>
+<script src="geolocation.js"></script>
+<script>
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        var p = 0.017453292519943295; // Math.PI / 180
+        var c = Math.cos;
+        var a = 0.5 - c((lat2 - lat1) * p) / 2 +
+            c(lat1 * p) * c(lat2 * p) *
+            (1 - c((lon2 - lon1) * p)) / 2;
+
+        return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+    }
+
+    var app = angular.module('app', [])
+        .directive('map', function () {
+            return {
+                link: function (scope, element, attrs) {
+
+                }
+            }
+        })
+        .controller('locations', function ($http, $scope) {
+            function GetDistance(locations, origin) {
+                _.each(locations, function (destination) {
+                    destination.distance = calculateDistance(
+                        origin.latitude,
+                        origin.longitude,
+                        destination.latitude,
+                        destination.longitude);
+                })
+                return locations;
+            }
+
+            $scope.geolocation = geolocation;
+            $scope.flyTo = function (center, zoom) {
+                mapbox.flyTo({
+                    center: [center.longitude, center.latitude],
+                    zoom: zoom
+                });
+            };
+
+            $scope.loadLocations = function () {
+                $http.get('https://josuedlt.github.io/scripts/locations.json')
+                    .then(function (response) {
+                        var locations = response.data;
+                        $scope.locations = locations;
+
+                        if ($scope.coords)
+                            GetDistance($scope.locations, $scope.coords);
+
+                        _.each(locations, function (location) {
+                            var el = document.createElement('div');
+                            el.className = 'marker';
+                            el.innerHTML = location.name;
+
+                            var marker = new mapboxgl.Marker(el)
+                                .setLngLat([location.longitude, location.latitude])
+                                .addTo(mapbox);
+                        })
+                    })
+            };
+
+            geolocation.subscribe(function (coords) {
+                $scope.$apply(function () {
+                    $scope.coords = coords;
+                    $scope.flyTo(coords, 12);
+
+                    GetDistance($scope.locations, $scope.coords);
+                })
+            })
+
+            $scope.loadLocations();
+        })
+
+    // Populate map
+    mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+    var mapbox = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v10',
+        center: [-98.65, 29.5],
+        zoom: 9
+    })
+
+    var geolocation = new Geolocation();
+    geolocation.subscribe(function (coords) {
+        // Recenter map
+        mapbox.flyTo({
+            center: [coords.longitude, coords.latitude],
+            zoom: 12
+        });
+    });
+
+    $('.sidebar')
+        .sidebar('setting', 'transition', 'uncover')
+        .sidebar('attach events', '.toggle-sidebar');;
+
+</script>
