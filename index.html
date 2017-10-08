@@ -37,7 +37,8 @@
             float: right !important;
         }
 
-        .pusher, .sidebar {
+        .pusher,
+        .sidebar {
             padding-top: 40px;
         }
     </style>
@@ -48,8 +49,8 @@
         <a class="item toggle-sidebar"><i class="ui content icon"></i></a>
         <a class="item" ng-click="loadLocations()">Load Locations</a>
         <div class="right menu">
-                <a class="item" ng-show="!coords" ng-click="geolocation.start()">Locate</a>
-                <a class="item" ng-show="coords" ng-click="flyTo(coords, 14)" ng-bind="(coords.latitude | number: 6) + ', ' + (coords.longitude | number: 6)"></a>   
+            <a class="item" ng-show="!coords" ng-click="geolocation.start()">Locate</a>
+            <a class="item" ng-show="coords" ng-click="flyTo(coords, 14)" ng-bind="(coords.latitude | number: 6) + ', ' + (coords.longitude | number: 6)"></a>
         </div>
     </div>
     <div class="ui left vertical inverted sidebar menu" style="width: 360px">
@@ -90,13 +91,15 @@
     var app = angular.module('app', [])
         .controller('locations', function ($http, $scope) {
             function GetDistance(locations, origin) {
-                _.each(locations, function (destination) {
-                    destination.distance = geolocation.calculateDistance(
-                        origin.latitude,
-                        origin.longitude,
-                        destination.latitude,
-                        destination.longitude);
-                })
+                if (origin) {
+                    _.each(locations, function (destination) {
+                        destination.distance = geolocation.calculateDistance(
+                            origin.latitude,
+                            origin.longitude,
+                            destination.latitude,
+                            destination.longitude);
+                    })
+                }
                 return locations;
             }
 
@@ -108,33 +111,65 @@
             };
 
             $scope.loadLocations = function () {
+                toGeoJSON = function (locations) {
+                    var geojson = {
+                        'type': 'geojson',
+                        'data': {
+                            'type': 'FeatureCollection',
+                            'features': _.map(locations, function (l) {
+                                return {
+                                    'type': "Feature",
+                                    'properties': {
+                                        'name': l.name
+                                    },
+                                    'geometry': {
+                                        'type': "Point",
+                                        'coordinates': [l.longitude, l.latitude]
+                                    }
+                                }
+                            })
+                        }
+                    }
+                    return geojson;
+                }
+
+                toBounds = function (locations) {
+                    var latitudes = _.map(locations, 'latitude');
+                    var longitudes = _.map(locations, 'longitude');
+
+                    return [
+                        [_.min(longitudes), _.min(latitudes)],
+                        [_.max(longitudes), _.max(latitudes)]
+                    ]
+                }
+
                 $http.get('https://josuedlt.github.io/scripts/locations.json')
                     .then(function (response) {
                         var locations = response.data;
-                        $scope.locations = locations;
 
-                        var latitudes = _.map(locations, 'latitude');
-                        var longitudes = _.map(locations, 'longitude');
+                        // Calculate distance to origin
+                        GetDistance(locations, $scope.coords);
 
-                        mapbox.fitBounds([
-                            [_.min(longitudes), _.min(latitudes)],
-                            [_.max(longitudes), _.max(latitudes)]
-                        ], {
-                            padding: 40
-                        });
-
-                        if ($scope.coords)
-                            GetDistance($scope.locations, $scope.coords);
-
-                        _.each(locations, function (location) {
-                            var el = document.createElement('div');
-                            el.className = 'marker';
-                            el.innerHTML = location.name;
-
-                            var marker = new mapboxgl.Marker(el)
-                                .setLngLat([location.longitude, location.latitude])
-                                .addTo(mapbox);
+                        mapbox.on('load', function () {
+                            mapbox.addLayer({
+                                "id": "points",
+                                "type": "symbol",
+                                "source": toGeoJSON(locations),
+                                "layout": {
+                                    "text-field": "{name}",
+                                    "text-font": ["Open Sans Semibold",
+                                        "Arial Unicode MS Bold"
+                                    ],
+                                    "text-offset": [0, 0.6],
+                                    "text-anchor": "top"
+                                }
+                            });
+                            mapbox.fitBounds(toBounds(locations), {
+                                padding: 40
+                            });
                         })
+
+                        $scope.locations = locations;
                     })
             };
             $scope.loadLocations();
@@ -144,7 +179,7 @@
             geolocation.subscribe(function (coords) {
                 $scope.$apply(function () {
                     $scope.coords = coords;
-                    $scope.flyTo(coords, 14);
+                    $scope.flyTo(coords, 17);
 
                     GetDistance($scope.locations, $scope.coords);
                 })
