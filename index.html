@@ -42,11 +42,23 @@
         </div>
     </div>
     <div class="ui left vertical inverted sidebar menu" style="width: 360px">
+        <div class="item">
+            <h3 class="header">Nearby Locations</h3>
+            <div class="menu">
+                <a class="item" ng-if="location.distance < 0.1" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
+                    ng-class="{ 'active': location.distance < 0.1 }">
+                    <div class="content">
+                        <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
+                        <span class="header" ng-bind="location.name"></span>
+                    </div>
+                </a>
+            </div>
+        </div>
         <div class="item toggle-sidebar">
             <h3 class="header">Locations</h3>
             <div class="menu">
-                <a class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
-                    ng-if="{ 'active': location.distance < 0.5 }">
+                <a class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
+                    ng-class="{ 'active': location.distance < 0.1 }">
                     <div class="content">
                         <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
                         <span class="header" ng-bind="location.name"></span>
@@ -59,7 +71,7 @@
         <div id="map" style="height: calc(50vh - 40px);"></div>
         <div style="height: 50%; overflow: auto;">
             <table class="ui single line selectable basic table" style="margin: 0px;">
-                <tr class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
+                <tr class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
                     ng-class="{ 'active': location.distance < 0.1 }">
                     <td class="content">
                         <div class="right floated">
@@ -125,6 +137,7 @@
             }
 
             $scope.flyTo = function (center) {
+                updateLocations($scope.locations, center);
                 mapbox.flyTo({
                     center: [center.longitude, center.latitude],
                     zoom: 16
@@ -200,12 +213,10 @@
             // Subscribe to geolocation service...
             var geolocation = new Geolocation();
             geolocation.subscribe(function (coords) {
-                $scope.$apply(function () {
-                    updateLocations($scope.locations, coords);
-                    $scope.coords = coords;
-                    $scope.flyTo(coords);
-
-                })
+                updateLocations($scope.locations, coords);
+                $scope.coords = coords;
+                $scope.flyTo(coords);
+                $scope.$apply();
             })
             $scope.geolocation = geolocation;
         })
@@ -220,6 +231,6 @@
     })
     mapbox.addControl(new mapboxgl.NavigationControl());
     $('.sidebar')
-        .sidebar('setting', 'transition', 'scale down')
+        .sidebar('setting', 'transition', 'overlay')
         .sidebar('attach events', '.toggle-sidebar');
 </script>
