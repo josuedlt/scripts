@@ -22,23 +22,11 @@
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
 
     <style>
-        .marker {
-            display: block;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            padding: 0px 5px 0px 5px;
-            background-color: rgba(255, 255, 255, 0.75);
-            color: #222;
-            font-size: 0.8em;
-        }
-
         .right.floated {
             float: right !important;
         }
 
-        .pusher,
-        .sidebar {
+        .pusher {
             padding-top: 40px;
         }
     </style>
@@ -50,14 +38,14 @@
         <a class="item" ng-click="loadLocations()">Load Locations</a>
         <div class="right menu">
             <a class="item" ng-show="!coords" ng-click="geolocation.start()">Locate</a>
-            <a class="item" ng-show="coords" ng-click="flyTo(coords, 14)" ng-bind="(coords.latitude | number: 6) + ', ' + (coords.longitude | number: 6)"></a>
+            <a class="item" ng-show="coords" ng-click="flyTo(coords)" ng-bind="(coords.latitude | number: 6) + ', ' + (coords.longitude | number: 6)"></a>
         </div>
     </div>
     <div class="ui left vertical inverted sidebar menu" style="width: 360px">
         <div class="item toggle-sidebar">
             <h3 class="header">Locations</h3>
             <div class="menu">
-                <a class="item" ng-click="flyTo(location, 16)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
+                <a class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
                     ng-if="{ 'active': location.distance < 0.5 }">
                     <div class="content">
                         <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
@@ -68,18 +56,18 @@
         </div>
     </div>
     <div class="pusher">
-        <div id="map" style="height: calc(100vh - 40px);"></div>
-        <!-- <div style="height: 50%; overflow: auto;">
+        <div id="map" style="height: calc(50vh - 40px);"></div>
+        <div style="height: 50%; overflow: auto;">
             <table class="ui single line selectable basic table" style="margin: 0px;">
-                <tr class="item" ng-click="flyTo(location, 17)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
-                    ng-class="{ 'active': location.distance < 0.5 }">
+                <tr class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: 'distance' track by location.location"
+                    ng-class="{ 'active': location.distance < 0.1 }">
                     <td class="content">
                         <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
                         <span ng-bind="location.name"></span>
                     </td>
                 </tr>
             </table>
-        </div> -->
+        </div>
     </div>
 </body>
 
@@ -90,7 +78,7 @@
 <script>
     var app = angular.module('app', [])
         .controller('locations', function ($http, $scope) {
-            function GetDistance(locations, origin) {
+            function updateDistance(locations, origin) {
                 if (origin) {
                     _.each(locations, function (destination) {
                         destination.distance = geolocation.calculateDistance(
@@ -99,89 +87,110 @@
                             destination.latitude,
                             destination.longitude);
                     })
+                    locations = _.orderBy(locations, 'distance');
+                } else {
+                    locations = _.orderBy(locations, 'name');
                 }
                 return locations;
             }
 
-            $scope.flyTo = function (center, zoom) {
-                mapbox.flyTo({
+            toGeoJSON = function (locations) {
+                var geojson = {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'FeatureCollection',
+                        'features': _.map(locations, function (l) {
+                            return {
+                                'type': "Feature",
+                                'properties': {
+                                    'name': l.name
+                                },
+                                'geometry': {
+                                    'type': "Point",
+                                    'coordinates': [l.longitude, l.latitude]
+                                }
+                            }
+                        })
+                    }
+                }
+                return geojson;
+            };
+
+            toLayer = function (locations, id) {
+                return {
+                    "id": id,
+                    "type": "symbol",
+                    "source": toGeoJSON(locations),
+                    "layout": {
+                        "text-field": "{name}",
+                        "text-font": ["Open Sans Semibold",
+                            "Arial Unicode MS Bold"
+                        ],
+                        "text-offset": [0, 0.6],
+                        "text-anchor": "center"
+                    }
+                }
+            }
+
+            toBounds = function (locations) {
+                var latitudes = _.map(locations, 'latitude');
+                var longitudes = _.map(locations, 'longitude');
+
+                return [
+                    [_.min(longitudes), _.min(latitudes)],
+                    [_.max(longitudes), _.max(latitudes)]
+                ]
+            }
+
+            $scope.flyTo = function (center) {
+                mapbox.jumpTo({
                     center: [center.longitude, center.latitude],
-                    zoom: zoom
+                    zoom: 16
                 });
             };
 
             $scope.loadLocations = function () {
-                toGeoJSON = function (locations) {
-                    var geojson = {
-                        'type': 'geojson',
-                        'data': {
-                            'type': 'FeatureCollection',
-                            'features': _.map(locations, function (l) {
-                                return {
-                                    'type': "Feature",
-                                    'properties': {
-                                        'name': l.name
-                                    },
-                                    'geometry': {
-                                        'type': "Point",
-                                        'coordinates': [l.longitude, l.latitude]
-                                    }
-                                }
-                            })
-                        }
-                    }
-                    return geojson;
-                }
-
-                toBounds = function (locations) {
-                    var latitudes = _.map(locations, 'latitude');
-                    var longitudes = _.map(locations, 'longitude');
-
-                    return [
-                        [_.min(longitudes), _.min(latitudes)],
-                        [_.max(longitudes), _.max(latitudes)]
-                    ]
-                }
-
                 $http.get('https://josuedlt.github.io/scripts/locations.json')
                     .then(function (response) {
                         var locations = response.data;
-
-                        // Calculate distance to origin
-                        GetDistance(locations, $scope.coords);
-
-                        mapbox.on('load', function () {
-                            mapbox.addLayer({
-                                "id": "points",
-                                "type": "symbol",
-                                "source": toGeoJSON(locations),
-                                "layout": {
-                                    "text-field": "{name}",
-                                    "text-font": ["Open Sans Semibold",
-                                        "Arial Unicode MS Bold"
-                                    ],
-                                    "text-offset": [0, 0.6],
-                                    "text-anchor": "top"
-                                }
-                            });
-                            mapbox.fitBounds(toBounds(locations), {
-                                padding: 40
-                            });
-                        })
+                        locations = updateDistance(locations, $scope.coords);
+                        mapbox.fitBounds(toBounds(locations), {
+                            padding: 40
+                        });
+                        mapbox.addLayer(toLayer(locations, 'locations'));
 
                         $scope.locations = locations;
                     })
             };
-            $scope.loadLocations();
+
+            mapbox.on('load', function () {
+                $scope.loadLocations();
+            })
+
+            mapbox.on('mousemove', function (e) {
+                console.log(e);
+                console.log(mapbox.queryRenderedFeatures(e.point));
+            });
+
+            mapbox.on('click', function (e) {
+                console.log(e);
+                var coords = {
+                    latitude: e.lngLat.lat,
+                    longitude: e.lngLat.lng
+                };
+                updateDistance($scope.locations, coords);
+                $scope.flyTo(coords);
+                $scope.$apply();
+            })
 
             // Subscribe to geolocation service...
             var geolocation = new Geolocation();
             geolocation.subscribe(function (coords) {
                 $scope.$apply(function () {
+                    updateDistance($scope.locations, coords);
                     $scope.coords = coords;
-                    $scope.flyTo(coords, 17);
+                    $scope.flyTo(coords);
 
-                    GetDistance($scope.locations, $scope.coords);
                 })
             })
             $scope.geolocation = geolocation;
