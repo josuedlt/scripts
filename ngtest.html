@@ -14,10 +14,11 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
-    <!-- map GL JS -->
-    <script src='https://api.tiles.map.com/map-gl-js/v0.40.1/map-gl.js'></script>
-    <link href='https://api.tiles.map.com/map-gl-js/v0.40.1/map-gl.css' rel='stylesheet' />
 
+    <!-- Mapbox GL JS -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+    
     <script src="angular-nisdWebApi.js"></script>
     <script src="angular-geolocation.js"></script>
 
@@ -25,12 +26,10 @@
         var app = angular.module('app', ['ngGeolocation', 'ngStorage', 'ngNisdWebApi'])
             .controller('map', function ($scope, $attrs, GeoFactory) {
                 // Initialize map
-                mapgl.accessToken =
-                    'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
-
-                var map = new mapgl.Map({
-                    container: $attrs['id'],
-                    style: 'map://styles/map/streets-v10',
+                mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+                var mapbox = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v10',
                     center: [-98.5, 29.43],
                     zoom: 8
                 });
@@ -79,7 +78,7 @@
                 }
 
                 $scope.$on('newPosition', function (event, center) {
-                    map.flyTo({
+                    mapbox.flyTo({
                         center: [center.longitude, center.latitude],
                         zoom: 16
                     });
