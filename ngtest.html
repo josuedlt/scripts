@@ -14,9 +14,9 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
-    <!-- Mapbox GL JS -->
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+    <!-- map GL JS -->
+    <script src='https://api.tiles.map.com/map-gl-js/v0.40.1/map-gl.js'></script>
+    <link href='https://api.tiles.map.com/map-gl-js/v0.40.1/map-gl.css' rel='stylesheet' />
 
     <script src="angular-nisdWebApi.js"></script>
     <script src="angular-geolocation.js"></script>
@@ -25,20 +25,111 @@
         var app = angular.module('app', ['ngGeolocation', 'ngStorage', 'ngNisdWebApi'])
             .controller('map', function ($scope, $attrs, GeoFactory) {
                 // Initialize map
-                mapboxgl.accessToken =
+                mapgl.accessToken =
                     'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
 
-                var map = new mapboxgl.Map({
+                var map = new mapgl.Map({
                     container: $attrs['id'],
-                    style: 'mapbox://styles/mapbox/streets-v10',
+                    style: 'map://styles/map/streets-v10',
                     center: [-98.5, 29.43],
                     zoom: 8
                 });
+
+                getGeoJSON = function (locations) {
+                    return {
+                        'type': 'FeatureCollection',
+                        'features': _.map(locations, function (l) {
+                            return {
+                                'type': "Feature",
+                                'properties': {
+                                    //'marker-symbol': 'school',
+                                    'title': l.name
+                                },
+                                'geometry': {
+                                    'type': "Point",
+                                    'coordinates': [l.longitude, l.latitude]
+                                }
+                            }
+                        })
+
+                    }
+                };
+
+                getBounds = function (locations) {
+                    var latitudes = _.map(locations, 'latitude');
+                    var longitudes = _.map(locations, 'longitude');
+
+                    return [
+                        [_.min(longitudes), _.min(latitudes)],
+                        [_.max(longitudes), _.max(latitudes)]
+                    ]
+                };
+                updateLocations = function (locations, origin) {
+                    if (origin) {
+                        _.each(locations, function (location) {
+                            // update bearing
+                            location.bearing = Math.ceil(getBearing(origin.latitude, origin.longitude,
+                                location.latitude, location.longitude));
+
+                            // update distance
+                            location.distance = getDistance(origin.latitude, origin.longitude,
+                                location.latitude, location.longitude);
+                        })
+                    }
+                }
 
                 $scope.$on('newPosition', function (event, center) {
                     map.flyTo({
                         center: [center.longitude, center.latitude],
                         zoom: 16
+                    });
+                })
+
+                $scope.$on('newLocations', function (event, locations) {
+                    updateLocations(locations, $scope.coords);
+
+                    // Add locations as a source
+                    if (!map.getSource('markers'))
+                        map.addSource('markers', {
+                            'type': 'geojson',
+                            'data': getGeoJSON(locations)
+                        });
+                    else
+                        map.getSource('markers').setData(getGeoJSON(locations));
+
+                    // Add marker layer with new source
+                    if (!map.getLayer('markers-layer')) {
+                        map.addLayer({
+                            "id": 'markers-layer',
+                            "type": 'symbol',
+                            "source": 'markers',
+                            "layout": {
+                                "icon-image": "{marker-symbol}-15",
+                                "icon-size": 1,
+                                "text-field": "{title}",
+                                "text-font": [
+                                    "Open Sans Semibold",
+                                    "Arial Unicode MS Bold"
+                                ],
+                                "text-offset": [0, 0.6],
+                                "text-anchor": "top",
+                                "text-size": 10
+                            },
+                            "paint": {}
+                        });
+
+                        // Trap click events on marker layer
+                        map.on('click', 'markers-layer', function (e) {
+                            new mapgl.Popup()
+                                .setLngLat(e.features[0].geometry.coordinates)
+                                .setHTML(e.features[0].properties.title)
+                                .addTo(map);
+                        });
+                    }
+
+                    // Fit markers to view
+                    map.fitBounds(getBounds(locations), {
+                        padding: 40
                     });
                 })
             })
@@ -84,7 +175,7 @@
     <div id="float">
         <button ng-click="geo.start()">Start</button>
         <pre ng-bind="position | json"></pre>
-        <div ng-controller="locations">
+        <div ng-controller="locations" style="overflow: auto;">
             <pre ng-bind="locations | json"></pre>
         </div>
     </div>
