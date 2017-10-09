@@ -1,0 +1,94 @@
+<html>
+
+<head>
+    <title>GPS Coordinate Test</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta name="theme-color" content="#000000">
+
+    <!-- jQuery + Semantic UI-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
+    <!-- AngularjJS -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+    <!-- Mapbox GL JS -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+
+    <script src="angular-nisdWebApi.js"></script>
+    <script src="angular-geolocation.js"></script>
+
+    <script>
+        var app = angular.module('app', ['ngGeolocation', 'ngStorage', 'ngNisdWebApi'])
+            .controller('map', function ($scope, $attrs, GeoFactory) {
+                // Initialize map
+                mapboxgl.accessToken =
+                    'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+
+                var map = new mapboxgl.Map({
+                    container: $attrs['id'],
+                    style: 'mapbox://styles/mapbox/streets-v10',
+                    center: [-98.5, 29.43],
+                    zoom: 8
+                });
+
+                $scope.$on('newPosition', function (event, center) {
+                    map.flyTo({
+                        center: [center.longitude, center.latitude],
+                        zoom: 16
+                    });
+                })
+            })
+            .controller('controller', function ($scope, GeoFactory) {
+                function newPosition(position) {
+                    $scope.$apply(function () {
+                        $scope.position = position;
+                        $scope.$broadcast('newPosition', position);
+                    });
+                }
+
+                GeoFactory.subscribe(newPosition);
+                $scope.geo = GeoFactory;
+            })
+            .controller('locations', function ($http, $scope, GeoFactory) {
+                $scope.loadLocations = function () {
+                    $http.get('https://josuedlt.github.io/scripts/locations.json')
+                        .then(function (response) {
+                            var locations = response.data;
+                            //updateLocations(locations, $scope.coords);
+                            $scope.$broadcast('newLocations', locations);
+                            $scope.locations = locations;
+                        })
+                };
+                $scope.loadLocations();
+            })
+    </script>
+    <style>
+        #float {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 99;
+        }
+
+        #map {
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body ng-app="app" ng-controller="controller">
+    <div id="float">
+        <button ng-click="geo.start()">Start</button>
+        <pre ng-bind="position | json"></pre>
+        <div ng-controller="locations">
+            <pre ng-bind="locations | json"></pre>
+        </div>
+    </div>
+    <div ng-controller="map" id="map"></div>
+</body>
+
+</html>
