@@ -33,80 +33,49 @@
 </head>
 
 <body class="ui" ng-app="app" ng-controller="locations">
+    <script type="text/ng-template" id="locationMenu.html">
+        <div class="menu">
+            <a class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
+                ng-class="{ 'active': location.distance < 0.1 }">
+                <div class="content">
+                    <div class="right floated">
+                        <span ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
+                        <i class="arrow up icon" ng-show="location.bearing" ng-style="{ 'transform': 'rotate(' + location.bearing + 'deg)' }"></i>
+                    </div>
+                    <span class="header" ng-bind="location.name"></span>
+                </div>
+            </a>
+        </div>
+    </script>
     <div class="ui top inverted fixed menu">
         <a class="item toggle-sidebar"><i class="ui content icon"></i></a>
         <a class="item" ng-click="loadLocations()">Load Locations</a>
         <div class="right menu">
-            <a class="item" ng-show="!coords" ng-click="geolocation.start()">Locate</a>
             <a class="item" ng-show="coords" ng-click="flyTo(coords)" ng-bind="(coords.latitude | number: 6) + ', ' + (coords.longitude | number: 6)"></a>
         </div>
     </div>
     <div class="ui left vertical inverted sidebar menu" style="width: 360px">
-        <div class="item">
-            <h3 class="header">Nearby Locations</h3>
-            <div class="menu">
-                <a class="item" ng-if="location.distance < 0.1" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
-                    ng-class="{ 'active': location.distance < 0.1 }">
-                    <div class="content">
-                        <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
-                        <span class="header" ng-bind="location.name"></span>
-                    </div>
-                </a>
-            </div>
-        </div>
         <div class="item toggle-sidebar">
             <h3 class="header">Locations</h3>
-            <div class="menu">
-                <a class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
-                    ng-class="{ 'active': location.distance < 0.1 }">
-                    <div class="content">
-                        <span class="right floated" ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
-                        <span class="header" ng-bind="location.name"></span>
-                    </div>
-                </a>
-            </div>
+            <location-menu></location-menu>
         </div>
     </div>
     <div class="pusher">
-        <div id="map" style="height: calc(50vh - 40px);"></div>
-        <div style="height: 50%; overflow: auto;">
-            <table class="ui single line selectable basic table" style="margin: 0px;">
-                <tr class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
-                    ng-class="{ 'active': location.distance < 0.1 }">
-                    <td class="content">
-                        <div class="right floated">
-                            <i class="arrow up icon" ng-show="location.bearing" ng-style="{ 'transform': 'rotate(' + location.bearing + 'deg)' }"></i>
-                            <span ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
-                        </div>
-                        <span ng-bind="location.name"></span>
-                    </td>
-                </tr>
-            </table>
-        </div>
+        <div id="map" style="height: calc(100vh - 40px);"></div>
     </div>
 </body>
 
 </html>
-
-<script src="geolocation.js"></script>
+<script type="text/javascript" src="geolocation.js"></script>
 <script>
     var app = angular.module('app', [])
-        .controller('locations', function ($http, $scope) {
-
-            updateLocations = function (locations, origin) {
-                if (origin) {
-                    _.each(locations, function (location) {
-                        // update bearing
-                        location.bearing = Math.ceil(geolocation.getBearing(origin.latitude, origin.longitude,
-                            location.latitude, location.longitude));
-
-                        // update distance
-                        location.distance = geolocation.getDistance(origin.latitude, origin.longitude,
-                            location.latitude, location.longitude);
-                    })
-                }
+        .directive('locationMenu', function () {
+            return {
+                replace: true,
+                templateUrl: 'locationMenu.html'
             }
-
+        })
+        .controller('locations', function ($http, $scope) {
             getGeoJSON = function (locations) {
                 return {
                     'type': 'FeatureCollection',
@@ -114,7 +83,8 @@
                         return {
                             'type': "Feature",
                             'properties': {
-                                'name': l.name
+                                //'marker-symbol': 'school',
+                                'title': l.name
                             },
                             'geometry': {
                                 'type': "Point",
@@ -134,10 +104,22 @@
                     [_.min(longitudes), _.min(latitudes)],
                     [_.max(longitudes), _.max(latitudes)]
                 ]
+            };
+            updateLocations = function (locations, origin) {
+                if (origin) {
+                    _.each(locations, function (location) {
+                        // update bearing
+                        location.bearing = Math.ceil(getBearing(origin.latitude, origin.longitude,
+                            location.latitude, location.longitude));
+
+                        // update distance
+                        location.distance = getDistance(origin.latitude, origin.longitude,
+                            location.latitude, location.longitude);
+                    })
+                }
             }
 
             $scope.flyTo = function (center) {
-                updateLocations($scope.locations, center);
                 mapbox.flyTo({
                     center: [center.longitude, center.latitude],
                     zoom: 16
@@ -145,80 +127,74 @@
             };
 
             $scope.loadLocations = function () {
+
+
                 $http.get('https://josuedlt.github.io/scripts/locations.json')
                     .then(function (response) {
                         var locations = response.data;
                         updateLocations(locations, $scope.coords);
 
-                        mapbox.fitBounds(getBounds(locations), {
-                            padding: 40
-                        });
-
-                        if (!mapbox.getSource('mySource'))
-                            mapbox.addSource('mySource', {
+                        // Add locations as a source
+                        if (!mapbox.getSource('markers'))
+                            mapbox.addSource('markers', {
                                 'type': 'geojson',
                                 'data': getGeoJSON(locations)
                             });
                         else
-                            mapbox.getSource('mySource').setData(getGeoJSON(locations));
+                            mapbox.getSource('markers').setData(getGeoJSON(locations));
 
-                        if (!mapbox.getLayer('nisd')) {
+                        // Add marker layer with new source
+                        if (!mapbox.getLayer('markers-layer')) {
                             mapbox.addLayer({
-                                "id": 'nisd',
+                                "id": 'markers-layer',
                                 "type": 'symbol',
-                                "source": 'mySource',
+                                "source": 'markers',
                                 "layout": {
-                                    "text-field": "{name}",
-                                    "text-font": ["Open Sans Semibold",
+                                    "icon-image": "{marker-symbol}-15",
+                                    "icon-size": 1,
+                                    "text-field": "{title}",
+                                    "text-font": [
+                                        "Open Sans Semibold",
                                         "Arial Unicode MS Bold"
                                     ],
                                     "text-offset": [0, 0.6],
-                                    "text-anchor": "center"
-                                }
+                                    "text-anchor": "top",
+                                    "text-size": 10
+                                },
+                                "paint": {}
                             });
 
-                            mapbox.on('click', 'nisd', function (e) {
+                            // Trap click events on marker layer
+                            mapbox.on('click', 'markers-layer', function (e) {
                                 new mapboxgl.Popup()
                                     .setLngLat(e.features[0].geometry.coordinates)
-                                    .setHTML(e.features[0].properties.name)
+                                    .setHTML(e.features[0].properties.title)
                                     .addTo(mapbox);
                             });
                         }
+
+                        // Fit markers to view
+                        mapbox.fitBounds(getBounds(locations), {
+                            padding: 40
+                        });
 
                         $scope.locations = locations;
                     })
             };
 
-            // Configure map
-            mapbox.on('load', function () {
-                $scope.loadLocations();
-
-                mapbox.on('click', function (e) {
-                    console.log(e);
-                    var coords = {
-                        latitude: e.lngLat.lat,
-                        longitude: e.lngLat.lng
-                    };
-                    updateLocations($scope.locations, coords);
-                    $scope.$apply();
-                });
-
-                // mapbox.on('mousemove', function (e) {
-                //     console.log(e);
-                //     console.log(mapbox.queryRenderedFeatures(e.point));
-                // });
-
-            })
-
-            // Subscribe to geolocation service...
-            var geolocation = new Geolocation();
-            geolocation.subscribe(function (coords) {
+            geolocate.on('geolocate', function (e) {
+                var coords = e.coords;
                 updateLocations($scope.locations, coords);
                 $scope.coords = coords;
                 $scope.flyTo(coords);
                 $scope.$apply();
             })
-            $scope.geolocation = geolocation;
+
+
+            // Configure map
+            mapbox.on('load', function () {
+                $scope.loadLocations();
+            })
         })
 
     // Populate map
@@ -228,8 +204,16 @@
         style: 'mapbox://styles/mapbox/streets-v10',
         center: [-98.5, 29.43],
         zoom: 8
-    })
-    mapbox.addControl(new mapboxgl.NavigationControl());
+    });
+
+    var geolocate = new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    });
+    mapbox.addControl(geolocate);
+
     $('.sidebar')
         .sidebar('setting', 'transition', 'overlay')
         .sidebar('attach events', '.toggle-sidebar');

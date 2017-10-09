@@ -47,45 +47,45 @@ var Geolocation = function () {
     },
     stop: function () {
       watcher = false;
-    },
-
-    // Functions...
-    getDistance: function (lat1, lon1, lat2, lon2) {
-      var p = 0.017453292519943295; // Math.PI / 180
-      var c = Math.cos;
-      var a = 0.5 - c((lat2 - lat1) * p) / 2 +
-        c(lat1 * p) * c(lat2 * p) *
-        (1 - c((lon2 - lon1) * p)) / 2;
-
-      return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
-    },
-
-    getBearing: function (lat1, lon1, lat2, lon2) {
-      function radians(n) {
-        return n * (Math.PI / 180);
-      }
-
-      function degrees(n) {
-        return n * (180 / Math.PI);
-      }
-
-      lat1 = radians(lat1);
-      lon1 = radians(lon1);
-      lat2 = radians(lat2);
-      lon2 = radians(lon2);
-
-      var dLong = lon2 - lon1;
-
-      var dPhi = Math.log(Math.tan(lat2 / 2.0 + Math.PI / 4.0) / Math.tan(lat1 / 2.0 + Math.PI /
-        4.0));
-      if (Math.abs(dLong) > Math.PI) {
-        if (dLong > 0.0)
-          dLong = -(2.0 * Math.PI - dLong);
-        else
-          dLong = (2.0 * Math.PI + dLong);
-      }
-
-      return (degrees(Math.atan2(dLong, dPhi)) + 360.0) % 360.0;
     }
   };
 };
+
+// Functions...
+function getDistance(lat1, lon1, lat2, lon2) {
+  var p = 0.017453292519943295; // Math.PI / 180
+  var c = Math.cos;
+  var a = 0.5 - c((lat2 - lat1) * p) / 2 +
+    c(lat1 * p) * c(lat2 * p) *
+    (1 - c((lon2 - lon1) * p)) / 2;
+
+  return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+};
+
+function getBearing(lat1, lon1, lat2, lon2) {
+  function radians(n) {
+    return n * (Math.PI / 180);
+  }
+
+  function degrees(n) {
+    return n * (180 / Math.PI);
+  }
+
+  lat1 = radians(lat1);
+  lon1 = radians(lon1);
+  lat2 = radians(lat2);
+  lon2 = radians(lon2);
+
+  var dLong = lon2 - lon1;
+
+  var dPhi = Math.log(Math.tan(lat2 / 2.0 + Math.PI / 4.0) / Math.tan(lat1 / 2.0 + Math.PI /
+    4.0));
+  if (Math.abs(dLong) > Math.PI) {
+    if (dLong > 0.0)
+      dLong = -(2.0 * Math.PI - dLong);
+    else
+      dLong = (2.0 * Math.PI + dLong);
+  }
+
+  return (degrees(Math.atan2(dLong, dPhi)) + 360.0) % 360.0;
+}
