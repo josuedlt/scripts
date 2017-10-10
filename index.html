@@ -21,6 +21,11 @@
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
 
+    <!--Begin SignalR Block-->
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/signalr/hubs"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/ws-connection.js"></script>
+
     <style>
         .right.floated {
             float: right !important;
@@ -194,7 +199,100 @@
             // Configure map
             mapbox.on('load', function () {
                 $scope.loadLocations();
+                updateSignalRMap($scope.connections);
             })
+
+            // SignalR Connections Hub - Client
+            updateSignalRMap = function (connections) {
+                signalRGeoJson = {
+                    'type': 'FeatureCollection',
+                    'features': _.map(_.filter(connections, 'Position'), function (c) {
+                        return {
+                            'type': "Feature",
+                            'properties': {
+                                'title': c.RequestCookies.name.Value,
+                                'marker-symbol': 'police'
+                            },
+                            'geometry': {
+                                'type': "Point",
+                                'coordinates': [c.Position.Longitude, c.Position.Latitude]
+                            }
+                        }
+                    })
+                }
+
+                // Configure source
+                if (!mapbox.getSource('signalR'))
+                    mapbox.addSource('signalR', {
+                        'type': 'geojson',
+                        'data': signalRGeoJson
+                    });
+                else
+                    mapbox.getSource('signalR').setData(signalRGeoJson);
+
+                // Configure layer
+                if (!mapbox.getLayer('signalR-layer')) {
+                    mapbox.addLayer({
+                        "id": 'signalR-layer',
+                        "type": 'symbol',
+                        "source": 'signalR',
+                        "layout": {
+                            "icon-image": "{marker-symbol}-15",
+                            "icon-size": 1,
+                            "text-field": "{title}",
+                            "text-font": [
+                                "Open Sans Semibold",
+                                "Arial Unicode MS Bold"
+                            ],
+                            "text-offset": [0, 0.6],
+                            "text-anchor": "top",
+                            "text-size": 10
+                        },
+                        "paint": {
+                            "text-color": '#0000FF'
+                        }
+                    });
+                }
+            }
+
+            ws_hub.client.hasConnected = function (c) {
+                if (c.ConnectionId == ws_con.id) {
+                    $scope.id = ws_con.id;
+                    ws_hub.server.getConnections().done(function (connections) {
+                        $scope.connections = connections;
+                        $scope.$apply();
+
+                        updateSignalRMap($scope.connections);
+                    });
+                } else {
+                    var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId)
+                    if (i > -1) $scope.connections[i] = c;
+                    else $scope.connections.push(c);
+                    $scope.$apply();
+
+                    updateSignalRMap($scope.connections);
+                }
+            };
+
+            ws_hub.client.hasDisconnected = function (c) {
+                if (c.ConnectionId == ws_con.id) {
+
+                } else {
+                    var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId);
+                    if (i > -1) $scope.connections.splice(i, 1);
+                }
+                $scope.$apply();
+
+                updateSignalRMap($scope.connections);
+            };
+
+            ws_hub.client.hasUpdatedPosition = function (c, p) {
+                var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId)
+                if (i > -1) $scope.connections[i].Position = p;
+                $scope.$apply();
+
+                updateSignalRMap($scope.connections);
+            }
         })
 
     // Populate map
