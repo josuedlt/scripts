@@ -1,0 +1,18 @@
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="jquery.signalR-2.2.2.min.js"></script>
+<script type="text/javascript" src="ws.signalR.js"></script>
+
+<script>
+    var int, web;
+    new signalR('https://integration.nisd.net')
+        .on('ready', function (o) {
+            console.log('int', o);
+            int = o;
+
+            new signalR("https://webservices.nisd.net")
+            .on('ready', function (o) {
+                console.log('web', o);
+                web = o;
+            })
+        })
+</script>
