@@ -16,6 +16,7 @@
     <!-- AngularjJS -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 
     <!-- Mapbox GL JS -->
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
@@ -150,7 +151,7 @@
                                         "Open Sans Semibold",
                                         "Arial Unicode MS Bold"
                                     ],
-                                    "text-offset": [0, 0.6],
+                                    //"text-offset": [0, 0.6],
                                     "text-anchor": "top",
                                     "text-size": 10
                                 },
@@ -202,11 +203,13 @@
                 signalRGeoJson = {
                     'type': 'FeatureCollection',
                     'features': _.map(_.filter(connections, 'Position'), function (c) {
+                        var name = c.RequestCookies.name;
                         return {
                             'type': "Feature",
                             'properties': {
-                                'title': c.RequestCookies.name.Value,
-                                'address': c.UserHostAddress,
+                                'title': c.UserHostAddress,
+                                'address': (name) ? name.Value : 'Anonymous',
+                                'host': c.Headers.Host,
                                 'timestamp': c.Timestamp,
                                 'marker-symbol': 'star'
                             },
@@ -255,7 +258,10 @@
                         var f = e.features[0];
                         new mapboxgl.Popup()
                             .setLngLat(f.geometry.coordinates)
-                            .setHTML(f.properties.address + '\n' + f.properties.timestamp)
+                            .setHTML(f.properties.address + '<br />' + 
+                                moment(f.properties.timestamp).toString() + '<br />' + 
+                                f.properties.host
+                            )
                             .addTo(mapbox);
                     });
                 }
