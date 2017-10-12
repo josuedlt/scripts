@@ -9,10 +9,12 @@ var signalR = function (hubPath) {
                 fn(o)
             });
     }
+    _this.tryingToReconnect = true;
 
     // Configure connection
     _this.prepareConnection = function () {
         _this.connection = $.hubConnection(hubPath);
+
         _this.connection.stateChanged(function (change) {
             function stateName(state) {
                 switch (state) {
@@ -26,32 +28,50 @@ var signalR = function (hubPath) {
                         return "reconnecting";
                 }
             }
-            _this.fire('state', stateName(change.newState));
+            _this.fire('state', {
+                name: stateName(change.newState)
+            });
         })
 
         _this.connectToHub = function () {
             _this.connection.start().done(function () {
-                _this.fire('ready', _this.connection.createHubProxies());
-
                 window.onbeforeunload = function () {
                     _this.connection.stop();
                 };
-                _this.connection.disconnected(function () {
-                    setTimeout(function () {
-                        _this.connectToHub();
-                    }, 5000);
+
+                _this.connection.connectionSlow(function () {
+                    _this.fire('state', {
+                        name: 'connection slow'
+                    });
                 });
+
+                _this.connection.disconnected(function () {
+                    if (_this.connection.lastError) {
+                        _this.fire('state', {
+                            name: 'error',
+                            resason: _this.connection.lastError.message
+                        })
+                    }
+
+                    if (_this.tryingToReconnect) {
+                        setTimeout(function () {
+                            _this.connectToHub();
+                        }, 5000);
+                    }
+                });
+
+                _this.fire('ready', _this.connection.createHubProxies());
             })
 
         }
-        
+
         _this.connectToHub();
     }
 
     if (!hubPath) hubPath = "https://webservices.nisd.net";
     $.ajax({
         async: false,
-        dataType:'script',
+        dataType: 'script',
         url: hubPath + '/signalr/hubs',
         success: _this.prepareConnection
     });

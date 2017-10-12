@@ -4,15 +4,19 @@
 
 <script>
     var int, web;
-    int = new signalR('https://integration.nisd.net');
-        int.on('ready', function (o) {
+    int = new signalR('https://integration.nisd.net')
+        .on('state', function (o) {
+            console.log('int-status', o)
+        }).on('ready', function (o) {
             console.log('int', o);
             int = o;
 
-            web = new signalR("https://webservices.nisd.net");
-            web.on('ready', function (o) {
-                console.log('web', o);
-                web = o;
-            });
+            web = new signalR("https://webservices.nisd.net")
+                .on('state', function (o) {
+                    console.log('web-status', o)
+                }).on('ready', function (o) {
+                    console.log('web', o);
+                    web = o;
+                });
         });
 </script>
