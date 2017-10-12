@@ -20,11 +20,11 @@
             //Connections Hub - Client
             ws_hub = o.connectionsHub;
             ws_hub.client.hasConnected = function (c) {
-                console.log('Connected', c);
+                console.log('Connected', c.UserHostAddress, c);
             };
 
             ws_hub.client.hasDisconnected = function (c) {
-                console.log('Disconnected', c);
+                console.log('Disconnected', c.UserHostAddress, c);
             };
 
             ws_hub.client.hasUpdatedPosition = function (c, p) {
