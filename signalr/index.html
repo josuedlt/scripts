@@ -10,13 +10,13 @@
         }).on('ready', function (o) {
             console.log('int', o);
 
-            // if (!web)
-            // web = new signalR("https://webservices.nisd.net")
-            //     .on('state', function (o) {
-            //         console.log('web-status', o)
-            //     }).on('ready', function (o) {
-            //         console.log('web', o);
-            //     }).start();
+            if (!web)
+            web = new signalR("https://webservices.nisd.net")
+                .on('state', function (o) {
+                    console.log('web-status', o)
+                }).on('ready', function (o) {
+                    console.log('web', o);
+                });
         });
 
 </script>

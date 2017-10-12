@@ -15,22 +15,6 @@ var signalR = function (hubPath) {
     // Configure connection
     _this.connectToHub = function () {
         _this.connection.start().done(function () {
-
-            _this.connection.disconnected(function () {
-                if (_this.connection.lastError) {
-                    _this.fire('state', {
-                        name: 'error',
-                        resason: _this.connection.lastError.message
-                    })
-                }
-
-                if (_this.tryingToReconnect) {
-                    setTimeout(function () {
-                        _this.connectToHub();
-                    }, 5000);
-                }
-            });
-
             window.onbeforeunload = function () {
                 _this.connection.stop();
             };
@@ -49,7 +33,7 @@ var signalR = function (hubPath) {
                 name: 'connection slow'
             });
         });
-        
+
         _this.connection.stateChanged(function (change) {
             function stateName(state) {
                 switch (state) {
@@ -67,6 +51,21 @@ var signalR = function (hubPath) {
                 name: stateName(change.newState)
             });
         })
+
+        _this.connection.disconnected(function () {
+            if (_this.connection.lastError) {
+                _this.fire('state', {
+                    name: 'error',
+                    resason: _this.connection.lastError.message
+                })
+            }
+
+            if (_this.tryingToReconnect) {
+                setTimeout(function () {
+                    _this.connectToHub();
+                }, 5000);
+            }
+        });
 
         _this.connectToHub();
     }
