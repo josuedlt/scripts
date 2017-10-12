@@ -1,0 +1,20 @@
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
+<script type="text/javascript" src="ws_SignalR.js"></script>
+
+<script>
+    var i = new ws_SignalR('https://integration.nisd.net');
+    i.on('state', function(o) {
+        console.log('int-state', o)
+    }).on('ready', function (o) {
+        console.log('int', o);
+    })
+
+    var w = new ws_SignalR();
+    w.on('state', function(o) {
+        console.log('web-state', o)
+    }).on('ready', function (o) {
+        console.log('web', o);
+    })
+
+</script>
