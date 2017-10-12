@@ -1,11 +1,13 @@
-var ws_SignalR = function (hubPath, hubName) {
+var ws_SignalR = function (hubPath) {
     var _this = this;
 
     // Configure subscribers...
     _this.keyHandlers = {};
     _this.fire = function (key, o) {
         if (_this.keyHandlers[key])
-            _this.keyHandlers[key].forEach(function (fn) { fn(o) });
+            _this.keyHandlers[key].forEach(function (fn) {
+                fn(o)
+            });
     }
 
     _this.prepareConnection = function () {
@@ -13,10 +15,14 @@ var ws_SignalR = function (hubPath, hubName) {
         _this.connection.stateChanged(function (change) {
             function stateName(state) {
                 switch (state) {
-                    case ($.signalR.connectionState.connecting): return "connecting";
-                    case ($.signalR.connectionState.connected): return "connected";
-                    case ($.signalR.connectionState.disconnected): return "disconnected";
-                    case ($.signalR.connectionState.reconnecting): return "reconnecting";
+                    case ($.signalR.connectionState.connecting):
+                        return "connecting";
+                    case ($.signalR.connectionState.connected):
+                        return "connected";
+                    case ($.signalR.connectionState.disconnected):
+                        return "disconnected";
+                    case ($.signalR.connectionState.reconnecting):
+                        return "reconnecting";
                 }
             }
             _this.fire('state', stateName(change.newState));
@@ -24,14 +30,15 @@ var ws_SignalR = function (hubPath, hubName) {
 
         _this.connectToHub = function () {
             _this.connection.start().done(function () {
-                console.log(hubPath, _this.connection);
-                _this.fire('ready', _this.connection);
+                _this.fire('ready', _this.connection.createHubProxies());
 
                 window.onbeforeunload = function () {
                     _this.connection.stop();
                 };
                 _this.connection.disconnected(function () {
-                    setTimeout(function () { _this.connectToHub(); }, 5000);
+                    setTimeout(function () {
+                        _this.connectToHub();
+                    }, 5000);
                 });
             })
 
@@ -40,10 +47,12 @@ var ws_SignalR = function (hubPath, hubName) {
     }
 
     if (!hubPath) hubPath = "https://webservices.nisd.net";
-    $.ajax({ async: false });
-    $.getScript(hubPath + '/signalr/hubs', _this.prepareConnection);
-    $.ajax({ async: true });
-    _this.prepareConnection();
+    $.ajax({
+        async: false,
+        dataType:'script',
+        url: hubPath + '/signalr/hubs',
+        success: _this.prepareConnection
+    });
 
     return {
         on: function (key, fn) {

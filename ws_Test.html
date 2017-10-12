@@ -3,18 +3,16 @@
 <script type="text/javascript" src="ws_SignalR.js"></script>
 
 <script>
-    var i = new ws_SignalR('https://integration.nisd.net');
-    i.on('state', function(o) {
-        console.log('int-state', o)
-    }).on('ready', function (o) {
-        console.log('int', o);
-    })
+    var int, web;
+    ws_SignalR('https://integration.nisd.net')
+        .on('ready', function (o) {
+            console.log('int', o);
+            int = o;
 
-    var w = new ws_SignalR();
-    w.on('state', function(o) {
-        console.log('web-state', o)
-    }).on('ready', function (o) {
-        console.log('web', o);
-    })
-
+            ws_SignalR("https://webservices.nisd.net")
+            .on('ready', function (o) {
+                console.log('web', o);
+                web = o;
+            })
+        })
 </script>
