@@ -203,7 +203,7 @@
                 signalRGeoJson = {
                     'type': 'FeatureCollection',
                     'features': _.map(_.filter(connections, 'Position'), function (c) {
-                        var name = c.RequestCookies.name;
+                        var name = c.RequestCookies.name; 
                         return {
                             'type': "Feature",
                             'properties': {
