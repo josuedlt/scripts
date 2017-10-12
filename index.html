@@ -210,6 +210,7 @@
                                 'title': c.UserHostAddress,
                                 'address': (name) ? name.Value : 'Anonymous',
                                 'host': c.Headers.Host,
+                                'referer': c.Headers.Referer,
                                 'timestamp': c.Timestamp,
                                 'marker-symbol': 'star'
                             },
@@ -260,7 +261,7 @@
                             .setLngLat(f.geometry.coordinates)
                             .setHTML(f.properties.address + '<br />' + 
                                 moment(f.properties.timestamp).toString() + '<br />' + 
-                                f.properties.host
+                                f.properties.referer
                             )
                             .addTo(mapbox);
                     });
