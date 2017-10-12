@@ -1,0 +1,12 @@
+<script src="jdlt.geolocation.js"></script>
+<script>
+    var geo = new Geolocation()
+        .on('position', function (o) {
+            console.log('position', o);
+        }).on('state', function (o) {
+            console.log('state', o);
+        })
+
+    setTimeout(geo.start, 1000);
+    setTimeout(geo.stop,  5000);
+</script>

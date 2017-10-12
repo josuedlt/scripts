@@ -19,11 +19,10 @@
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
 
-    <script src="angular-nisdWebApi.js"></script>
     <script src="angular-geolocation.js"></script>
 
     <script>
-        var app = angular.module('app', ['ngGeolocation', 'ngStorage'])
+        var app = angular.module('app', ['ngGeolocation'])
             .directive('mapbox', function () {
                 // Internal functions...
                 getBearing = function (lat1, lon1, lat2, lon2) {
