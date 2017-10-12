@@ -175,8 +175,8 @@
                             [_.min(longitudes), _.min(latitudes)],
                             [_.max(longitudes), _.max(latitudes)]
                         ], {
-                            padding: 40
-                        });
+                                padding: 40
+                            });
 
                         $scope.locations = locations;
                     })
@@ -206,6 +206,8 @@
                             'type': "Feature",
                             'properties': {
                                 'title': c.RequestCookies.name.Value,
+                                'address': c.UserHostAddress,
+                                'timestamp': c.Timestamp,
                                 'marker-symbol': 'star'
                             },
                             'geometry': {
@@ -246,6 +248,15 @@
                         "paint": {
                             "text-color": '#000000'
                         }
+                    });
+
+                    // Trap click events on marker layer
+                    mapbox.on('click', 'signalR-layer', function (e) {
+                        var f = e.features[0];
+                        new mapboxgl.Popup()
+                            .setLngLat(f.geometry.coordinates)
+                            .setHTML(f.properties.address + '\n' + f.properties.timestamp)
+                            .addTo(mapbox);
                     });
                 }
             }

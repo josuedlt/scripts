@@ -1,4 +1,4 @@
-var Geolocation = function () {
+Geolocation = function () {
     var _this = this;
 
     _this.handlers = {};
@@ -14,7 +14,9 @@ var Geolocation = function () {
     }
 
     firePosition = function (position) {
-        // prepare 
+        if (!position) return;
+
+        // prepare
         var p = {
             accuracy: position.coords.accuracy,
             latitude: position.coords.latitude,
@@ -22,7 +24,7 @@ var Geolocation = function () {
             timestamp: position.timestamp
         };
 
-        // fire 
+        // fire
         fire('state', {
             name: 'New position',
             position: p
@@ -150,3 +152,4 @@ var Geolocation = function () {
         }
     }
 }
+var geolocation = new Geolocation();
