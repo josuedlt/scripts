@@ -3,20 +3,33 @@
 <script type="text/javascript" src="jdlt.signalR.js"></script>
 
 <script>
-    var int, web;
-    int = new signalR('https://integration.nisd.net')
-        .on('state', function (o) {
-            console.log('int-status', o)
-        }).on('ready', function (o) {
-            console.log('int', o);
+    // var int, web;
+    // int = new signalR('https://integration.nisd.net')
+    //     .on('state', function (o) {
+    //         console.log('int-status', o)
+    //     }).on('ready', function (o) {
+    //         console.log('int', o);
+    //     });
 
-            if (!web)
-            web = new signalR("https://webservices.nisd.net")
-                .on('state', function (o) {
-                    console.log('web-status', o)
-                }).on('ready', function (o) {
-                    console.log('web', o);
-                });
+    var web = new signalR("https://webservices.nisd.net")
+        .on('state', function (o) {
+            console.log('web-status', o)
+        }).on('ready', function (o) {
+            console.log('web', o);
+
+            //Connections Hub - Client
+            ws_hub = o.connectionsHub;
+            ws_hub.client.hasConnected = function (c) {
+                console.log('Connected', c);
+            };
+
+            ws_hub.client.hasDisconnected = function (c) {
+                console.log('Disconnected', c);
+            };
+
+            ws_hub.client.hasUpdatedPosition = function (c, p) {
+                console.log('Position', c.UserHostAddress, p);
+            }
         });
 
 </script>

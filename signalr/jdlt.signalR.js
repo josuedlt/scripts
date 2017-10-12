@@ -19,8 +19,6 @@ var signalR = function (hubPath) {
                 window.onbeforeunload = function () {
                     _this.connection.stop();
                 };
-
-                _this.fire('ready', _this.proxies);
             })
         }
     }
@@ -28,7 +26,8 @@ var signalR = function (hubPath) {
     _this.prepareConnection = function () {
         _this.connection = $.hubConnection(hubPath);
         _this.proxies = _this.connection.createHubProxies();
-
+        _this.fire('ready', _this.proxies);
+        
         _this.connection.connectionSlow(function () {
             _this.fire('state', {
                 name: 'connection slow'
