@@ -48,6 +48,7 @@ var signalR = function (hubPath) {
         _this.connectToHub();
     }
 
+    if (!hubPath) hubPath = "https://webservices.nisd.net";
     $.ajax({
         async: false,
         dataType:'script',
