@@ -10,11 +10,46 @@ var signalR = function (hubPath) {
             });
     }
     _this.tryingToReconnect = true;
+    _this.proxies;
 
     // Configure connection
+    _this.connectToHub = function () {
+        _this.connection.start().done(function () {
+
+            _this.connection.disconnected(function () {
+                if (_this.connection.lastError) {
+                    _this.fire('state', {
+                        name: 'error',
+                        resason: _this.connection.lastError.message
+                    })
+                }
+
+                if (_this.tryingToReconnect) {
+                    setTimeout(function () {
+                        _this.connectToHub();
+                    }, 5000);
+                }
+            });
+
+            window.onbeforeunload = function () {
+                _this.connection.stop();
+            };
+
+            _this.fire('ready', _this.proxies);
+        })
+
+    }
+
     _this.prepareConnection = function () {
         _this.connection = $.hubConnection(hubPath);
+        _this.proxies = _this.connection.createHubProxies();
 
+        _this.connection.connectionSlow(function () {
+            _this.fire('state', {
+                name: 'connection slow'
+            });
+        });
+        
         _this.connection.stateChanged(function (change) {
             function stateName(state) {
                 switch (state) {
@@ -33,38 +68,6 @@ var signalR = function (hubPath) {
             });
         })
 
-        _this.connectToHub = function () {
-            _this.connection.start().done(function () {
-                window.onbeforeunload = function () {
-                    _this.connection.stop();
-                };
-
-                _this.connection.connectionSlow(function () {
-                    _this.fire('state', {
-                        name: 'connection slow'
-                    });
-                });
-
-                _this.connection.disconnected(function () {
-                    if (_this.connection.lastError) {
-                        _this.fire('state', {
-                            name: 'error',
-                            resason: _this.connection.lastError.message
-                        })
-                    }
-
-                    if (_this.tryingToReconnect) {
-                        setTimeout(function () {
-                            _this.connectToHub();
-                        }, 5000);
-                    }
-                });
-
-                _this.fire('ready', _this.connection.createHubProxies());
-            })
-
-        }
-
         _this.connectToHub();
     }
 
@@ -82,6 +85,16 @@ var signalR = function (hubPath) {
                 _this.keyHandlers[key] = new Array;
 
             _this.keyHandlers[key].push(fn);
+            return this;
+        },
+        start: function () {
+            _this.tryingToReconnect = true;
+            if (_this.connection) _this.connectToHub();
+            return this;
+        },
+        stop: function () {
+            _this.tryingToReconnect = false;
+            _this.connection.stop();
             return this;
         }
     }
