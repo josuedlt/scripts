@@ -14,14 +14,15 @@ var signalR = function (hubPath) {
 
     // Configure connection
     _this.connectToHub = function () {
-        _this.connection.start().done(function () {
-            window.onbeforeunload = function () {
-                _this.connection.stop();
-            };
+        if (_this.tryingToReconnect) {
+            _this.connection.start().done(function () {
+                window.onbeforeunload = function () {
+                    _this.connection.stop();
+                };
 
-            _this.fire('ready', _this.proxies);
-        })
-
+                _this.fire('ready', _this.proxies);
+            })
+        }
     }
 
     _this.prepareConnection = function () {
