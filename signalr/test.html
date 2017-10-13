@@ -1,0 +1,27 @@
+<script src="jquery.min.js"></script>
+<script src="jquery.signalR-2.2.2.min.js"></script>
+<script src="jdlt.signalRHubs.js"></script>
+<script>
+    new signalRHub('https://integration.nisd.net', function (hub) {
+        ws_hub = hub.proxies.connectionshub;
+        hub.start();
+    });
+
+    new signalRHub('https://webservices.nisd.net', function (hub) {
+        ws_hub = hub.proxies.connectionshub;
+
+        ws_hub.client.hasConnected = function (c) {
+            console.log('Connected', c.UserHostAddress, c);
+        };
+
+        ws_hub.client.hasDisconnected = function (c) {
+            console.log('Disconnected', c.UserHostAddress, c);
+        };
+
+        ws_hub.client.hasUpdatedPosition = function (c, p) {
+            console.log('Position', c.UserHostAddress, p);
+        }
+
+        hub.start();
+    })
+</script>

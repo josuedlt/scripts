@@ -13,17 +13,7 @@ var signalR = function (hubPath) {
     _this.proxies;
 
     // Configure connection
-    _this.connectToHub = function () {
-        if (_this.tryingToReconnect) {
-            _this.connection.start().done(function () {
-                window.onbeforeunload = function () {
-                    _this.connection.stop();
-                };
-            })
-        }
-    }
-
-    _this.prepareConnection = function () {
+     _this.prepareConnection = function () {
         _this.connection = $.hubConnection(hubPath);
         _this.proxies = _this.connection.createHubProxies();
         _this.fire('ready', _this.proxies);
@@ -67,6 +57,16 @@ var signalR = function (hubPath) {
             }
         });
 
+        _this.connectToHub = function () {
+            if (_this.tryingToReconnect) {
+                _this.connection.start().done(function () {
+                    window.onbeforeunload = function () {
+                        _this.connection.stop();
+                    };
+                })
+            }
+        }
+        
         _this.connectToHub();
     }
 
