@@ -17,6 +17,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-moment/1.0.1/angular-moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/UAParser.js/0.7.14/ua-parser.min.js"></script>
 
     <!-- Mapbox GL JS -->
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
@@ -41,17 +43,29 @@
 <body class="ui" ng-app="app" ng-controller="locations">
     <script type="text/ng-template" id="locationMenu.html">
         <div class="menu">
-            <a class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['distance', 'name'] track by location.location"
-                ng-class="{ 'active': location.distance < 0.1 }">
+            <a class="item" ng-click="flyTo(location)" ng-repeat="location in locations | orderBy: ['Distance', 'Name'] track by location.Location"
+                ng-class="{ 'active': location.Distance < 0.1 }">
                 <div class="content">
                     <div class="right floated">
-                        <span ng-show="location.distance" ng-bind="(location.distance | number:2) + ' mi.'"></span>
-                        <i class="arrow up icon" ng-show="location.bearing" ng-style="{ 'transform': 'rotate(' + location.bearing + 'deg)' }"></i>
+                        <span ng-show="location.Distance" ng-bind="(location.Distance | number:2) + ' mi.'"></span>
+                        <i class="arrow up icon" ng-show="location.Bearing" ng-style="{ 'transform': 'rotate(' + location.Bearing + 'deg)' }"></i>
                     </div>
-                    <span class="header" ng-bind="location.name"></span>
+                    <span class="header" ng-bind="location.Name"></span>
                 </div>
             </a>
         </div>
+    </script>
+    <script type="text/ng-template" id="connectionMenu.html">
+        <div class="menu">
+            <a class="item" ng-click="flyTo(connection.Position)" ng-repeat="connection in connections track by connection.ConnectionId"
+                ng-if="connection.Position">
+                <div class="content">
+                    <div class="right floated" am-time-ago="connection.Timestamp"></div>
+                    <div class="header" ng-bind="connection.UserHostAddress"></div>
+
+                    <span ng-bind="connection.Headers.Referer"></span>
+                </div>
+            </a>
     </script>
     <div class="ui top inverted fixed menu">
         <a class="item toggle-sidebar">
@@ -64,6 +78,8 @@
     </div>
     <div class="ui left vertical inverted sidebar menu" style="width: 360px">
         <div class="item toggle-sidebar">
+            <h3 class="header">Connections</h3>
+            <connection-menu></connection-menu>
             <h3 class="header">Locations</h3>
             <location-menu></location-menu>
         </div>
@@ -76,11 +92,17 @@
 </html>
 <script type="text/javascript" src="geolocation/jdlt.geolocation.js"></script>
 <script>
-    var app = angular.module('app', [])
+    var app = angular.module('app', ['angularMoment'])
         .directive('locationMenu', function () {
             return {
                 replace: true,
                 templateUrl: 'locationMenu.html'
+            }
+        })
+        .directive('connectionMenu', function () {
+            return {
+                replace: true,
+                templateUrl: 'connectionMenu.html'
             }
         })
         .controller('locations', function ($http, $scope) {
@@ -88,19 +110,19 @@
                 if (origin) {
                     _.each(locations, function (location) {
                         // update bearing
-                        location.bearing = Math.ceil(getBearing(origin.latitude, origin.longitude,
-                            location.latitude, location.longitude));
+                        location.Bearing = Math.ceil(geolocation.getBearing(origin.Latitude, origin.Longitude,
+                            location.Latitude, location.Longitude));
 
                         // update distance
-                        location.distance = getDistance(origin.latitude, origin.longitude,
-                            location.latitude, location.longitude);
+                        location.Distance = geolocation.getDistance(origin.Latitude, origin.Longitude,
+                            location.Latitude, location.Longitude);
                     })
                 }
             }
 
             $scope.flyTo = function (center) {
                 mapbox.flyTo({
-                    center: [center.longitude, center.latitude],
+                    center: [center.Longitude, center.Latitude],
                     zoom: 16
                 });
             };
@@ -118,11 +140,11 @@
                                     'type': "Feature",
                                     'properties': {
                                         //'marker-symbol': 'school',
-                                        'title': l.name
+                                        'title': l.Name
                                     },
                                     'geometry': {
                                         'type': "Point",
-                                        'coordinates': [l.longitude, l.latitude]
+                                        'coordinates': [l.Longitude, l.Latitude]
                                     }
                                 }
                             })
@@ -170,27 +192,32 @@
                         }
 
                         // Fit markers to view
-                        var latitudes = _.map(locations, 'latitude');
-                        var longitudes = _.map(locations, 'longitude');
+                        var latitudes = _.map(locations, 'Latitude');
+                        var longitudes = _.map(locations, 'Longitude');
                         mapbox.fitBounds([
                             [_.min(longitudes), _.min(latitudes)],
                             [_.max(longitudes), _.max(latitudes)]
                         ], {
-                                padding: 40
-                            });
+                            padding: 40
+                        });
 
                         $scope.locations = locations;
                     })
             };
 
-            geolocate.on('geolocate', function (e) {
-                var coords = e.coords;
-                updateLocations($scope.locations, coords);
-                $scope.coords = coords;
-                $scope.flyTo(coords);
-                $scope.$apply();
+            geolocation.on('position', function (p) {
+                console.log(p);
+                updateLocations($scope.locations, {
+                    Latitude: p.latitude,
+                    Longitude: p.longitude
+                });
             })
-
+            // geolocate.on('geolocate', function (e) {
+            //     var coords = e.coords;
+            //     $scope.coords = coords;
+            //     $scope.flyTo(coords);
+            //     $scope.$apply();
+            // })
 
             // Configure map
             mapbox.on('load', function () {
@@ -203,7 +230,7 @@
                 signalRGeoJson = {
                     'type': 'FeatureCollection',
                     'features': _.map(_.filter(connections, 'Position'), function (c) {
-                        var name = c.RequestCookies.name; 
+                        var name = c.RequestCookies.name;
                         return {
                             'type': "Feature",
                             'properties': {
@@ -259,8 +286,8 @@
                         var f = e.features[0];
                         new mapboxgl.Popup()
                             .setLngLat(f.geometry.coordinates)
-                            .setHTML(f.properties.address + '<br />' + 
-                                moment(f.properties.timestamp).toString() + '<br />' + 
+                            .setHTML(f.properties.address + '<br />' +
+                                moment(f.properties.timestamp).toString() + '<br />' +
                                 f.properties.referer
                             )
                             .addTo(mapbox);
@@ -316,14 +343,6 @@
         center: [-98.5, 29.43],
         zoom: 8
     });
-
-    var geolocate = new mapboxgl.GeolocateControl({
-        positionOptions: {
-            enableHighAccuracy: true
-        },
-        trackUserLocation: true
-    });
-    mapbox.addControl(geolocate);
 
     $('.sidebar')
         .sidebar('setting', 'transition', 'overlay')
