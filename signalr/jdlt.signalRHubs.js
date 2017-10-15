@@ -12,20 +12,21 @@ function signalRHub(url, callback) {
     })
 }
 
-// var signalRHubs = function (urls) {
-//     var hubs = [];
-//     urls.forEach(function (url) {
-//         $.ajax({
-//             async: false,
-//             cache: false,
-//             dataType: 'script',
-//             url: url + '/signalr/hubs',
-//             complete: function () {
-//                 h = $.hubConnection(url)
-//                 h.createHubProxies();
-//                 hubs.push(h);
-//             }
-//         })
-//     })
-//     return hubs;
-// }
+var signalRHubs = function (urls, callback) {
+    var hubs = [];
+    urls.forEach(function (url) {
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: 'script',
+            url: url + '/signalr/hubs',
+            complete: function () {
+                h = $.hubConnection(url);
+                h.createHubProxies();
+                hubs.push(h);
+                if (hubs.length == urls.length) 
+                    callback(hubs);
+            }
+        })
+    })
+}
