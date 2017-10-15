@@ -2,7 +2,7 @@
 <script src="jquery.signalR-2.2.2.min.js"></script>
 <script src="jdlt.signalRHubs.js"></script>
 <script>
-    IntegrationConnectionsHub = function (hub) {
+    IntegrationConnectionsHubHandler = function (hub) {
         proxy = hub.proxies.connectionshub;
 
         proxy.client.receivedEvent = function (event) {
@@ -30,9 +30,11 @@
         }
 
         startPersistedConnection(hub);
+
+        return proxy;
     }
 
-    WebServiceConnectionsHub = function (hub) {
+    WebServiceConnectionsHubHandler = function (hub) {
         proxy = hub.proxies.connectionshub;
 
         proxy.client.hasConnected = function (c) {
@@ -48,6 +50,8 @@
         }
 
         startPersistedConnection(hub);
+
+        return proxy;
     }
 
     startPersistedConnection = function (hub) {
@@ -84,19 +88,13 @@
     }
 
     var intHub, webHub;
+    var signalR = new signalR();
 
-    // new signalRHubs([
-    //     //'https://integration.nisd.net',
-    //     'https://webservices.nisd.net'
-    // ], function (hubs) {
-    //     //intHub = new IntegrationConnectionsHub(hubs[0]);
-    //     webHub = new WebServiceConnectionsHub(hubs[1]);
-    // })
-
-    new signalRHub('https://webservices.nisd.net', (hub) => {
-        webHub = new WebServiceConnectionsHub(hub);
+    signalR.connectToHubs([
+        'https://integration.nisd.net',
+        'https://webservices.nisd.net'
+    ], function (c) {
+        intHub = new IntegrationConnectionsHubHandler(c[0]);
+        webHub = new WebServiceConnectionsHubHandler(c[1]);
     })
-    new signalRHub('https://integration.nisd.net', (hub) => {
-        intHub = IntegrationConnectionsHub(hub);
-    });
 </script>
