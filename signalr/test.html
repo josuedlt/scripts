@@ -4,97 +4,73 @@
 <script>
     IntegrationConnectionsHubHandler = function (hub) {
         proxy = hub.proxies.connectionshub;
-
-        proxy.client.receivedEvent = function (event) {
-            console.log(hub.url, event)
-        };
-
-        proxy.client.reload = function () {
-            location.reload(true);
-        }
-
-        proxy.client.redirect = function (path) {
-            location.href = path;
-        }
-
-        proxy.client.notify = function (message) {
-            alert(message);
-        }
-
-        proxy.client.speak = function (phrase) {
-            if (window.SpeechSynthesisUtterance != undefined) {
-                var utterance = new SpeechSynthesisUtterance(phrase);
-                utterance.lang = "en-us";
-                window.speechSynthesis.speak(utterance);
+        proxy.client = {
+            receivedEvent: function (event) {
+                console.log(hub.url, event)
+            },
+            reload: function () {
+                location.reload(true);
+            },
+            redirect: function (path) {
+                location.href = path;
+            },
+            notify: function (message) {
+                alert(message);
+            },
+            speak: function (phrase) {
+                if (window.SpeechSynthesisUtterance != undefined) {
+                    var utterance = new SpeechSynthesisUtterance(phrase);
+                    utterance.lang = "en-us";
+                    window.speechSynthesis.speak(utterance);
+                }
             }
         }
-
-        startPersistedConnection(hub);
-
         return proxy;
     }
 
     WebServiceConnectionsHubHandler = function (hub) {
         proxy = hub.proxies.connectionshub;
-
-        proxy.client.hasConnected = function (c) {
-            console.log(hub.url, 'connected', c);
-        };
-
-        proxy.client.hasDisconnected = function (c) {
-            console.log(hub.url, 'disconnected', c);
-        };
-
-        proxy.client.hasUpdatedPosition = function (c, p) {
-            console.log(hub.url, 'position', c, p);
+        proxy.client = {
+            hasConnected: function (c) {
+                console.log(hub.url, 'connected', c);
+            },
+            hasDisconnected: function (c) {
+                console.log(hub.url, 'disconnected', c);
+            },
+            hasUpdatedPosition: function (c, p) {
+                console.log(hub.url, 'position', c, p);
+            }
         }
-
-        startPersistedConnection(hub);
-
         return proxy;
     }
 
-    startPersistedConnection = function (hub) {
-        hub.stateChanged(function (change) {
-            // Get connection state name.
-            stateName = function (state) {
-                switch (state) {
-                    case ($.signalR.connectionState.connecting):
-                        return "connecting";
-                    case ($.signalR.connectionState.connected):
-                        return "connected";
-                    case ($.signalR.connectionState.disconnected):
-                        return "disconnected";
-                    case ($.signalR.connectionState.reconnecting):
-                        return "reconnecting";
-                }
-            }
-            console.log('%s state changed from %s to %s', hub.url, stateName(change.oldState),
-                stateName(change.newState));
-        });
-
-        hub.start().done(() => {
-            window.onbeforeunload = function () {
-                hub.stop();
-            };
-
-            // If hub becomes disconnected, attempt to reconnect in 5 seconds.
-            hub.disconnected(function () {
-                setTimeout(function () {
-                    startPersistedConnection();
-                }, 5000);
-            })
-        })
+    ArmoredServiceConnectionsHubHandler = function (hub) {
+        var proxy = hub.proxies.armoredservicehub;
+        return proxy;
     }
 
-    var intHub, webHub;
-    var signalR = new signalR();
+    var hubs = [];
+    var proxies = {};
+    // signalR.connectToHubs([
+    //     'https://webservices.nisd.net',
+    //     'https://integration.nisd.net',
+    // ], function (c) {
+    //     proxies["webHub"] = WebServiceConnectionsHubHandler(c[0]);
+    //     proxies["intHub"] = IntegrationConnectionsHubHandler(c[1]);
+    //     proxies["asHub"] = ArmoredServiceConnectionsHubHandler(c[1]);
 
-    signalR.connectToHubs([
-        'https://integration.nisd.net',
-        'https://webservices.nisd.net'
-    ], function (c) {
-        intHub = new IntegrationConnectionsHubHandler(c[0]);
-        webHub = new WebServiceConnectionsHubHandler(c[1]);
+    //     c.forEach(function (element) {
+    //         element.persistedConnection = signalR.persistedConnection(element).start();
+    //         element.logConnectionStates = signalR.logConnectionStates(element).start();
+    //     });
+
+    //     hubs = c;
+    // })
+
+    signalR.connectToHub('https://webservices.nisd.net', function (hub) {
+        proxies["webHub"] = new WebServiceConnectionsHubHandler(hub);
+        hub.logConnectionStates = signalR.logConnectionStates(hub).start();
+        hub.persistedConnection = signalR.persistedConnection(hub).start();
+        hubs.push(hub);
     })
 </script>
