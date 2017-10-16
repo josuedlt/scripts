@@ -23,8 +23,10 @@ signalR.prototype = {
             });
         });
     },
-    logConnectionStates: function (hub) {
+    logConnectionStates: function (hub, callback) {
         _this = this;
+        _this.callback = callback;
+        _this.state;
 
         hub.connectionSlow(() => {
             if (_this.logging) console.log('%s connection slow');
@@ -44,8 +46,13 @@ signalR.prototype = {
                         return "reconnecting";
                 }
             }
-            if (_this.logging) console.log('%s state changed from %s to %s', hub.url, stateName(change.oldState),
+            _this.state = stateName(change.newState);
+
+            if (callback) callback(stateName(change.oldState), stateName(change.newState));
+            if (_this.logging) {
+                console.log('%s state changed from %s to %s', hub.url, stateName(change.oldState),
                 stateName(change.newState));
+            }
         });
 
         return {
@@ -54,6 +61,9 @@ signalR.prototype = {
             },
             stop: function () {
                 _this.logging = false;
+            },
+            getState: function() {
+                return _this.state
             }
         }
 

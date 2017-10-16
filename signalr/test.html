@@ -61,7 +61,9 @@
 
         c.forEach(function (element) {
             element.persistedConnection = signalR.persistedConnection(element).start();
-            element.logConnectionStates = signalR.logConnectionStates(element).start();
+            element.logConnectionStates = signalR.logConnectionStates(element, function(_old, _new) {
+                console.log(_old,_new);
+            });
         });
 
         hubs = c;
