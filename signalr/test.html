@@ -51,26 +51,26 @@
 
     var hubs = [];
     var proxies = {};
-    // signalR.connectToHubs([
-    //     'https://webservices.nisd.net',
-    //     'https://integration.nisd.net',
-    // ], function (c) {
-    //     proxies["webHub"] = WebServiceConnectionsHubHandler(c[0]);
-    //     proxies["intHub"] = IntegrationConnectionsHubHandler(c[1]);
-    //     proxies["asHub"] = ArmoredServiceConnectionsHubHandler(c[1]);
+    signalR.connectToHubs([
+        'https://webservices.nisd.net',
+        'https://integration.nisd.net',
+    ], function (c) {
+        proxies["webHub"] = WebServiceConnectionsHubHandler(c[0]);
+        proxies["intHub"] = IntegrationConnectionsHubHandler(c[1]);
+        proxies["asHub"] = ArmoredServiceConnectionsHubHandler(c[1]);
 
-    //     c.forEach(function (element) {
-    //         element.persistedConnection = signalR.persistedConnection(element).start();
-    //         element.logConnectionStates = signalR.logConnectionStates(element).start();
-    //     });
+        c.forEach(function (element) {
+            element.persistedConnection = signalR.persistedConnection(element).start();
+            element.logConnectionStates = signalR.logConnectionStates(element).start();
+        });
 
-    //     hubs = c;
-    // })
-
-    signalR.connectToHub('https://webservices.nisd.net', function (hub) {
-        proxies["webHub"] = new WebServiceConnectionsHubHandler(hub);
-        hub.logConnectionStates = signalR.logConnectionStates(hub).start();
-        hub.persistedConnection = signalR.persistedConnection(hub).start();
-        hubs.push(hub);
+        hubs = c;
     })
+
+    // signalR.connectToHub('https://webservices.nisd.net', function (hub) {
+    //     proxies["webHub"] = new WebServiceConnectionsHubHandler(hub);
+    //     hub.logConnectionStates = signalR.logConnectionStates(hub).start();
+    //     hub.persistedConnection = signalR.persistedConnection(hub).start();
+    //     hubs.push(hub);
+    // })
 </script>
