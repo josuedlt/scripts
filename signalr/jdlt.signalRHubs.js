@@ -66,7 +66,6 @@ signalR.prototype = {
                 return _this.state
             }
         }
-
     },
     persistedConnection: function (hub) {
         _this = this;
