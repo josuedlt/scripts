@@ -15,8 +15,6 @@
         .on('state', function (o) {
             console.log('web-status', o)
         }).on('ready', function (o) {
-            console.log('web', o);
-
             //Connections Hub - Client
             ws_hub = o.connectionsHub;
             ws_hub.client.hasConnected = function (c) {
