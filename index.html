@@ -3,7 +3,7 @@
 <head>
     <title>GPS Coordinate Test</title>
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
     <meta name="theme-color" content="#000000">
 
     <!-- jQuery -->
@@ -26,8 +26,9 @@
 
     <!--Begin SignalR Block-->
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
-    <script type="text/javascript" src="https://webservices.nisd.net/signalr/hubs"></script>
-    <script type="text/javascript" src="https://webservices.nisd.net/scripts/ws-connection.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.geolocation.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.signalr.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/ws-connection.js?n=1"></script>
 
     <style>
         .right.floated {
@@ -120,6 +121,8 @@
                 }
             }
 
+            $scope.connections = [];
+
             $scope.flyTo = function (center) {
                 mapbox.flyTo({
                     center: [center.Longitude, center.Latitude],
@@ -183,12 +186,12 @@
                             });
 
                             // Trap click events on marker layer
-                            mapbox.on('click', 'markers-layer', function (e) {
-                                new mapboxgl.Popup()
-                                    .setLngLat(e.features[0].geometry.coordinates)
-                                    .setHTML(e.features[0].properties.title)
-                                    .addTo(mapbox);
-                            });
+                            // mapbox.on('click', 'markers-layer', function (e) {
+                            //     new mapboxgl.Popup()
+                            //         .setLngLat(e.features[0].geometry.coordinates)
+                            //         .setHTML(e.features[0].properties.title)
+                            //         .addTo(mapbox);
+                            // });
                         }
 
                         // Fit markers to view
@@ -289,44 +292,48 @@
                 }
             }
 
-            ws_hub.client.hasConnected = function (c) {
-                if (c.ConnectionId == ws_con.id) {
-                    $scope.id = ws_con.id;
-                    ws_hub.server.getConnections().done(function (connections) {
-                        $scope.connections = connections;
+            signalR.connectToHub('https://webservices.nisd.net', function (hub) {
+                proxy = hub.proxies.connectionshub;
+                proxy.client = {
+                    hasConnected: function (c) {
+                        if (c.ConnectionId == hub.id) {
+                            $scope.id = hub.id;
+                            proxy.server.getConnections().done(function (connections) {
+                                $scope.connections = connections;
+                                $scope.$apply();
+
+                                updateSignalRMap($scope.connections);
+                            });
+                        } else {
+                            var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId)
+                            if (i > -1) $scope.connections[i] = c;
+                            else $scope.connections.push(c);
+                            $scope.$apply();
+
+                            updateSignalRMap($scope.connections);
+                        }
+                    },
+                    hasDisconnected: function (c) {
+                        if (c.ConnectionId == hub.id) {
+
+                        } else {
+                            var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId);
+                            if (i > -1) $scope.connections.splice(i, 1);
+                        }
                         $scope.$apply();
 
                         updateSignalRMap($scope.connections);
-                    });
-                } else {
-                    var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId)
-                    if (i > -1) $scope.connections[i] = c;
-                    else $scope.connections.push(c);
-                    $scope.$apply();
+                    },
+                    hasUpdatedPosition: function (c, p) {
+                        var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId)
+                        if (i > -1) $scope.connections[i].Position = p;
+                        $scope.$apply();
 
-                    updateSignalRMap($scope.connections);
+                        updateSignalRMap($scope.connections);
+                    }
                 }
-            };
-
-            ws_hub.client.hasDisconnected = function (c) {
-                if (c.ConnectionId == ws_con.id) {
-
-                } else {
-                    var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId);
-                    if (i > -1) $scope.connections.splice(i, 1);
-                }
-                $scope.$apply();
-
-                updateSignalRMap($scope.connections);
-            };
-
-            ws_hub.client.hasUpdatedPosition = function (c, p) {
-                var i = _.indexOf(_.map($scope.connections, 'ConnectionId'), c.ConnectionId)
-                if (i > -1) $scope.connections[i].Position = p;
-                $scope.$apply();
-
-                updateSignalRMap($scope.connections);
-            }
+                signalR.forceReconnect(hub).start();
+            })
         })
 
     // Populate map

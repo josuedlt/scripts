@@ -1,19 +1,19 @@
-var signalR = function () {};
+var signalR = function () { };
 signalR.prototype = {
     connectToHub: function (url, callback) {
-        this.connectToHubs([url], (hubs) => {
+        this.connectToHubs([url], function (hubs) {
             callback(hubs[0]);
         });
     },
-    connectToHubs: (urls, callback) => {
+    connectToHubs: function (urls, callback) {
         var hubs = [];
-        urls.forEach((url) => {
+        urls.forEach(function (url) {
             $.ajax({
                 async: false,
                 cache: false,
                 dataType: 'script',
                 url: url + '/signalr/hubs',
-                complete: () => {
+                complete: function () {
                     h = $.hubConnection(url);
                     h.createHubProxies();
                     hubs.push(h);
@@ -28,13 +28,13 @@ signalR.prototype = {
         _this.callback = callback;
         _this.state;
 
-        hub.connectionSlow(() => {
+        hub.connectionSlow(function () {
             if (_this.logging) console.log('%s connection slow');
         });
 
-        hub.stateChanged((change) => {
+        hub.stateChanged(function (change) {
             // Get connection state name.
-            stateName = (state) => {
+            stateName = function (state) {
                 switch (state) {
                     case ($.signalR.connectionState.connecting):
                         return "connecting";
@@ -46,13 +46,14 @@ signalR.prototype = {
                         return "reconnecting";
                 }
             }
-            _this.state = stateName(change.newState);
 
-            if (callback) callback(stateName(change.oldState), stateName(change.newState));
             if (_this.logging) {
                 console.log('%s state changed from %s to %s', hub.url, stateName(change.oldState),
                 stateName(change.newState));
             }
+
+            _this.state = stateName(change.newState);
+            if (callback) callback(stateName(change.oldState), stateName(change.newState));
         });
 
         return {
@@ -62,24 +63,28 @@ signalR.prototype = {
             stop: function () {
                 _this.logging = false;
             },
-            getState: function() {
+            getState: function () {
                 return _this.state
             }
         }
     },
-    persistedConnection: function (hub) {
+    forceReconnect: function (hub, callback) {
         _this = this;
 
         return {
             start: function () {
                 _this.tryingToReconnect = true;
-                hub.start().done(() => {
-                    hub.disconnected(() => {
-                        setTimeout(() => {
-                            if (_this.tryingToReconnect)
-                                _this.startPersistedConnection(hub);
-                        }, 5000);
+                hub.start().done(function () {
+                    console.log("%s connection id is %s", hub.url, hub.id)
+
+                    hub.disconnected(function () {
+                        if (_this.tryingToReconnect)
+                            setTimeout(function () {
+                                _this.forceReconnect(hub);
+                            }, 5000);
                     });
+
+                    if (callback) callback();
                 });
                 return this;
             },

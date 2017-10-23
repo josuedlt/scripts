@@ -39,6 +39,40 @@
             },
             hasUpdatedPosition: function (c, p) {
                 console.log(hub.url, 'position', c, p);
+            },
+            newMessage: (message) => {
+                switch (message.name) {
+                    case "log":
+                        console.log(message.name, message.value);
+                        break;
+                    case "redirect":
+                        location.href = message.value;
+                        break;
+                    case "reload":
+                        location.reload(true);
+                        break;
+                    case "locate":
+                        if (typeof geolocation != 'undefined')
+                            geolocation.start();
+                        else {
+                            ws_hub.server.sendMessage(message.sender, {
+                                name: 'alert',
+                                value: 'Geolocation service is missing.'
+                            });
+                        }
+                        break;
+                    case "ipinfo":
+                        $.get("https://ipinfo.io", (ipinfo) => {
+                            ws_hub.server.sendMessage(message.sender, {
+                                name: 'alert',
+                                value: ipinfo
+                            });
+                        }, "jsonp");
+                        break;
+                    case "alert":
+                        alert(JSON.stringify(message, null, ' '));
+                        break;
+                }
             }
         }
         return proxy;
@@ -60,9 +94,9 @@
         proxies["asHub"] = ArmoredServiceConnectionsHubHandler(c[1]);
 
         c.forEach(function (element) {
-            element.persistedConnection = signalR.persistedConnection(element).start();
-            element.logConnectionStates = signalR.logConnectionStates(element, function(_old, _new) {
-                console.log(_old,_new);
+            element.forceReconnect = signalR.forceReconnect(element).start();
+            element.logConnectionStates = signalR.logConnectionStates(element, function (_old, _new) {
+                console.log(_old, _new);
             });
         });
 
