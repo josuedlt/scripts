@@ -67,7 +67,7 @@ signalR.prototype = {
                 _this.logging = false;
             },
             getState: function () {
-                return _this.state
+                return _this.newState;
             }
         }
     },
