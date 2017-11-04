@@ -31,7 +31,7 @@
                             $rootScope.connections = $localStorage.connections = [c];
                             $rootScope.id = hub.id;
                             proxy.server.getConnections().done(function (connections) {
-                                $rootScope.connections = connections;
+                                $rootScope.connections = $localStorage.connections = connections;
                                 $rootScope.$apply();
                             });
                         } else {
