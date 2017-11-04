@@ -21,7 +21,7 @@
                 var proxy = hub.proxies.connectionshub;
                 //Connections Hub - Client
                 proxy.prototype.client = {
-                    hasConnected = function (c) {
+                    hasConnected: function (c) {
                         if (c.ConnectionId == hub.id) {
                             $rootScope.id = hub.id;
                             proxy.server.getConnections().done(function (connections) {
@@ -35,7 +35,7 @@
                             $rootScope.$apply();
                         }
                     },
-                    hasDisconnected = function (c) {
+                    hasDisconnected: function (c) {
                         if (c.ConnectionId == hub.id) {
 
                         } else {
@@ -44,7 +44,7 @@
                             $rootScope.$apply();
                         }
                     },
-                    hasUpdatedPosition = function (c, p) {
+                    hasUpdatedPosition: function (c, p) {
                         var i = _.indexOf(_.map($rootScope.connections, 'ConnectionId'), c.ConnectionId)
                         if (i > -1) $rootScope.connections[i].Position = p;
                         $rootScope.$apply();
