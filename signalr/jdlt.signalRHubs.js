@@ -49,8 +49,6 @@ signalR.prototype = {
         });
 
         hub.stateChanged(function (change) {
-
-
             if (_this.logging) {
                 console.log('%s state changed from %s to %s', hub.url, stateName(change.oldState),
                     stateName(change.newState));
@@ -72,7 +70,8 @@ signalR.prototype = {
             },
             getState: function () {
                 return _this.change.newState;
-            }
+            },
+            state = _this.change.newState
         }
     },
     forceReconnect: function (hub, callback) {
