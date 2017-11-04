@@ -71,7 +71,7 @@ signalR.prototype = {
             getState: function () {
                 return _this.change.newState;
             },
-            state = _this.change.newState
+            state: _this.change.newState
         }
     },
     forceReconnect: function (hub, callback) {
