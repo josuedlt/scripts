@@ -12,7 +12,7 @@
 
 <div ng-app="app">
     <h3 ng-bind="state"></h3>
-    <pre ng-bind="connections | json"></pre>
+    <pre ng-bind="$storage.connections | json"></pre>
 </div>
 
 <script>
