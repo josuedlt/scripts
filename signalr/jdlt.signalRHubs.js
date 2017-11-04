@@ -78,8 +78,6 @@ signalR.prototype = {
             start: function () {
                 _this.tryingToReconnect = true;
                 hub.start().done(function () {
-                    console.log("%s connection id is %s", hub.url, hub.id)
-
                     hub.disconnected(function () {
                         if (_this.tryingToReconnect)
                             setTimeout(function () {
