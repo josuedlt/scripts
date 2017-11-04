@@ -1,4 +1,4 @@
-var signalR = function () { };
+var signalR = function () {};
 signalR.prototype = {
     connectToHub: function (url, callback) {
         this.connectToHubs([url], function (hubs) {
@@ -23,7 +23,7 @@ signalR.prototype = {
             });
         });
     },
-    logConnectionStates: function (hub, callback) {
+    onStateChanged: function (hub, callback) {
         _this = this;
         _this.callback = callback;
         _this.state;
@@ -49,11 +49,14 @@ signalR.prototype = {
 
             if (_this.logging) {
                 console.log('%s state changed from %s to %s', hub.url, stateName(change.oldState),
-                stateName(change.newState));
+                    stateName(change.newState));
             }
 
             _this.state = stateName(change.newState);
-            if (callback) callback(stateName(change.newState), stateName(change.oldState));
+            if (callback) callback({
+                newState: stateName(change.newState),
+                oldState: stateName(change.oldState)
+            });
         });
 
         return {
