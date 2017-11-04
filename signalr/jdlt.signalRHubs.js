@@ -26,9 +26,6 @@ signalR.prototype = {
     onStateChanged: function (hub, callback) {
         _this = this;
         _this.callback = callback;
-        _this.change = {
-            newState: stateName(hub.state)
-        };
 
         // Get connection state name.
         stateName = function (state) {
@@ -60,6 +57,10 @@ signalR.prototype = {
             };
             if (callback) callback(_this.change);
         });
+
+        _this.change = {
+            newState: stateName(hub.state)
+        };
 
         return {
             start: function () {
