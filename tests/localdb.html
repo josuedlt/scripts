@@ -20,6 +20,12 @@
     var app = angular.module('app', [])
         .controller('test', function ($scope, $rootScope) {
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
+                $rootScope.state = hub.logger.getState();
+                hub.logger = signalR.onStateChanged(hub, function (change) {
+                    $rootScope.state = hub.logger.getState();
+                    $rootScope.$apply();
+                })
+
                 var proxy = hub.proxies.connectionshub;
                 //Connections Hub - Client
                 proxy.client = {
@@ -55,10 +61,6 @@
                 }
 
                 hub.forceReconnect = signalR.forceReconnect(hub).start();
-                hub.logger = signalR.onStateChanged(hub, function (change) {
-                    $rootScope.state = hub.logger.getState();
-                    $rootScope.$apply();
-                })
 
                 hubConnection = hub;
             });
