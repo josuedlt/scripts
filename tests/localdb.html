@@ -20,43 +20,38 @@
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
                 var proxy = hub.proxies.connectionshub;
                 //Connections Hub - Client
-                proxy.client.hasConnected = function (c) {
-                    if (c.ConnectionId == hub.id) {
-                        $rootScope.id = hub.id;
-                        proxy.server.getConnections().done(function (connections) {
-                            $rootScope.connections = connections;
+                proxy.client = {
+                    hasConnected = function (c) {
+                        if (c.ConnectionId == hub.id) {
+                            $rootScope.id = hub.id;
+                            proxy.server.getConnections().done(function (connections) {
+                                $rootScope.connections = connections;
+                                $rootScope.$apply();
+                            });
+                        } else {
+                            var i = _.indexOf(_.map($rootScope.connections, 'ConnectionId'), c.ConnectionId)
+                            if (i > -1) $rootScope.connections[i] = c;
+                            else $rootScope.connections.push(c);
                             $rootScope.$apply();
-                        });
-                    } else {
+                        }
+                    },
+                    hasDisconnected = function (c) {
+                        if (c.ConnectionId == hub.id) {
+
+                        } else {
+                            var i = _.indexOf(_.map($rootScope.connections, 'ConnectionId'), c.ConnectionId);
+                            if (i > -1) $rootScope.connections.splice(i, 1);
+                            $rootScope.$apply();
+                        }
+                    },
+                    hasUpdatedPosition = function (c, p) {
                         var i = _.indexOf(_.map($rootScope.connections, 'ConnectionId'), c.ConnectionId)
-                        if (i > -1) $rootScope.connections[i] = c;
-                        else $rootScope.connections.push(c);
+                        if (i > -1) $rootScope.connections[i].Position = p;
+                        $rootScope.$apply();
                     }
-                    $rootScope.$apply();
-                };
-
-                proxy.client.hasDisconnected = function (c) {
-                    if (c.ConnectionId == hub.id) {
-
-                    } else {
-                        var i = _.indexOf(_.map($rootScope.connections, 'ConnectionId'), c.ConnectionId);
-                        if (i > -1) $rootScope.connections.splice(i, 1);
-                    }
-                    $rootScope.$apply();
-                };
-
-                proxy.client.hasUpdatedPosition = function (c, p) {
-                    var i = _.indexOf(_.map($rootScope.connections, 'ConnectionId'), c.ConnectionId)
-                    if (i > -1) $rootScope.connections[i].Position = p;
-                    $rootScope.$apply();
                 }
-                hub.start().done(function () {
-                    $scope.proxy = hub.proxies.connectionshub;
-                    proxy.server.getConnections(function (data) {
-                        console.log(data);
-                        $scope.$apply();
-                    });
-                })
+
+                signalR.forceReconnect(hub).start();
             });
         })
 </script>
