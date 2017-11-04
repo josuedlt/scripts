@@ -9,13 +9,15 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
 </head>
+
 <div ng-app="app" ng-controller="test">
     <pre ng-bind="hub.url"></pre>
 </div>
+
 <script>
     var app = angular.module('app', [])
         .controller('test', function ($scope) {
-            signalR.connectToHub('https://integration.nisd.net', function (hub) {
+            signalR.connectToHub('https://webservices.nisd.net', function (hub) {
                 var proxy = hub.proxies.connectionshub;
                 hub.start().done(function () {
                    $scope.proxy = hub.proxies.connectionshub;
