@@ -21,8 +21,8 @@
                 var proxy = hub.proxies.connectionshub;
                 //Connections Hub - Client
                 proxy.client.hasConnected = function (c) {
-                    if (c.ConnectionId == ws_con.id) {
-                        $rootScope.id = ws_con.id;
+                    if (c.ConnectionId == hub.id) {
+                        $rootScope.id = hub.id;
                         proxy.server.getConnections().done(function (connections) {
                             $rootScope.connections = connections;
                             $rootScope.$apply();
@@ -36,7 +36,7 @@
                 };
 
                 proxy.client.hasDisconnected = function (c) {
-                    if (c.ConnectionId == ws_con.id) {
+                    if (c.ConnectionId == hub.id) {
 
                     } else {
                         var i = _.indexOf(_.map($rootScope.connections, 'ConnectionId'), c.ConnectionId);
