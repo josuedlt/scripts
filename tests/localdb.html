@@ -16,6 +16,7 @@
 </div>
 
 <script>
+    var hubConnection;
     var app = angular.module('app', [])
         .controller('test', function ($scope, $rootScope) {
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
@@ -60,6 +61,8 @@
                     };
                     $rootScope.$apply();
                 })
+
+                hubConnection = hub;
             });
         })
 </script>
