@@ -12,6 +12,7 @@
 
 <div ng-app="app">
     <h3 ng-bind="state"></h3>
+    <h2 ng-bind="refreshedOn | date"></h2>
     <pre ng-bind="$storage.connections | json"></pre>
 </div>
 
@@ -24,6 +25,7 @@
 
             $rootScope.$watch('connections', function () {
                 $localStorage.connections = $rootScope.connections;
+                $localStorage.refreshedOn = new Date();
             });
 
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
