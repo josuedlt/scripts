@@ -17,8 +17,10 @@
 
 <script>
     var hubConnection;
-    var app = angular.module('app', [])
-        .controller('test', function ($scope, $rootScope) {
+    var app = angular.module('app', ['ngStorage'])
+        .run(function ($rootScope, $localStorage) {
+            $rootScope.$storage = $localStorage;
+            
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
                 var proxy = hub.proxies.connectionshub;
                 //Connections Hub - Client
