@@ -22,16 +22,19 @@
             $rootScope.$storage = $localStorage;
             $rootScope.connections = $localStorage.connections;
 
+            $rootScope.watch('connections', function() {
+                $localStorage.connections = $rootScope.connections;             
+            })
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
                 var proxy = hub.proxies.connectionshub;
                 //Connections Hub - Client
                 proxy.client = {
                     hasConnected: function (c) {
                         if (c.ConnectionId == hub.id) {
-                            $rootScope.connections = $localStorage.connections = [c];
+                            $rootScope.connections = [c];
                             $rootScope.id = hub.id;
                             proxy.server.getConnections().done(function (connections) {
-                                $rootScope.connections = $localStorage.connections = connections;
+                                $rootScope.connections  = connections;
                                 $rootScope.$apply();
                             });
                         } else {
