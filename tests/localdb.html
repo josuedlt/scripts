@@ -28,7 +28,7 @@
                 proxy.client = {
                     hasConnected: function (c) {
                         if (c.ConnectionId == hub.id) {
-                            $rootScope.connections = [c];
+                            $rootScope.connections = $localStorage.connections = [c];
                             $rootScope.id = hub.id;
                             proxy.server.getConnections().done(function (connections) {
                                 $rootScope.connections = connections;
