@@ -26,7 +26,7 @@ signalR.prototype = {
     onStateChanged: function (hub, callback) {
         _this = this;
         _this.callback = callback;
-        _this.state;
+        _this.change = {};
 
         hub.connectionSlow(function () {
             if (_this.logging) console.log('%s connection slow');
@@ -52,11 +52,11 @@ signalR.prototype = {
                     stateName(change.newState));
             }
 
-            _this.state = stateName(change.newState);
-            if (callback) callback({
+            _this.change = {
                 newState: stateName(change.newState),
                 oldState: stateName(change.oldState)
-            });
+            };
+            if (callback) callback(_this.change);
         });
 
         return {
@@ -67,7 +67,7 @@ signalR.prototype = {
                 _this.logging = false;
             },
             getState: function () {
-                return _this.newState;
+                return _this.change.newState;
             }
         }
     },
