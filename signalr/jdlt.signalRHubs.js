@@ -53,7 +53,7 @@ signalR.prototype = {
             }
 
             _this.state = stateName(change.newState);
-            if (callback) callback(stateName(change.oldState), stateName(change.newState));
+            if (callback) callback(stateName(change.newState), stateName(change.oldState));
         });
 
         return {
