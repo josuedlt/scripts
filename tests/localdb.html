@@ -20,7 +20,7 @@
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
                 var proxy = hub.proxies.connectionshub;
                 //Connections Hub - Client
-                proxy.prototype.client = {
+                proxy.client = {
                     hasConnected: function (c) {
                         if (c.ConnectionId == hub.id) {
                             $rootScope.id = hub.id;
