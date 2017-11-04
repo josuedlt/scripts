@@ -11,7 +11,7 @@
 </head>
 
 <div ng-app="app" ng-controller="test">
-    <pre ng-bind="state | json"></pre>
+    <h3 ng-bind="state"></h3>
     <pre ng-bind="connections | json"></pre>
 </div>
 
@@ -55,7 +55,7 @@
 
                 hub.forceReconnect = signalR.forceReconnect(hub).start();
                 hub.logger = signalR.onStateChanged(hub, function (change) {
-                    $rootScope.state = change;
+                    $rootScope.state = change.newState;
                     $rootScope.$apply();
                 })
 
