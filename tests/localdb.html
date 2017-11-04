@@ -17,13 +17,12 @@
         .controller('test', function ($scope) {
             signalR.connectToHub('https://integration.nisd.net', function (hub) {
                 var proxy = hub.proxies.connectionshub;
-                hub.start().done(function (data) {
-                   $scope.hub = hub;
-                    // proxy.server.getConnections(function (data) {
+                hub.start().done(function () {
+                   $scope.proxy = hub.proxies.connectionshub;
+                     proxy.server.getConnections(function (data) {
                          console.log(data);
                          $scope.$apply();
-                    // })
-                    alert('Hello from signalR')
+                     });
                 })
             });
         })
