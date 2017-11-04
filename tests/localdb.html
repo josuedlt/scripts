@@ -53,7 +53,7 @@
                 }
 
                 signalR.forceReconnect(hub).start();
-                signalR.logConnectionStates(hub, function (oldState, newState) {
+                signalR.logConnectionStates(hub, function (newState, oldState) {
                     $rootScope.state = {
                         old: oldState,
                         new: newState
