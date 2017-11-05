@@ -6,19 +6,21 @@
     <script src="../signalr/jdlt.signalRHubs.js"></script>
     <!-- AngularjJS -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-moment/1.0.1/angular-moment.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
 </head>
 
 <div ng-app="app">
     <h3 ng-bind="state"></h3>
-    <h4 ng-bind="$storage.refreshedOn | date: 'medium'"></h4>
+    <h4 am-time-ago="$storage.refreshedOn"></h4>
     <pre ng-bind="$storage.connections | json"></pre>
 </div>
 
 <script>
     var hubConnection;
-    var app = angular.module('app', ['ngStorage'])
+    var app = angular.module('app', ['angularMoment', 'ngStorage'])
         .run(function ($rootScope, $localStorage) {
             $rootScope.$storage = $localStorage;
             $rootScope.connections = $localStorage.connections;
