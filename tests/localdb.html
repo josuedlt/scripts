@@ -65,7 +65,9 @@
                     }
                 }
 
-                hub.forceReconnect = signalR.forceReconnect(hub).start();
+                hub.forceReconnect = signalR.forceReconnect(hub, function() {
+                    console.log('Started!');
+                }, 1500).start();
                 hub.logger = signalR.onStateChanged(hub, function (change) {
                     $rootScope.state = hub.logger.getState();
                     $rootScope.$apply();

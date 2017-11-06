@@ -25,7 +25,7 @@ signalR.prototype = {
     },
     onStateChanged: function (hub, callback) {
         _this = this;
-        _this.callback = callback;
+        _this.stateChangedCallback = callback;
 
         // Get connection state name.
         stateName = function (state) {
@@ -55,7 +55,7 @@ signalR.prototype = {
                 newState: stateName(change.newState),
                 oldState: stateName(change.oldState)
             };
-            if (callback) callback(_this.change);
+            if (_this.stateChangedCallback) _this.stateChangedCallback(_this.change);
         });
 
         _this.change = {
@@ -74,27 +74,38 @@ signalR.prototype = {
             }
         }
     },
-    forceReconnect: function (hub, callback) {
+    forceReconnect: function (hub, callback, timeout) {
         _this = this;
+        _this.timeout = timeout ? timeout : 5000;
+        _this.reconnectCallback = callback;
+
+        function connect() {
+            hub.start().done(function () {
+                console.log('%s [Force Reconnect] Connection started with id %s', hub.url, hub.id);
+                if (typeof _this.reconnectCallback != 'undefined')
+                    _this.reconnectCallback();
+            });
+        }
+
+        hub.disconnected(function () {
+            if (_this.tryingToReconnect) {
+                console.log('%s [Force Reconnect] Reconnecting in %d milliseconds...', hub.url, _this.timeout);
+                setTimeout(function () {
+                    connect();
+                }, _this.timeout);
+            }
+        });
 
         return {
             start: function () {
                 _this.tryingToReconnect = true;
-                hub.start().done(function () {
-                    hub.disconnected(function () {
-                        if (_this.tryingToReconnect)
-                            setTimeout(function () {
-                                _this.forceReconnect(hub);
-                            }, 5000);
-                    });
-
-                    if (callback) callback();
-                });
+                connect();
                 return this;
             },
             stop: function () {
                 _this.tryingToReconnect = false;
                 hub.stop();
+                console.log('%s [Force reconnect] Connection stopped.', hub.url);
                 return this;
             }
         }
