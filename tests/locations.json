@@ -1,691 +1,782 @@
-[{
-        "Location": "001",
-        "Name": "HOLMES HS",
-        "Latitude": 29.465514,
-        "Longitude": -98.617313
-    },
-    {
-        "Location": "002",
-        "Name": "JAY HS",
-        "Latitude": 29.418409,
-        "Longitude": -98.640712
-    },
-    {
-        "Location": "003",
-        "Name": "MARSHALL HS",
-        "Latitude": 29.513627,
-        "Longitude": -98.619869
-    },
-    {
-        "Location": "004",
-        "Name": "HOLMGREEN HS",
-        "Latitude": 29.519674,
-        "Longitude": -98.580575
-    },
-    {
-        "Location": "005",
-        "Name": "CLARK HS",
-        "Latitude": 29.565448,
-        "Longitude": -98.580966
-    },
-    {
-        "Location": "006",
-        "Name": "HEALTH CAREERS HS",
-        "Latitude": 29.52051,
-        "Longitude": -98.57854
-    },
-    {
-        "Location": "007",
-        "Name": "TAFT HS",
-        "Latitude": 29.497636,
-        "Longitude": -98.721713
-    },
-    {
-        "Location": "008",
-        "Name": "ALTERNATIVE HS",
-        "Latitude": 29.437491,
-        "Longitude": -98.668291
-    },
-    {
-        "Location": "009",
-        "Name": "EVENING HS",
-        "Latitude": 29.464743,
-        "Longitude": -98.616712
-    },
-    {
-        "Location": "011",
-        "Name": "EXCEL ACADEMY",
-        "Latitude": 29.554893,
-        "Longitude": -98.586297
-    },
-    {
-        "Location": "012",
-        "Name": "BUSINESS CAREERS HS",
-        "Latitude": 29.464789,
-        "Longitude": -98.618694
-    },
-    {
-        "Location": "013",
-        "Name": "REDDIX CENTER",
-        "Latitude": 29.518146,
-        "Longitude": -98.577747
-    },
-    {
-        "Location": "014",
-        "Name": "COMMUNICATIONS ARTS HS",
-        "Latitude": 29.497631,
-        "Longitude": -98.720459
-    },
-    {
-        "Location": "016",
-        "Name": "O'CONNOR HS",
-        "Latitude": 29.558993,
-        "Longitude": -98.686538
-    },
-    {
-        "Location": "017",
-        "Name": "JAY SCI & ENG ACADEMY",
-        "Latitude": 29.418409,
-        "Longitude": -98.640712
-    },
-    {
-        "Location": "019",
-        "Name": "WARREN HS",
-        "Latitude": 29.463651,
-        "Longitude": -98.670115
-    },
-    {
-        "Location": "022",
-        "Name": "STEVENS HS",
-        "Latitude": 29.439971,
-        "Longitude": -98.684628
-    },
-    {
-        "Location": "023",
-        "Name": "BRANDEIS HS",
-        "Latitude": 29.565408,
-        "Longitude": -98.646363
-    },
-    {
-        "Location": "024",
-        "Name": "BRENNAN HS",
-        "Latitude": 29.457648,
-        "Longitude": -98.7247
-    },
-    {
-        "Location": "025",
-        "Name": "HARLAN HS",
-        "Latitude": 29.515315,
-        "Longitude": -98.778564
-    },
-    {
-        "Location": "030",
-        "Name": "CONSTR CAREERS ACDMY",
-        "Latitude": 29.463794,
-        "Longitude": -98.671478
-    },
-    {
-        "Location": "041",
-        "Name": "NEFF MS",
-        "Latitude": 29.483516,
-        "Longitude": -98.590032
-    },
-    {
-        "Location": "042",
-        "Name": "RAYBURN MS",
-        "Latitude": 29.383258,
-        "Longitude": -98.639501
-    },
-    {
-        "Location": "043",
-        "Name": "ROSS MS",
-        "Latitude": 29.457271,
-        "Longitude": -98.600866
-    },
-    {
-        "Location": "044",
-        "Name": "JONES MS",
-        "Latitude": 29.422336,
-        "Longitude": -98.622937
-    },
-    {
-        "Location": "045",
-        "Name": "HOBBY MS",
-        "Latitude": 29.550165,
-        "Longitude": -98.571089
-    },
-    {
-        "Location": "046",
-        "Name": "PEASE MS",
-        "Latitude": 29.434057,
-        "Longitude": -98.669093
-    },
-    {
-        "Location": "047",
-        "Name": "STEVENSON MS",
-        "Latitude": 29.519714,
-        "Longitude": -98.663653
-    },
-    {
-        "Location": "048",
-        "Name": "RUDDER MS",
-        "Latitude": 29.539463,
-        "Longitude": -98.61672
-    },
-    {
-        "Location": "049",
-        "Name": "ZACHRY MS",
-        "Latitude": 29.492874,
-        "Longitude": -98.68224
-    },
-    {
-        "Location": "050",
-        "Name": "STINSON MS",
-        "Latitude": 29.563636,
-        "Longitude": -98.650283
-    },
-    {
-        "Location": "051",
-        "Name": "JORDAN MS",
-        "Latitude": 29.457342,
-        "Longitude": -98.667536
-    },
-    {
-        "Location": "052",
-        "Name": "CONNALLY MS",
-        "Latitude": 29.501353,
-        "Longitude": -98.655692
-    },
-    {
-        "Location": "053",
-        "Name": "RAWLINSON MS",
-        "Latitude": 29.576407,
-        "Longitude": -98.58455
-    },
-    {
-        "Location": "054",
-        "Name": "LUNA MS",
-        "Latitude": 29.434069,
-        "Longitude": -98.737586
-    },
-    {
-        "Location": "055",
-        "Name": "JEFFERSON MS",
-        "Latitude": 29.519662,
-        "Longitude": -98.710833
-    },
-    {
-        "Location": "056",
-        "Name": "VALE MS",
-        "Latitude": 29.455599,
-        "Longitude": -98.6939
-    },
-    {
-        "Location": "057",
-        "Name": "GARCIA MS",
-        "Latitude": 29.586168,
-        "Longitude": -98.647163
-    },
-    {
-        "Location": "058",
-        "Name": "BRISCOE MS",
-        "Latitude": 29.473294,
-        "Longitude": -98.728943
-    },
-    {
-        "Location": "059",
-        "Name": "FOLKS MS",
-        "Latitude": 29.535478,
-        "Longitude": -98.736244
-    },
-    {
-        "Location": "060",
-        "Name": "BERNAL MS",
-        "Latitude": 29.42669,
-        "Longitude": -98.77232
-    },
-    {
-        "Location": "061",
-        "Name": "ALTERNATIVE MS SOUTH",
-        "Latitude": 29.45463,
-        "Longitude": -98.589072
-    },
-    {
-        "Location": "062",
-        "Name": "ALTERNATIVE MS NORTH",
-        "Latitude": 29.554773,
-        "Longitude": -98.585555
-    },
-    {
-        "Location": "101",
-        "Name": "CABLE ES",
-        "Latitude": 29.41434,
-        "Longitude": -98.62329
-    },
-    {
-        "Location": "102",
-        "Name": "GLENN ES",
-        "Latitude": 29.407692,
-        "Longitude": -98.657652
-    },
-    {
-        "Location": "103",
-        "Name": "GLENOAKS ES",
-        "Latitude": 29.495754,
-        "Longitude": -98.585566
-    },
-    {
-        "Location": "104",
-        "Name": "HELOTES ES",
-        "Latitude": 29.57249,
-        "Longitude": -98.689427
-    },
-    {
-        "Location": "105",
-        "Name": "HULL ES",
-        "Latitude": 29.414785,
-        "Longitude": -98.634589
-    },
-    {
-        "Location": "106",
-        "Name": "ALLEN ES",
-        "Latitude": 29.387478,
-        "Longitude": -98.639486
-    },
-    {
-        "Location": "107",
-        "Name": "FISHER ES",
-        "Latitude": 29.396081,
-        "Longitude": -98.687253
-    },
-    {
-        "Location": "108",
-        "Name": "LEON VALLEY ES",
-        "Latitude": 29.50259,
-        "Longitude": -98.622975
-    },
-    {
-        "Location": "109",
-        "Name": "LOCKE HILL ES",
-        "Latitude": 29.565091,
-        "Longitude": -98.58356
-    },
-    {
-        "Location": "111",
-        "Name": "GLASS ES",
-        "Latitude": 29.48001,
-        "Longitude": -98.57413
-    },
-    {
-        "Location": "112",
-        "Name": "POWELL ES",
-        "Latitude": 29.475023,
-        "Longitude": -98.604436
-    },
-    {
-        "Location": "113",
-        "Name": "VALLEY HI ES",
-        "Latitude": 29.374836,
-        "Longitude": -98.64622
-    },
-    {
-        "Location": "114",
-        "Name": "WESTWOOD TERRACE ES",
-        "Latitude": 29.408956,
-        "Longitude": -98.640001
-    },
-    {
-        "Location": "115",
-        "Name": "COLONIES NORTH ES",
-        "Latitude": 29.531808,
-        "Longitude": -98.553162
-    },
-    {
-        "Location": "116",
-        "Name": "VILLARREAL ES",
-        "Latitude": 29.465662,
-        "Longitude": -98.588585
-    },
-    {
-        "Location": "117",
-        "Name": "MEADOW VILLAGE ES",
-        "Latitude": 29.422951,
-        "Longitude": -98.64337
-    },
-    {
-        "Location": "118",
-        "Name": "OAK HILLS TERRACE ES",
-        "Latitude": 29.500965,
-        "Longitude": -98.599261
-    },
-    {
-        "Location": "119",
-        "Name": "HOWSMAN ES",
-        "Latitude": 29.546036,
-        "Longitude": -98.564116
-    },
-    {
-        "Location": "122",
-        "Name": "PASSMORE ES",
-        "Latitude": 29.430485,
-        "Longitude": -98.622715
-    },
-    {
-        "Location": "123",
-        "Name": "ADAMS HILL ES",
-        "Latitude": 29.409853,
-        "Longitude": -98.67259
-    },
-    {
-        "Location": "124",
-        "Name": "ESPARZA ES",
-        "Latitude": 29.455227,
-        "Longitude": -98.599062
-    },
-    {
-        "Location": "125",
-        "Name": "BOONE ES",
-        "Latitude": 29.551657,
-        "Longitude": -98.618394
-    },
-    {
-        "Location": "128",
-        "Name": "CARLOS COON ES",
-        "Latitude": 29.465261,
-        "Longitude": -98.652023
-    },
-    {
-        "Location": "130",
-        "Name": "MURNIN ES",
-        "Latitude": 29.443692,
-        "Longitude": -98.684387
-    },
-    {
-        "Location": "131",
-        "Name": "LINTON ES",
-        "Latitude": 29.456769,
-        "Longitude": -98.611189
-    },
-    {
-        "Location": "132",
-        "Name": "TIMBERWILDE ES",
-        "Latitude": 29.485384,
-        "Longitude": -98.659415
-    },
-    {
-        "Location": "134",
-        "Name": "BRAUN STATION ES",
-        "Latitude": 29.524424,
-        "Longitude": -98.664144
-    },
-    {
-        "Location": "135",
-        "Name": "CODY ES",
-        "Latitude": 29.429417,
-        "Longitude": -98.690409
-    },
-    {
-        "Location": "136",
-        "Name": "NORTHWEST CROSSING ES",
-        "Latitude": 29.511775,
-        "Longitude": -98.683914
-    },
-    {
-        "Location": "138",
-        "Name": "KNOWLTON ES",
-        "Latitude": 29.492841,
-        "Longitude": -98.68659
-    },
-    {
-        "Location": "139",
-        "Name": "NORTHSIDE CHILDREN'S CENTER",
-        "Latitude": 29.519854,
-        "Longitude": -98.578815
-    },
-    {
-        "Location": "141",
-        "Name": "FORESTER ES",
-        "Latitude": 29.429747,
-        "Longitude": -98.704333
-    },
-    {
-        "Location": "143",
-        "Name": "SCOBEE ES",
-        "Latitude": 29.554533,
-        "Longitude": -98.642417
-    },
-    {
-        "Location": "144",
-        "Name": "GALM ES",
-        "Latitude": 29.443295,
-        "Longitude": -98.721288
-    },
-    {
-        "Location": "145",
-        "Name": "ELROD ES",
-        "Latitude": 29.500513,
-        "Longitude": -98.645323
-    },
-    {
-        "Location": "148",
-        "Name": "WANKE ES",
-        "Latitude": 29.541383,
-        "Longitude": -98.652699
-    },
-    {
-        "Location": "149",
-        "Name": "THORNTON ES",
-        "Latitude": 29.538132,
-        "Longitude": -98.613417
-    },
-    {
-        "Location": "150",
-        "Name": "BRAUCHLE ES",
-        "Latitude": 29.523757,
-        "Longitude": -98.684376
-    },
-    {
-        "Location": "151",
-        "Name": "FERNANDEZ ES",
-        "Latitude": 29.501741,
-        "Longitude": -98.669897
-    },
-    {
-        "Location": "152",
-        "Name": "LEON SPRINGS ES",
-        "Latitude": 29.663031,
-        "Longitude": -98.628867
-    },
-    {
-        "Location": "156",
-        "Name": "EVERS ES",
-        "Latitude": 29.455704,
-        "Longitude": -98.665745
-    },
-    {
-        "Location": "157",
-        "Name": "MAY ES",
-        "Latitude": 29.592369,
-        "Longitude": -98.626681
-    },
-    {
-        "Location": "158",
-        "Name": "MCDERMOTT ES",
-        "Latitude": 29.534265,
-        "Longitude": -98.58391
-    },
-    {
-        "Location": "160",
-        "Name": "MYERS ES",
-        "Latitude": 29.472018,
-        "Longitude": -98.654547
-    },
-    {
-        "Location": "161",
-        "Name": "STEUBING ES",
-        "Latitude": 29.551844,
-        "Longitude": -98.657468
-    },
-    {
-        "Location": "162",
-        "Name": "MICHAEL ES",
-        "Latitude": 29.399417,
-        "Longitude": -98.682108
-    },
-    {
-        "Location": "165",
-        "Name": "CARSON ES",
-        "Latitude": 29.513623,
-        "Longitude": -98.664119
-    },
-    {
-        "Location": "166",
-        "Name": "BURKE ES",
-        "Latitude": 29.508034,
-        "Longitude": -98.690059
-    },
-    {
-        "Location": "167",
-        "Name": "RABA ES",
-        "Latitude": 29.469599,
-        "Longitude": -98.668964
-    },
-    {
-        "Location": "168",
-        "Name": "LEWIS ES",
-        "Latitude": 29.442249,
-        "Longitude": -98.698384
-    },
-    {
-        "Location": "169",
-        "Name": "RHODES ES",
-        "Latitude": 29.511704,
-        "Longitude": -98.600546
-    },
-    {
-        "Location": "170",
-        "Name": "NICHOLS ES",
-        "Latitude": 29.530501,
-        "Longitude": -98.671619
-    },
-    {
-        "Location": "171",
-        "Name": "DRIGGERS ES",
-        "Latitude": 29.488611,
-        "Longitude": -98.625137
-    },
-    {
-        "Location": "177",
-        "Name": "CARNAHAN ES",
-        "Latitude": 29.558257,
-        "Longitude": -98.623155
-    },
-    {
-        "Location": "178",
-        "Name": "AUE ES",
-        "Latitude": 29.672701,
-        "Longitude": -98.647281
-    },
-    {
-        "Location": "179",
-        "Name": "SCARBOROUGH ES",
-        "Latitude": 29.519191,
-        "Longitude": -98.73456
-    },
-    {
-        "Location": "180",
-        "Name": "BEARD ES",
-        "Latitude": 29.581183,
-        "Longitude": -98.656465
-    },
-    {
-        "Location": "181",
-        "Name": "BLATTMAN ES",
-        "Latitude": 29.599245,
-        "Longitude": -98.542884
-    },
-    {
-        "Location": "182",
-        "Name": "OTT ES",
-        "Latitude": 29.432009,
-        "Longitude": -98.736695
-    },
-    {
-        "Location": "183",
-        "Name": "WARD ES",
-        "Latitude": 29.518491,
-        "Longitude": -98.708789
-    },
-    {
-        "Location": "184",
-        "Name": "HATCHET ES",
-        "Latitude": 29.424975,
-        "Longitude": -98.665144
-    },
-    {
-        "Location": "185",
-        "Name": "MEAD ES",
-        "Latitude": 29.515419,
-        "Longitude": -98.55968
-    },
-    {
-        "Location": "186",
-        "Name": "KRUEGER ES",
-        "Latitude": 29.534332,
-        "Longitude": -98.697997
-    },
-    {
-        "Location": "187",
-        "Name": "LANGLEY ES",
-        "Latitude": 29.426622,
-        "Longitude": -98.77643
-    },
-    {
-        "Location": "188",
-        "Name": "HOFFMANN ES",
-        "Latitude": 29.47667,
-        "Longitude": -98.7322
-    },
-    {
-        "Location": "189",
-        "Name": "MARTIN ES",
-        "Latitude": 29.442863,
-        "Longitude": -98.598718
-    },
-    {
-        "Location": "191",
-        "Name": "KUENTZ ES",
-        "Latitude": 29.558981,
-        "Longitude": -98.682375
-    },
-    {
-        "Location": "192",
-        "Name": "BEHLAU ES",
-        "Latitude": 29.408058,
-        "Longitude": -98.724271
-    },
-    {
-        "Location": "193",
-        "Name": "FRANKLIN ES",
-        "Latitude": 29.527388,
-        "Longitude": -98.731561
-    },
-    {
-        "Location": "195",
-        "Name": "MIRELES ES",
-        "Latitude": 29.49177,
-        "Longitude": -98.73546
-    },
-    {
-        "Location": "198",
-        "Name": "HENDERSON ES",
-        "Latitude": 29.52186,
-        "Longitude": -98.784842
-    },
-    {
-        "Location": "421",
-        "Name": "ACCOUNTING",
-        "Latitude": 29.4912,
-        "Longitude": -98.60175
-    }
+[
+   {
+      "Code":"001",
+      "Name":"HOLMES HS",
+      "Latitude":29.4655140,
+      "Longitude":-98.6173130
+   },
+   {
+      "Code":"002",
+      "Name":"JAY HS",
+      "Latitude":29.4184090,
+      "Longitude":-98.6407120
+   },
+   {
+      "Code":"003",
+      "Name":"MARSHALL HS",
+      "Latitude":29.5136270,
+      "Longitude":-98.6198690
+   },
+   {
+      "Code":"004",
+      "Name":"HOLMGREEN HS",
+      "Latitude":29.5196740,
+      "Longitude":-98.5805750
+   },
+   {
+      "Code":"005",
+      "Name":"CLARK HS",
+      "Latitude":29.5654480,
+      "Longitude":-98.5809660
+   },
+   {
+      "Code":"006",
+      "Name":"HEALTH CAREERS HS",
+      "Latitude":29.5205100,
+      "Longitude":-98.5785400
+   },
+   {
+      "Code":"007",
+      "Name":"TAFT HS",
+      "Latitude":29.4976360,
+      "Longitude":-98.7217130
+   },
+   {
+      "Code":"008",
+      "Name":"ALTERNATIVE HS",
+      "Latitude":29.4374910,
+      "Longitude":-98.6682910
+   },
+   {
+      "Code":"009",
+      "Name":"EVENING HS",
+      "Latitude":29.4647430,
+      "Longitude":-98.6167120
+   },
+   {
+      "Code":"011",
+      "Name":"EXCEL ACADEMY",
+      "Latitude":29.5548930,
+      "Longitude":-98.5862970
+   },
+   {
+      "Code":"012",
+      "Name":"BUSINESS CAREERS HS",
+      "Latitude":29.4647890,
+      "Longitude":-98.6186940
+   },
+   {
+      "Code":"013",
+      "Name":"REDDIX CENTER",
+      "Latitude":29.5181460,
+      "Longitude":-98.5777470
+   },
+   {
+      "Code":"014",
+      "Name":"COMMUNICATIONS ARTS HS",
+      "Latitude":29.4976310,
+      "Longitude":-98.7204590
+   },
+   {
+      "Code":"016",
+      "Name":"O\u0027CONNOR HS",
+      "Latitude":29.5589930,
+      "Longitude":-98.6865380
+   },
+   {
+      "Code":"017",
+      "Name":"JAY SCI \u0026 ENG ACADEMY",
+      "Latitude":29.4184090,
+      "Longitude":-98.6407120
+   },
+   {
+      "Code":"019",
+      "Name":"WARREN HS",
+      "Latitude":29.4636510,
+      "Longitude":-98.6701150
+   },
+   {
+      "Code":"022",
+      "Name":"STEVENS HS",
+      "Latitude":29.4399710,
+      "Longitude":-98.6846280
+   },
+   {
+      "Code":"023",
+      "Name":"BRANDEIS HS",
+      "Latitude":29.5654080,
+      "Longitude":-98.6463630
+   },
+   {
+      "Code":"024",
+      "Name":"BRENNAN HS",
+      "Latitude":29.4576480,
+      "Longitude":-98.7247000
+   },
+   {
+      "Code":"025",
+      "Name":"HARLAN HS",
+      "Latitude":29.5153150,
+      "Longitude":-98.7785640
+   },
+   {
+      "Code":"030",
+      "Name":"CONSTR CAREERS ACDMY",
+      "Latitude":29.4637940,
+      "Longitude":-98.6714780
+   },
+   {
+      "Code":"041",
+      "Name":"NEFF MS",
+      "Latitude":29.4835160,
+      "Longitude":-98.5900320
+   },
+   {
+      "Code":"042",
+      "Name":"RAYBURN MS",
+      "Latitude":29.3832580,
+      "Longitude":-98.6395010
+   },
+   {
+      "Code":"043",
+      "Name":"ROSS MS",
+      "Latitude":29.4572710,
+      "Longitude":-98.6008660
+   },
+   {
+      "Code":"044",
+      "Name":"JONES MS",
+      "Latitude":29.4223360,
+      "Longitude":-98.6229370
+   },
+   {
+      "Code":"045",
+      "Name":"HOBBY MS",
+      "Latitude":29.5501650,
+      "Longitude":-98.5710890
+   },
+   {
+      "Code":"046",
+      "Name":"PEASE MS",
+      "Latitude":29.4340570,
+      "Longitude":-98.6690930
+   },
+   {
+      "Code":"047",
+      "Name":"STEVENSON MS",
+      "Latitude":29.5197140,
+      "Longitude":-98.6636530
+   },
+   {
+      "Code":"048",
+      "Name":"RUDDER MS",
+      "Latitude":29.5394630,
+      "Longitude":-98.6167200
+   },
+   {
+      "Code":"049",
+      "Name":"ZACHRY MS",
+      "Latitude":29.4928740,
+      "Longitude":-98.6822400
+   },
+   {
+      "Code":"050",
+      "Name":"STINSON MS",
+      "Latitude":29.5636360,
+      "Longitude":-98.6502830
+   },
+   {
+      "Code":"051",
+      "Name":"JORDAN MS",
+      "Latitude":29.4573420,
+      "Longitude":-98.6675360
+   },
+   {
+      "Code":"052",
+      "Name":"CONNALLY MS",
+      "Latitude":29.5013530,
+      "Longitude":-98.6556920
+   },
+   {
+      "Code":"053",
+      "Name":"RAWLINSON MS",
+      "Latitude":29.5764070,
+      "Longitude":-98.5845500
+   },
+   {
+      "Code":"054",
+      "Name":"LUNA MS",
+      "Latitude":29.4340690,
+      "Longitude":-98.7375860
+   },
+   {
+      "Code":"055",
+      "Name":"JEFFERSON MS",
+      "Latitude":29.5196620,
+      "Longitude":-98.7108330
+   },
+   {
+      "Code":"056",
+      "Name":"VALE MS",
+      "Latitude":29.4555990,
+      "Longitude":-98.6939000
+   },
+   {
+      "Code":"057",
+      "Name":"GARCIA MS",
+      "Latitude":29.5861680,
+      "Longitude":-98.6471630
+   },
+   {
+      "Code":"058",
+      "Name":"BRISCOE MS",
+      "Latitude":29.4732940,
+      "Longitude":-98.7289430
+   },
+   {
+      "Code":"059",
+      "Name":"FOLKS MS",
+      "Latitude":29.5354780,
+      "Longitude":-98.7362440
+   },
+   {
+      "Code":"060",
+      "Name":"BERNAL MS",
+      "Latitude":29.4266900,
+      "Longitude":-98.7723200
+   },
+   {
+      "Code":"061",
+      "Name":"ALTERNATIVE MS SOUTH",
+      "Latitude":29.4546300,
+      "Longitude":-98.5890720
+   },
+   {
+      "Code":"062",
+      "Name":"ALTERNATIVE MS NORTH",
+      "Latitude":29.5547730,
+      "Longitude":-98.5855550
+   },
+   {
+      "Code":"101",
+      "Name":"CABLE ES",
+      "Latitude":29.4143400,
+      "Longitude":-98.6232900
+   },
+   {
+      "Code":"102",
+      "Name":"GLENN ES",
+      "Latitude":29.4076920,
+      "Longitude":-98.6576520
+   },
+   {
+      "Code":"103",
+      "Name":"GLENOAKS ES",
+      "Latitude":29.4957540,
+      "Longitude":-98.5855660
+   },
+   {
+      "Code":"104",
+      "Name":"HELOTES ES",
+      "Latitude":29.5724900,
+      "Longitude":-98.6894270
+   },
+   {
+      "Code":"105",
+      "Name":"HULL ES",
+      "Latitude":29.4147850,
+      "Longitude":-98.6345890
+   },
+   {
+      "Code":"106",
+      "Name":"ALLEN ES",
+      "Latitude":29.3874780,
+      "Longitude":-98.6394860
+   },
+   {
+      "Code":"107",
+      "Name":"FISHER ES",
+      "Latitude":29.3960810,
+      "Longitude":-98.6872530
+   },
+   {
+      "Code":"108",
+      "Name":"LEON VALLEY ES",
+      "Latitude":29.5025900,
+      "Longitude":-98.6229750
+   },
+   {
+      "Code":"109",
+      "Name":"LOCKE HILL ES",
+      "Latitude":29.5650910,
+      "Longitude":-98.5835600
+   },
+   {
+      "Code":"111",
+      "Name":"GLASS ES",
+      "Latitude":29.4800100,
+      "Longitude":-98.5741300
+   },
+   {
+      "Code":"112",
+      "Name":"POWELL ES",
+      "Latitude":29.4750230,
+      "Longitude":-98.6044360
+   },
+   {
+      "Code":"113",
+      "Name":"VALLEY HI ES",
+      "Latitude":29.3748360,
+      "Longitude":-98.6462200
+   },
+   {
+      "Code":"114",
+      "Name":"WESTWOOD TERRACE ES",
+      "Latitude":29.4089560,
+      "Longitude":-98.6400010
+   },
+   {
+      "Code":"115",
+      "Name":"COLONIES NORTH ES",
+      "Latitude":29.5318080,
+      "Longitude":-98.5531620
+   },
+   {
+      "Code":"116",
+      "Name":"VILLARREAL ES",
+      "Latitude":29.4656620,
+      "Longitude":-98.5885850
+   },
+   {
+      "Code":"117",
+      "Name":"MEADOW VILLAGE ES",
+      "Latitude":29.4229510,
+      "Longitude":-98.6433700
+   },
+   {
+      "Code":"118",
+      "Name":"OAK HILLS TERRACE ES",
+      "Latitude":29.5009650,
+      "Longitude":-98.5992610
+   },
+   {
+      "Code":"119",
+      "Name":"HOWSMAN ES",
+      "Latitude":29.5460360,
+      "Longitude":-98.5641160
+   },
+   {
+      "Code":"122",
+      "Name":"PASSMORE ES",
+      "Latitude":29.4304850,
+      "Longitude":-98.6227150
+   },
+   {
+      "Code":"123",
+      "Name":"ADAMS HILL ES",
+      "Latitude":29.4098530,
+      "Longitude":-98.6725900
+   },
+   {
+      "Code":"124",
+      "Name":"ESPARZA ES",
+      "Latitude":29.4552270,
+      "Longitude":-98.5990620
+   },
+   {
+      "Code":"125",
+      "Name":"BOONE ES",
+      "Latitude":29.5516570,
+      "Longitude":-98.6183940
+   },
+   {
+      "Code":"128",
+      "Name":"CARLOS COON ES",
+      "Latitude":29.4652610,
+      "Longitude":-98.6520230
+   },
+   {
+      "Code":"130",
+      "Name":"MURNIN ES",
+      "Latitude":29.4436920,
+      "Longitude":-98.6843870
+   },
+   {
+      "Code":"131",
+      "Name":"LINTON ES",
+      "Latitude":29.4567690,
+      "Longitude":-98.6111890
+   },
+   {
+      "Code":"132",
+      "Name":"TIMBERWILDE ES",
+      "Latitude":29.4853840,
+      "Longitude":-98.6594150
+   },
+   {
+      "Code":"134",
+      "Name":"BRAUN STATION ES",
+      "Latitude":29.5244240,
+      "Longitude":-98.6641440
+   },
+   {
+      "Code":"135",
+      "Name":"CODY ES",
+      "Latitude":29.4294170,
+      "Longitude":-98.6904090
+   },
+   {
+      "Code":"136",
+      "Name":"NORTHWEST CROSSING ES",
+      "Latitude":29.5117750,
+      "Longitude":-98.6839140
+   },
+   {
+      "Code":"138",
+      "Name":"KNOWLTON ES",
+      "Latitude":29.4928410,
+      "Longitude":-98.6865900
+   },
+   {
+      "Code":"139",
+      "Name":"NORTHSIDE CHILDREN\u0027S CENTER",
+      "Latitude":29.5198540,
+      "Longitude":-98.5788150
+   },
+   {
+      "Code":"141",
+      "Name":"FORESTER ES",
+      "Latitude":29.4297470,
+      "Longitude":-98.7043330
+   },
+   {
+      "Code":"143",
+      "Name":"SCOBEE ES",
+      "Latitude":29.5545330,
+      "Longitude":-98.6424170
+   },
+   {
+      "Code":"144",
+      "Name":"GALM ES",
+      "Latitude":29.4432950,
+      "Longitude":-98.7212880
+   },
+   {
+      "Code":"145",
+      "Name":"ELROD ES",
+      "Latitude":29.5005130,
+      "Longitude":-98.6453230
+   },
+   {
+      "Code":"148",
+      "Name":"WANKE ES",
+      "Latitude":29.5413830,
+      "Longitude":-98.6526990
+   },
+   {
+      "Code":"149",
+      "Name":"THORNTON ES",
+      "Latitude":29.5381320,
+      "Longitude":-98.6134170
+   },
+   {
+      "Code":"150",
+      "Name":"BRAUCHLE ES",
+      "Latitude":29.5237570,
+      "Longitude":-98.6843760
+   },
+   {
+      "Code":"151",
+      "Name":"FERNANDEZ ES",
+      "Latitude":29.5017410,
+      "Longitude":-98.6698970
+   },
+   {
+      "Code":"152",
+      "Name":"LEON SPRINGS ES",
+      "Latitude":29.6630310,
+      "Longitude":-98.6288670
+   },
+   {
+      "Code":"156",
+      "Name":"EVERS ES",
+      "Latitude":29.4557040,
+      "Longitude":-98.6657450
+   },
+   {
+      "Code":"157",
+      "Name":"MAY ES",
+      "Latitude":29.5923690,
+      "Longitude":-98.6266810
+   },
+   {
+      "Code":"158",
+      "Name":"MCDERMOTT ES",
+      "Latitude":29.5342650,
+      "Longitude":-98.5839100
+   },
+   {
+      "Code":"160",
+      "Name":"MYERS ES",
+      "Latitude":29.4720180,
+      "Longitude":-98.6545470
+   },
+   {
+      "Code":"161",
+      "Name":"STEUBING ES",
+      "Latitude":29.5518440,
+      "Longitude":-98.6574680
+   },
+   {
+      "Code":"162",
+      "Name":"MICHAEL ES",
+      "Latitude":29.3994170,
+      "Longitude":-98.6821080
+   },
+   {
+      "Code":"165",
+      "Name":"CARSON ES",
+      "Latitude":29.5136230,
+      "Longitude":-98.6641190
+   },
+   {
+      "Code":"166",
+      "Name":"BURKE ES",
+      "Latitude":29.5080340,
+      "Longitude":-98.6900590
+   },
+   {
+      "Code":"167",
+      "Name":"RABA ES",
+      "Latitude":29.4695990,
+      "Longitude":-98.6689640
+   },
+   {
+      "Code":"168",
+      "Name":"LEWIS ES",
+      "Latitude":29.4422490,
+      "Longitude":-98.6983840
+   },
+   {
+      "Code":"169",
+      "Name":"RHODES ES",
+      "Latitude":29.5117040,
+      "Longitude":-98.6005460
+   },
+   {
+      "Code":"170",
+      "Name":"NICHOLS ES",
+      "Latitude":29.5305010,
+      "Longitude":-98.6716190
+   },
+   {
+      "Code":"171",
+      "Name":"DRIGGERS ES",
+      "Latitude":29.4886110,
+      "Longitude":-98.6251370
+   },
+   {
+      "Code":"177",
+      "Name":"CARNAHAN ES",
+      "Latitude":29.5582570,
+      "Longitude":-98.6231550
+   },
+   {
+      "Code":"178",
+      "Name":"AUE ES",
+      "Latitude":29.6727010,
+      "Longitude":-98.6472810
+   },
+   {
+      "Code":"179",
+      "Name":"SCARBOROUGH ES",
+      "Latitude":29.5191910,
+      "Longitude":-98.7345600
+   },
+   {
+      "Code":"180",
+      "Name":"BEARD ES",
+      "Latitude":29.5811830,
+      "Longitude":-98.6564650
+   },
+   {
+      "Code":"181",
+      "Name":"BLATTMAN ES",
+      "Latitude":29.5992450,
+      "Longitude":-98.5428840
+   },
+   {
+      "Code":"182",
+      "Name":"OTT ES",
+      "Latitude":29.4320090,
+      "Longitude":-98.7366950
+   },
+   {
+      "Code":"183",
+      "Name":"WARD ES",
+      "Latitude":29.5184910,
+      "Longitude":-98.7087890
+   },
+   {
+      "Code":"184",
+      "Name":"HATCHET ES",
+      "Latitude":29.4249750,
+      "Longitude":-98.6651440
+   },
+   {
+      "Code":"185",
+      "Name":"MEAD ES",
+      "Latitude":29.5154190,
+      "Longitude":-98.5596800
+   },
+   {
+      "Code":"186",
+      "Name":"KRUEGER ES",
+      "Latitude":29.5343320,
+      "Longitude":-98.6979970
+   },
+   {
+      "Code":"187",
+      "Name":"LANGLEY ES",
+      "Latitude":29.4266220,
+      "Longitude":-98.7764300
+   },
+   {
+      "Code":"188",
+      "Name":"HOFFMANN ES",
+      "Latitude":29.4766700,
+      "Longitude":-98.7322000
+   },
+   {
+      "Code":"189",
+      "Name":"MARTIN ES",
+      "Latitude":29.4428630,
+      "Longitude":-98.5987180
+   },
+   {
+      "Code":"191",
+      "Name":"KUENTZ ES",
+      "Latitude":29.5589810,
+      "Longitude":-98.6823750
+   },
+   {
+      "Code":"192",
+      "Name":"BEHLAU ES",
+      "Latitude":29.4080580,
+      "Longitude":-98.7242710
+   },
+   {
+      "Code":"193",
+      "Name":"FRANKLIN ES",
+      "Latitude":29.5273880,
+      "Longitude":-98.7315610
+   },
+   {
+      "Code":"195",
+      "Name":"MIRELES ES",
+      "Latitude":29.4917700,
+      "Longitude":-98.7354600
+   },
+   {
+      "Code":"198",
+      "Name":"HENDERSON ES",
+      "Latitude":29.5218600,
+      "Longitude":-98.7848420
+   },
+   {
+      "Code":"212",
+      "Name":"STUDENT SERVICES",
+      "Latitude":29.4871010,
+      "Longitude":-98.6263370
+   },
+   {
+      "Code":"216",
+      "Name":"COMM ED",
+      "Latitude":29.4937560,
+      "Longitude":-98.6177620
+   },
+   {
+      "Code":"223",
+      "Name":"KALLISON ES",
+      "Latitude":29.5215550,
+      "Longitude":-98.7642070
+   },
+   {
+      "Code":"225",
+      "Name":"LIECK ES",
+      "Latitude":29.4247730,
+      "Longitude":-98.7450250
+   },
+   {
+      "Code":"226",
+      "Name":"FIELDS ES",
+      "Latitude":29.5304660,
+      "Longitude":-98.7160160
+   },
+   {
+      "Code":"227",
+      "Name":"BOLDT ES",
+      "Latitude":29.4350620,
+      "Longitude":-98.7950780
+   },
+   {
+      "Code":"228",
+      "Name":"COLE ES",
+      "Latitude":29.4574850,
+      "Longitude":-98.7544630
+   },
+   {
+      "Code":"230",
+      "Name":"MCANDREW ES",
+      "Latitude":29.6931540,
+      "Longitude":-98.7088090
+   },
+   {
+      "Code":"234",
+      "Name":"ELLISON ES",
+      "Latitude":29.6385460,
+      "Longitude":-98.6223100
+   },
+   {
+      "Code":"236",
+      "Name":"LOS REYES ES",
+      "Latitude":29.6006350,
+      "Longitude":-98.7034500
+   },
+   {
+      "Code":"361",
+      "Name":"ATHLETICS",
+      "Latitude":29.5731870,
+      "Longitude":-98.6471890
+   },
+   {
+      "Code":"404",
+      "Name":"INFO SVCS",
+      "Latitude":29.5593260,
+      "Longitude":-98.5935850
+   },
+   {
+      "Code":"421",
+      "Name":"ACCOUNTING",
+      "Latitude":29.4912000,
+      "Longitude":-98.6017500
+   },
+   {
+      "Code":"427",
+      "Name":"SUPT/ASST-BUSINESS",
+      "Latitude":29.4912000,
+      "Longitude":-98.6017500
+   },
+   {
+      "Code":"710",
+      "Name":"FOOD SERVICE ADMIN",
+      "Latitude":29.5065110,
+      "Longitude":-98.6479140
+   },
+   {
+      "Code":"969",
+      "Name":"NATATORIUM",
+      "Latitude":29.5621350,
+      "Longitude":-98.6531790
+   }
 ]
