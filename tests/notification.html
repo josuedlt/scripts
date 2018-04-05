@@ -1,0 +1,11 @@
+<script>
+    Notification.requestPermission().then(response => {
+        if (response == 'granted') {
+
+            var n = new Notification("Hello from javascript!", {
+                title: "Welcome"
+            });
+
+        }
+    });
+</script>
