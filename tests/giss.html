@@ -1,0 +1,219 @@
+<html>
+
+<head>
+    <title>GISS</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.1.6/css/swiper.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.1.6/js/swiper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.7/jquery.lazy.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.css" />
+
+    <style>
+        .swiper-slide {
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .loader {
+            z-index: 999;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            font-size: 5vmax;
+            text-shadow: 0.1em 0.1em 0.2em #888;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+
+            margin: 100px auto;
+            -webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
+            animation: sk-rotateplane 1.2s infinite ease-in-out;
+        }
+
+        @-webkit-keyframes sk-rotateplane {
+            0% {
+                -webkit-transform: perspective(120px)
+            }
+            50% {
+                -webkit-transform: perspective(120px) rotateY(180deg)
+            }
+            100% {
+                -webkit-transform: perspective(120px) rotateY(180deg) rotateX(180deg)
+            }
+        }
+
+        @keyframes sk-rotateplane {
+            0% {
+                transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+                -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg)
+            }
+            50% {
+                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+                -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg)
+            }
+            100% {
+                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+                -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+    </div>
+    <div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+            </div>
+            <div class="swiper-pagination"></div>
+
+            <!-- If we need scrollbar -->
+            <div class="swiper-scrollbar"></div>
+        </div>
+    </div>
+</body>
+<script>
+    const SLIDES_PER_VIEW = 2;
+
+    var mySwiper = new Swiper('.swiper-container', {
+        // Optional parameters
+        //direction: 'vertical',
+        //loop: true,
+        //mousewheel: true,
+        keyboard: {
+            enabled: true,
+        },
+
+        slidesPerView: SLIDES_PER_VIEW,
+        spaceBetween: 30,
+
+        // If we need pagination
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+            dynamicBullets: true,
+        },
+
+        // Navigation arrows
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+
+        //And if we need scrollbar
+        scrollbar: {
+            el: '.swiper-scrollbar',
+        }
+    })
+</script>
+<script>
+    var baseUrl = 'http://165.111.154.139:5000';
+    giss = {
+        fetchToken: (username, password) => {
+            return new Promise((resolve, reject) => {
+                try {
+                    $.ajax({
+                        url: baseUrl + '/token',
+                        data: {
+                            'username': username,
+                            'password': password
+                        },
+                        method: 'POST',
+                        success: (data, status) => {
+                            resolve(data.token);
+                        },
+                        error: (error) => {
+                            console.log(error);
+                        }
+                    })
+                } catch (e) {
+                    reject(e);
+                }
+                //
+            })
+        },
+
+        fetchPackages: (token) => {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: baseUrl + '/api/packages',
+                    beforeSend: (xhr, settings) => {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                    },
+                    success: (data, status) => {
+                        resolve(data, status);
+                    },
+                    error: (error) => {
+                        reject(error);
+                    }
+                })
+            });
+        }
+    }
+
+    // Configure and initialize Swiper slides
+    function loadSwiper(packages, callback) {
+        mySwiper.removeAllSlides();
+
+        packages.forEach((package) => {
+            mySwiper.appendSlide($('<div></div>')
+                .addClass('swiper-slide slider')
+                .attr('id', package.packageId)
+                .html(package.packageName));
+        });
+
+        function doCallback() {
+            for (var i = 0; i < SLIDES_PER_VIEW; i++) {
+                callback(mySwiper.slides[mySwiper.activeIndex + i]);
+            }
+        }
+
+        mySwiper.on('slideChange', () => {
+            doCallback();
+        });
+        mySwiper.update();
+        doCallback();
+    }
+
+    giss.fetchToken('botsint', 'Lg2tRQd_').then((token) => {
+        giss.fetchPackages(token).then((packages) => {
+            loadSwiper(packages, (slide) => {
+                if (!$(slide).attr('loaded')) {
+                    // Load package content...
+                    var packageId = $(slide).attr('id');
+                    var url = baseUrl + '/packages/' + packageId + " #package";
+                    $package = $('<div></div>')
+                        .addClass('ui basic segment')
+                        .load(url, () => {
+                            $("#package table").addClass('ui blue small table');
+                        });
+                    $(slide).html($package);
+                    $(slide).attr('loaded', true)
+                };
+            });
+        });
+    });
+
+    var $loader = $('.loader').hide();
+    $(document)
+        .ajaxStart(function () {
+            $loader.show();
+        })
+        .ajaxStop(function () {
+            $loader.hide();
+        });
+</script>
+
+</html>
