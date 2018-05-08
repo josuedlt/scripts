@@ -4,18 +4,15 @@
 
     <!--Begin SignalR Block-->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.geolocation.js"></script>
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.signalr.js"></script>
     <!-- <script type="text/javascript" src="https://webservices.nisd.net/scripts/ws-connection.js?n=1"></script> -->
 
-
     <!-- AngularjJS -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
-
-    <!-- Other -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
 
     <!-- Semantic UI -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.css" />
@@ -23,6 +20,30 @@
 </head>
 
 <body class="" ng-app="app">
+    <div class="ui modal" ng-show="$storage.selectedConnection">
+        <div class="header" ng-bind="$storage.selectedConnection.ConnectionId"></div>
+        <div class="content">
+            <div>
+                Host Address: {{$storage.selectedConnection.UserHostAddress}}
+            </div>
+            <div ng-if="$storage.selectedConnection.Position">
+                Position:
+                <a ng-href="https://maps.google.com/?q={{$storage.selectedConnection.Position.Latitude}},{{$storage.selectedConnection.Position.Longitude}}">
+                    {{$storage.selectedConnection.Position.Latitude}},{{$storage.selectedConnection.Position.Longitude}}
+                </a>
+            </div>
+            <div ng-if="$storage.selectedConnection.RequestCookies.username">
+                User: 
+                <span ng-bind="$storage.selectedConnection.RequestCookies.username.Value"></span>
+                <strong ng-bind="$storage.selectedConnection.RequestCookies.name.Value"></strong>
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui approve button">Approve</div>
+            <div class="ui button">Neutral</div>
+            <div class="ui cancel button">Cancel</div>
+        </div>
+    </div>
     <div class="ui inverted vertical segment">
         <div class="ui container">
             <div class="ui two statistics">
@@ -43,14 +64,14 @@
             </div>
         </div>
     </div>
-    <div ng-if="false">
+    <div class="ui vertical segment container" ng-if="!$storage.visible">
         <p class="ui fluid icon input">
             <input type="text" ng-model="search" placeholder="Search filter">
             <i class="search icon"></i>
         </p>
         <p>
             <div class="ui cards">
-                <div class="ui card" ng-repeat="c in $storage.connections | filter: search | orderBy: 'Timestamp' track by c.ConnectionId">
+                <div class="ui link card" ng-click="selectConnection(c)" ng-repeat="c in $storage.connections | filter: search | orderBy: 'Timestamp' track by c.ConnectionId">
                     <div class="content">
                         <div class="right floated" ng-if="c.Position">
                             <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
@@ -58,41 +79,41 @@
                             </a>
                         </div>
                         <div class="header" ng-bind="c.UserHostAddress"></div>
-                    </div>
-                    <div class="content">
-                        <div class="description">
+                        <div class="meta" ng-bind="c.Timestamp | date: 'medium'"></div>
+                        <div class="description" ng-if="c.RequestCookies.username">
                             <span ng-bind="c.RequestCookies.username.Value"></span>
                             <strong ng-bind="c.RequestCookies.name.Value"></strong>
                         </div>
-                        <div ng-bind="c.Timestamp | date: 'medium'"></div>
-                        <div class="meta" ng-bind="c.ConnectionId" ng-click="selectedConnection = c"></div>
                     </div>
                 </div>
             </div>
         </p>
     </div>
-    <div class="ui vertical segment container">
-       <div class="ui relaxed divided list">
+    <div class="ui vertical segment container" ng-if="$storage.visible">
+        <div class="ui relaxed divided list">
             <div class="ui item" ng-repeat="(key, connections) in $storage.groupedConnections">
-                <p class="ui right floated" ng-bind="connections.length"></p>
-                <p>
-                    <a class="ui header" href="{{key}}">{{key}}</a>
-                </p>
-                <div class="ui cards" ng-if="$storage.visible">
-                    <div class="ui link card" ng-repeat="c in connections | orderBy: 'Timestamp' track by c.ConnectionId">
-                        <div class="content">
-                            <div class="right floated" ng-if="c.Position">
-                                <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
-                                    <i class="icon map"></i>
-                                </a>
+                <div class="ui right floated label label-primary" ng-bind="connections.length" ng-click="showConnections = !showConnections"></div>
+                <a class="ui header" href="{{key}}">{{key}}</a>
+                <div class="ui basic segment" ng-show="showConnections">
+                    <p class="ui fluid icon input">
+                        <input type="text" ng-model="search" placeholder="Search filter">
+                        <i class="search icon"></i>
+                    </p>
+                    <div class="ui cards">
+                        <div class="ui link card" ng-click="selectConnection(c)" ng-repeat="c in connections | filter: search | orderBy: 'Timestamp' track by c.ConnectionId">
+                            <div class="content">
+                                <div class="right floated" ng-if="c.Position">
+                                    <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
+                                        <i class="icon map"></i>
+                                    </a>
+                                </div>
+                                <div class="header" ng-bind="c.UserHostAddress"></div>
+                                <div class="meta" ng-bind="c.Timestamp | date: 'medium'"></div>
+                                <div class="description" ng-if="c.RequestCookies.username">
+                                    <span ng-bind="c.RequestCookies.username.Value"></span>
+                                    <strong ng-bind="c.RequestCookies.name.Value"></strong>
+                                </div>
                             </div>
-                            <div class="header" ng-bind="c.UserHostAddress"></div>
-                            <div class="meta" ng-bind="c.Timestamp | date: 'medium'"></div>
-                            <div class="description" ng-if="c.RequestCookies.username">
-                                <span ng-bind="c.RequestCookies.username.Value"></span>
-                                <strong ng-bind="c.RequestCookies.name.Value"></strong>
-                            </div>
-                            
                         </div>
                     </div>
                 </div>
@@ -104,6 +125,12 @@
 <script>
     var app = angular.module('app', ['ngStorage'])
         .run(function ($rootScope, $localStorage) {
+            $rootScope.selectConnection = function (connection) {
+                $('.ui.modal').modal('show');
+                $localStorage.selectedConnection = connection;
+                $rootScope.$apply();
+            }
+
             $rootScope.$storage = $localStorage;
 
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
