@@ -1,6 +1,10 @@
 <html>
 
 <head>
+    <title>SignalR Connection Test</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+    <meta name="theme-color" content="#000000">
 
     <!--Begin SignalR Block-->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -20,7 +24,7 @@
 </head>
 
 <body class="" ng-app="app">
-    <div class="ui modal" ng-show="$storage.selectedConnection">
+    <div class="ui modal" ng-controller="modal" ng-show="$storage.selectedConnection">
         <div class="header" ng-bind="$storage.selectedConnection.ConnectionId"></div>
         <div class="content">
             <div>
@@ -33,13 +37,16 @@
                 </a>
             </div>
             <div ng-if="$storage.selectedConnection.RequestCookies.username">
-                User: 
+                User:
                 <span ng-bind="$storage.selectedConnection.RequestCookies.username.Value"></span>
                 <strong ng-bind="$storage.selectedConnection.RequestCookies.name.Value"></strong>
             </div>
+            <div>
+                Referer: <a ng-href="{{$storage.selectedConnection.Headers.Referer}}">{{$storage.selectedConnection.Headers.Referer}}</a>
+            </div>
         </div>
         <div class="actions">
-            <div class="ui approve button">Approve</div>
+            <div class="ui cancel button" ng-click="reload($storage.selectedConnection)">Reload</div>
             <div class="ui button">Neutral</div>
             <div class="ui cancel button">Cancel</div>
         </div>
@@ -124,10 +131,13 @@
 
 <script>
     var app = angular.module('app', ['ngStorage'])
+        .controller('modal', function($scope) {
+            
+        })
         .run(function ($rootScope, $localStorage) {
             $rootScope.selectConnection = function (connection) {
-                $('.ui.modal').modal('show');
                 $localStorage.selectedConnection = connection;
+                $('.ui.modal').modal('show');
             }
 
             $rootScope.$storage = $localStorage;
@@ -168,6 +178,15 @@
                 signalR.forceReconnect(hub, function () {
                     $localStorage.connectionId = hub.id;
                     proxy.server.getConnections().done(updateConnections);
+
+                    $rootScope.reload = function(c) {
+                        var message = {};
+                        message.sender = hub.id;
+
+                        message.name = 'reload';
+                        proxy.server.sendMessage(c.ConnectionId, message);
+                    };
+                    
                 }).start();
             })
         });
