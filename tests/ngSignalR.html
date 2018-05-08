@@ -147,8 +147,9 @@
                 proxy.client = {
                     hasConnected: function (c) {
                         var connections = $localStorage.connections;
+                        if (!connections) connections = [];
                         var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
-                        if (i > -1) { $connections[i] = c } else { connections.push(c) }
+                        if (i > -1) { connections[i] = c } else { connections.push(c) }
                         updateConnections(connections);
                     },
                     hasDisconnected: function (c) {
