@@ -128,7 +128,6 @@
             $rootScope.selectConnection = function (connection) {
                 $('.ui.modal').modal('show');
                 $localStorage.selectedConnection = connection;
-                $rootScope.$apply();
             }
 
             $rootScope.$storage = $localStorage;
