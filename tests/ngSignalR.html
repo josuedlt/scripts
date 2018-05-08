@@ -1,0 +1,149 @@
+<html>
+
+<head>
+
+    <!--Begin SignalR Block-->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.geolocation.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.signalr.js"></script>
+    <!-- <script type="text/javascript" src="https://webservices.nisd.net/scripts/ws-connection.js?n=1"></script> -->
+
+
+    <!-- AngularjJS -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+
+    <!-- Other -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+
+    <!-- Semantic UI -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.js"></script>
+</head>
+
+<body class="" ng-app="app">
+    <div class="ui inverted vertical segment">
+        <div class="ui container">
+            <div class="ui two statistics">
+                <div class="ui inverted blue statistic" ng-click="$storage.visible = !$storage.visible">
+                    <div class="value">
+                        <i class="fork code icon"></i>
+                        <span ng-bind="$storage.connections.length"></span>
+                    </div>
+                    <div class="label">Connections</div>
+                </div>
+                <div class="ui inverted orange statistic">
+                    <div class="text value">
+                        {{$storage.connectionsRefreshDate | date: 'mediumDate'}}
+                        <br /> {{$storage.connectionsRefreshDate | date: 'mediumTime'}}
+                    </div>
+                    <div class="label">Refreshed on</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div ng-if="false">
+        <p class="ui fluid icon input">
+            <input type="text" ng-model="search" placeholder="Search filter">
+            <i class="search icon"></i>
+        </p>
+        <p>
+            <div class="ui cards">
+                <div class="ui card" ng-repeat="c in $storage.connections | filter: search | orderBy: 'Timestamp' track by c.ConnectionId">
+                    <div class="content">
+                        <div class="right floated" ng-if="c.Position">
+                            <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
+                                <i class="icon map"></i>
+                            </a>
+                        </div>
+                        <div class="header" ng-bind="c.UserHostAddress"></div>
+                    </div>
+                    <div class="content">
+                        <div class="description">
+                            <span ng-bind="c.RequestCookies.username.Value"></span>
+                            <strong ng-bind="c.RequestCookies.name.Value"></strong>
+                        </div>
+                        <div ng-bind="c.Timestamp | date: 'medium'"></div>
+                        <div class="meta" ng-bind="c.ConnectionId" ng-click="selectedConnection = c"></div>
+                    </div>
+                </div>
+            </div>
+        </p>
+    </div>
+    <div class="ui vertical segment container">
+       <div class="ui relaxed divided list">
+            <div class="ui item" ng-repeat="(key, connections) in $storage.groupedConnections">
+                <p class="ui right floated" ng-bind="connections.length"></p>
+                <p>
+                    <a class="ui header" href="{{key}}">{{key}}</a>
+                </p>
+                <div class="ui cards" ng-if="$storage.visible">
+                    <div class="ui link card" ng-repeat="c in connections | orderBy: 'Timestamp' track by c.ConnectionId">
+                        <div class="content">
+                            <div class="right floated" ng-if="c.Position">
+                                <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
+                                    <i class="icon map"></i>
+                                </a>
+                            </div>
+                            <div class="header" ng-bind="c.UserHostAddress"></div>
+                            <div class="meta" ng-bind="c.Timestamp | date: 'medium'"></div>
+                            <div class="description" ng-if="c.RequestCookies.username">
+                                <span ng-bind="c.RequestCookies.username.Value"></span>
+                                <strong ng-bind="c.RequestCookies.name.Value"></strong>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    var app = angular.module('app', ['ngStorage'])
+        .run(function ($rootScope, $localStorage) {
+            $rootScope.$storage = $localStorage;
+
+            signalR.connectToHub('https://webservices.nisd.net', function (hub) {
+
+                updateConnections = function (connections) {
+                    $rootScope.$apply(function () {
+                        $localStorage.connections = connections;
+                        $localStorage.connectionsRefreshDate = new Date();
+                        $localStorage.groupedConnections = _.groupBy(_.orderBy(connections, 'Headers.Referer'), 'Headers.Referer');
+                    })
+                }
+
+                proxy = hub.proxies.connectionshub;
+                proxy.client = {
+                    hasConnected: function (c) {
+                        var connections = $localStorage.connections;
+                        var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
+                        if (i > -1) { $connections[i] = c } else { connections.push(c) }
+                        updateConnections(connections);
+                    },
+                    hasDisconnected: function (c) {
+                        var connections = $localStorage.connections;
+                        var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId);
+                        if (i > -1) connections.splice(i, 1);
+                        updateConnections(connections);
+                    },
+                    hasUpdatedPosition: function (c, p) {
+                        var connections = $localStorage.connections;
+                        var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
+                        if (i > -1) connections[i].Position = p;
+                        updateConnections(connections);
+                    }
+                }
+
+                signalR.forceReconnect(hub, function () {
+                    $localStorage.connectionId = hub.id;
+                    proxy.server.getConnections().done(updateConnections);
+                }).start();
+            })
+        });
+</script>
+
+</html>
