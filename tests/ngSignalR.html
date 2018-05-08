@@ -21,10 +21,35 @@
     <!-- Semantic UI -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.js"></script>
+
+    <style>
+        .overflow {
+            overflow-x: scroll;
+        }
+    </style>
 </head>
 
 <body class="" ng-app="app">
-    <div class="ui modal" ng-controller="modal" ng-show="$storage.selectedConnection">
+    <script type="text/ng-template" id="cards.html">
+        <div class="ui four doubling stackable cards">
+            <div class="ui fluid link card" ng-click="selectConnection(c)" ng-repeat="c in connections | filter: search | orderBy: 'Timestamp' track by c.ConnectionId">
+                <div class="content">
+                    <div class="right floated" ng-if="c.Position">
+                        <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
+                            <i class="icon map"></i>
+                        </a>
+                    </div>
+                    <div class="header" ng-bind="c.UserHostAddress"></div>
+                    <div class="meta" ng-bind="c.Timestamp | date: 'medium'"></div>
+                    <div class="description" ng-if="c.RequestCookies.username">
+                        <span ng-bind="c.RequestCookies.username.Value"></span>
+                        <strong ng-bind="c.RequestCookies.name.Value"></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+    <div class="ui modal" ng-show="$storage.selectedConnection">
         <div class="header" ng-bind="$storage.selectedConnection.ConnectionId"></div>
         <div class="content">
             <div>
@@ -42,116 +67,125 @@
                 <strong ng-bind="$storage.selectedConnection.RequestCookies.name.Value"></strong>
             </div>
             <div>
-                Referer: <a ng-href="{{$storage.selectedConnection.Headers.Referer}}">{{$storage.selectedConnection.Headers.Referer}}</a>
+                Referer:
+                <a ng-href="{{$storage.selectedConnection.Headers.Referer}}">{{$storage.selectedConnection.Headers.Referer}}</a>
             </div>
         </div>
         <div class="actions">
             <div class="ui cancel button" ng-click="reload($storage.selectedConnection)">Reload</div>
-            <div class="ui button">Neutral</div>
             <div class="ui cancel button">Cancel</div>
         </div>
     </div>
     <div class="ui inverted vertical segment">
-        <div class="ui container">
-            <div class="ui two statistics">
-                <div class="ui inverted blue statistic" ng-click="$storage.visible = !$storage.visible">
-                    <div class="value">
-                        <i class="fork code icon"></i>
-                        <span ng-bind="$storage.connections.length"></span>
-                    </div>
-                    <div class="label">Connections</div>
+        <div class="ui two statistics container">
+            <div class="ui inverted yellow statistic">
+                <div class="value">
+                    <i class="icon" ng-class="{'signal': $storage.connectionState == 'connected', 'unlink': $storage.connectionState == 'disconnected', 'redo': $storage.connectionState == 'connecting', 'sync': $storage.connectionState == 'reconnecting' }"></i>
                 </div>
-                <div class="ui inverted orange statistic">
-                    <div class="text value">
-                        {{$storage.connectionsRefreshDate | date: 'mediumDate'}}
-                        <br /> {{$storage.connectionsRefreshDate | date: 'mediumTime'}}
-                    </div>
-                    <div class="label">Refreshed on</div>
+                <div class="label">Link</div>
+            </div>
+            <div class="ui inverted blue statistic" ng-if="$storage.connections" ng-click="$storage.visible = !$storage.visible">
+                <div class="value">
+                    <i class="fork code icon"></i>
+                    <span ng-bind="$storage.connections.length"></span>
+                </div>
+                <div class="label">
+                    {{$storage.connectionsRefreshDate | date: 'mediumTime'}}
                 </div>
             </div>
         </div>
     </div>
-    <div class="ui vertical segment container" ng-if="!$storage.visible">
-        <p class="ui fluid icon input">
-            <input type="text" ng-model="search" placeholder="Search filter">
-            <i class="search icon"></i>
-        </p>
-        <p>
-            <div class="ui cards">
-                <div class="ui link card" ng-click="selectConnection(c)" ng-repeat="c in $storage.connections | filter: search | orderBy: 'Timestamp' track by c.ConnectionId">
-                    <div class="content">
-                        <div class="right floated" ng-if="c.Position">
-                            <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
-                                <i class="icon map"></i>
-                            </a>
-                        </div>
-                        <div class="header" ng-bind="c.UserHostAddress"></div>
-                        <div class="meta" ng-bind="c.Timestamp | date: 'medium'"></div>
-                        <div class="description" ng-if="c.RequestCookies.username">
-                            <span ng-bind="c.RequestCookies.username.Value"></span>
-                            <strong ng-bind="c.RequestCookies.name.Value"></strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </p>
-    </div>
-    <div class="ui vertical segment container" ng-if="$storage.visible">
-        <div class="ui relaxed divided list">
-            <div class="ui item" ng-repeat="(key, connections) in $storage.groupedConnections">
-                <div class="ui right floated label label-primary" ng-bind="connections.length" ng-click="showConnections = !showConnections"></div>
-                <a class="ui header" href="{{key}}">{{key}}</a>
-                <div class="ui basic segment" ng-show="showConnections">
-                    <p class="ui fluid icon input">
-                        <input type="text" ng-model="search" placeholder="Search filter">
-                        <i class="search icon"></i>
-                    </p>
-                    <div class="ui cards">
-                        <div class="ui link card" ng-click="selectConnection(c)" ng-repeat="c in connections | filter: search | orderBy: 'Timestamp' track by c.ConnectionId">
-                            <div class="content">
-                                <div class="right floated" ng-if="c.Position">
-                                    <a ng-href="https://maps.google.com/?q={{c.Position.Latitude}},-{{c.Position.Longitude}}">
-                                        <i class="icon map"></i>
-                                    </a>
-                                </div>
-                                <div class="header" ng-bind="c.UserHostAddress"></div>
-                                <div class="meta" ng-bind="c.Timestamp | date: 'medium'"></div>
-                                <div class="description" ng-if="c.RequestCookies.username">
-                                    <span ng-bind="c.RequestCookies.username.Value"></span>
-                                    <strong ng-bind="c.RequestCookies.name.Value"></strong>
-                                </div>
-                            </div>
-                        </div>
+    <div class="ui vertical segment container">
+        <div class="ui inverted dimmer" ng-class="{'active': $storage.connectionState != 'connected'}" style="min-height: 200px">
+            <div class="ui text loader">Loading</div>
+        </div>
+        
+        <div ng-if="!$storage.visible">
+            <p class="ui fluid icon input">
+                <input type="text" ng-model="search" placeholder="Search filter">
+                <i class="search icon"></i>
+            </p>
+            <p ng-init="connections = $storage.connections">
+                <cards />
+            </p>
+        </div>
+        <div ng-if="$storage.visible">
+            <div class="ui relaxed divided list">
+                <div class="ui item" ng-repeat="(key, connections) in $storage.groupedConnections">
+                    <div class="ui right floated label label-primary" ng-bind="connections.length" ng-click="showConnections = !showConnections"></div>
+                    <small>
+                        <a href="{{key}}">{{key}}</a>
+                    </small>
+                    <div class="ui basic segment" ng-show="showConnections">
+                        <p class="ui fluid icon input">
+                            <input type="text" ng-model="search" placeholder="Search filter">
+                            <i class="search icon"></i>
+                        </p>
+                        <cards />
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </body>
 
 <script>
+    var proxy;
     var app = angular.module('app', ['ngStorage'])
-        .controller('modal', function($scope) {
-            
+        .directive('cards', function () {
+            return {
+                templateUrl: 'cards.html',
+                controller: function($rootScope, $localStorage) {
+                    $rootScope.selectConnection = function (connection) {
+                        $localStorage.selectedConnection = connection;
+                        $('.ui.modal').modal('show');
+                    }
+                }
+            }
         })
         .run(function ($rootScope, $localStorage) {
-            $rootScope.selectConnection = function (connection) {
-                $localStorage.selectedConnection = connection;
-                $('.ui.modal').modal('show');
-            }
+            $localStorage.$reset({
+                visible: true,
+                connectionState: 'disconnected'
+            });
 
             $rootScope.$storage = $localStorage;
+            updateConnections = function (connections) {
+                $rootScope.$apply(function () {
+                    $localStorage.connections = connections;
+                    $localStorage.connectionsRefreshDate = new Date();
+                    $localStorage.groupedConnections = _.groupBy(_.orderBy(connections, 'Headers.Referer'), 'Headers.Referer');
+                })
+            }
 
+            // var hub = new signalR('https://webservices.nisd.net')
+            //     .on('state', function (o) {
+            //         $localStorage.connectionState = o;
+            //         $rootScope.$apply();
+            //     })
+            //     .on('ready', function (hub) {
+            //         hub.connectionshub.client = {
+            //             hasConnected: function (c) {
+            //                 var connections = $localStorage.connections;
+            //                 if (!connections) connections = [];
+            //                 var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
+            //                 if (i > -1) { connections[i] = c } else { connections.push(c) }
+            //                 updateConnections(connections);
+            //             },
+            //             hasDisconnected: function (c) {
+            //                 var connections = $localStorage.connections;
+            //                 var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId);
+            //                 if (i > -1) connections.splice(i, 1);
+            //                 updateConnections(connections);
+            //             },
+            //             hasUpdatedPosition: function (c, p) {
+            //                 var connections = $localStorage.connections;
+            //                 var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
+            //                 if (i > -1) connections[i] = c;
+            //                 updateConnections(connections);
+            //             }
+            //         }
+            //     })
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
-
-                updateConnections = function (connections) {
-                    $rootScope.$apply(function () {
-                        $localStorage.connections = connections;
-                        $localStorage.connectionsRefreshDate = new Date();
-                        $localStorage.groupedConnections = _.groupBy(_.orderBy(connections, 'Headers.Referer'), 'Headers.Referer');
-                    })
-                }
-
                 proxy = hub.proxies.connectionshub;
                 proxy.client = {
                     hasConnected: function (c) {
@@ -170,23 +204,28 @@
                     hasUpdatedPosition: function (c, p) {
                         var connections = $localStorage.connections;
                         var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
-                        if (i > -1) connections[i].Position = p;
+                        if (i > -1) connections[i] = c;
                         updateConnections(connections);
                     }
                 }
+
+                signalR.logConnectionStates(hub, function (o) {
+                    $localStorage.connectionState = o;
+                    $rootScope.$apply();
+                }).start();
 
                 signalR.forceReconnect(hub, function () {
                     $localStorage.connectionId = hub.id;
                     proxy.server.getConnections().done(updateConnections);
 
-                    $rootScope.reload = function(c) {
+                    $rootScope.reload = function (c) {
                         var message = {};
                         message.sender = hub.id;
 
                         message.name = 'reload';
                         proxy.server.sendMessage(c.ConnectionId, message);
                     };
-                    
+
                 }).start();
             })
         });
