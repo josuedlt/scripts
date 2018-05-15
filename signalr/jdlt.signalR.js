@@ -1,26 +1,39 @@
-var signalR = function () { };
+var signalR = function () {};
 signalR.prototype = {
     connectToHub: function (url, callback) {
-        this.connectToHubs([url], function (hubs) {
+        return this.connectToHubs([url], function (hubs) {
             callback(hubs[0]);
         });
     },
     connectToHubs: function (urls, callback) {
-        var hubs = [];
-        urls.forEach(function (url) {
-            $.ajax({
-                async: false,
-                cache: false,
-                dataType: 'script',
-                url: url + '/signalr/hubs',
-                complete: function () {
-                    h = $.hubConnection(url);
-                    h.createHubProxies();
-                    hubs.push(h);
-                    if (hubs.length == urls.length)
-                        callback(hubs);
+        return new Promise(function (resolve) {
+            var hubs = [];
+
+            function addHub(h, i) {
+                hubs[i] = h;
+                if (hubs.length == urls.length) {
+                    if (callback) callback(hubs);
+                    resolve(hubs);
                 }
-            });
+            }
+
+            try {
+                urls.forEach(function (url, i) {
+                    $.ajax({
+                        async: false,
+                        cache: false,
+                        dataType: 'script',
+                        url: url + '/signalr/hubs',
+                        complete: function () {
+                            h = $.hubConnection(url);
+                            h.createHubProxies();
+                            addHub(h, i);
+                        },
+                    });
+                });
+            } catch (e) {
+                addHub(null, i);
+            }
         });
     },
     logConnectionStates: function (hub, callback) {
@@ -64,22 +77,16 @@ signalR.prototype = {
             stop: function () {
                 _this.logging = false;
             }
-        }
+        };
     },
     forceReconnect: function (hub, callback) {
         _this = this;
 
-        hub.start().done(function () {
-            console.log("%s connected with id %s", hub.url, hub.id)
-
-            hub.disconnected(function () {
-                if (_this.tryingToReconnect)
-                    setTimeout(function () {
-                        _this.forceReconnect(hub, callback);
-                    }, 5000);
-            });
-
-            if (callback) callback();
+        hub.disconnected(function () {
+            if (_this.tryingToReconnect)
+                setTimeout(function () {
+                    _this.forceReconnect(hub, callback);
+                }, 5000);
         });
 
         return {
