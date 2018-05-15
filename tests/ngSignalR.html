@@ -11,7 +11,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.geolocation.js"></script>
-    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.signalr.js"></script>
+    <script type="text/javascript" src="../signalr/jdlt.signalr.js"></script>
+    <!-- <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.signalr.js"></script> -->
     <!-- <script type="text/javascript" src="https://webservices.nisd.net/scripts/ws-connection.js?n=1"></script> -->
 
     <!-- AngularjJS -->
@@ -80,9 +81,9 @@
         <div class="ui two statistics container">
             <div class="ui inverted yellow statistic">
                 <div class="value">
-                    <i class="icon" ng-class="{'signal': $storage.connectionState == 'connected', 'unlink': $storage.connectionState == 'disconnected', 'redo': $storage.connectionState == 'connecting', 'sync': $storage.connectionState == 'reconnecting' }"></i>
+                    <i class="icon" ng-class="{'signal': $storage.connectionState == 'connected', 'unlink': $storage.connectionState == 'disconnected', 'redo': $storage.connectionState == 'connecting', 'sync': $storage.connectionState == 'reconnecting', 'exclamation triangle': $storage.connectionState == 'slow' }"></i>
                 </div>
-                <div class="label">Link</div>
+                <div class="label">{{$storage.connectionState}}</div>
             </div>
             <div class="ui inverted blue statistic" ng-if="$storage.connections" ng-click="$storage.visible = !$storage.visible">
                 <div class="value">
@@ -99,7 +100,7 @@
         <div class="ui inverted dimmer" ng-class="{'active': $storage.connectionState != 'connected'}" style="min-height: 200px">
             <div class="ui text loader">Loading</div>
         </div>
-        
+
         <div ng-if="!$storage.visible">
             <p class="ui fluid icon input">
                 <input type="text" ng-model="search" placeholder="Search filter">
@@ -134,7 +135,7 @@
         .directive('cards', function () {
             return {
                 templateUrl: 'cards.html',
-                controller: function($rootScope, $localStorage) {
+                controller: function ($rootScope, $localStorage) {
                     $rootScope.selectConnection = function (connection) {
                         $localStorage.selectedConnection = connection;
                         $('.ui.modal').modal('show');
@@ -145,6 +146,7 @@
         .run(function ($rootScope, $localStorage) {
             $localStorage.$reset({
                 visible: true,
+                connections: [],
                 connectionState: 'disconnected'
             });
 
@@ -153,46 +155,22 @@
                 $rootScope.$apply(function () {
                     $localStorage.connections = connections;
                     $localStorage.connectionsRefreshDate = new Date();
-                    $localStorage.groupedConnections = _.groupBy(_.orderBy(connections, 'Headers.Referer'), 'Headers.Referer');
+                    $localStorage.groupedConnections = _.groupBy(_.orderBy(connections,
+                        'Headers.Referer'), 'Headers.Referer');
                 })
             }
 
-            // var hub = new signalR('https://webservices.nisd.net')
-            //     .on('state', function (o) {
-            //         $localStorage.connectionState = o;
-            //         $rootScope.$apply();
-            //     })
-            //     .on('ready', function (hub) {
-            //         hub.connectionshub.client = {
-            //             hasConnected: function (c) {
-            //                 var connections = $localStorage.connections;
-            //                 if (!connections) connections = [];
-            //                 var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
-            //                 if (i > -1) { connections[i] = c } else { connections.push(c) }
-            //                 updateConnections(connections);
-            //             },
-            //             hasDisconnected: function (c) {
-            //                 var connections = $localStorage.connections;
-            //                 var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId);
-            //                 if (i > -1) connections.splice(i, 1);
-            //                 updateConnections(connections);
-            //             },
-            //             hasUpdatedPosition: function (c, p) {
-            //                 var connections = $localStorage.connections;
-            //                 var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
-            //                 if (i > -1) connections[i] = c;
-            //                 updateConnections(connections);
-            //             }
-            //         }
-            //     })
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
                 proxy = hub.proxies.connectionshub;
                 proxy.client = {
                     hasConnected: function (c) {
                         var connections = $localStorage.connections;
-                        if (!connections) connections = [];
                         var i = _.indexOf(_.map(connections, 'ConnectionId'), c.ConnectionId)
-                        if (i > -1) { connections[i] = c } else { connections.push(c) }
+                        if (i > -1) {
+                            connections[i] = c
+                        } else {
+                            connections.push(c)
+                        }
                         updateConnections(connections);
                     },
                     hasDisconnected: function (c) {
@@ -209,12 +187,12 @@
                     }
                 }
 
-                signalR.logConnectionStates(hub, function (o) {
+                proxy.logger = signalR.logConnectionStates(hub, function (o) {
                     $localStorage.connectionState = o;
                     $rootScope.$apply();
                 }).start();
 
-                signalR.forceReconnect(hub, function () {
+                proxy.force = signalR.forceReconnect(hub, function () {
                     $localStorage.connectionId = hub.id;
                     proxy.server.getConnections().done(updateConnections);
 
@@ -225,7 +203,6 @@
                         message.name = 'reload';
                         proxy.server.sendMessage(c.ConnectionId, message);
                     };
-
                 }).start();
             })
         });
