@@ -51,33 +51,32 @@ signalR.prototype = {
             }
         });
     },
-    logConnectionStates: function (hub, callback) {
+    onStateChange: function (hub, callback, logToConsole) {
         _this = this;
-        _this.callback = callback;
-        _this.hub = hub;
-        _this.logging = true;
+        _this.logToConsole = logToConsole ? logToConsole : false;
+
+        function updateState(change) {
+            var state = change.newState;
+            if (_this.logToConsole) console.log('%s [State Changed] %s', hub.url, state);
+            if (callback) callback(state);
+        }
 
         hub.connectionSlow(function () {
-            _this.state = "slow";
-            if (_this.logging) console.log('%s [State] Connection slow', hub.url);
-            if (callback) callback("slow");
+            updateState("{ newState: 'slow' }");
         });
 
         hub.stateChanged(function (change) {
-            _this.state = _this.stateName(change.newState);
-            if (_this.logging) console.log('%s [State] %s', hub.url, _this.stateName(change.newState));
-            if (callback) callback(_this.stateName(change.newState));
+            updateState(change.newState);
         });
 
-        if (callback) callback(_this.stateName(hub.state));
-        if (_this.logging) console.log('%s [State] %s', hub.url, _this.stateName(hub.state));
+        updateState(stateName(hub.state));
 
         return {
             start: function () {
-                _this.logging = true;
+                _this.logToConsole = true;
             },
             stop: function () {
-                _this.logging = false;
+                _this.logToConsole = false;
             }
         };
     },
