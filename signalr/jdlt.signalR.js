@@ -1,5 +1,6 @@
 var signalR = function () {};
 signalR.prototype = {
+    version: 1.0,
 
     // Get connection state name.
     stateName: function (state) {
@@ -16,12 +17,14 @@ signalR.prototype = {
     },
 
     connectToHub: function (url, callback) {
-        return this.connectToHubs([url], function (hubs) {
-            callback(hubs[0]);
-        });
+        return this.connectToHubs([url])
+            .then(function (hubs) {
+                callback(hubs[0]);
+            });
     },
+
     connectToHubs: function (urls, callback) {
-        return new Promise(function (resolve) {
+        return new Promise(function (resolve, reject) {
             var hubs = [];
 
             function addHub(h, i) {
@@ -32,90 +35,102 @@ signalR.prototype = {
                 }
             }
 
-            try {
-                urls.forEach(function (url, i) {
+            urls.forEach(function (url, i) {
+                try {
                     $.ajax({
-                        async: false,
-                        cache: false,
-                        dataType: 'script',
-                        url: url + '/signalr/hubs',
-                        complete: function () {
+                            async: false,
+                            //cache: false,
+                            dataType: 'script',
+                            //timeout: 3000,
+                            url: url + '/signalr/hubs',
+                        })
+                        .done(function () {
                             h = $.hubConnection(url);
                             h.createHubProxies();
                             addHub(h, i);
-                        },
-                    });
-                });
-            } catch (e) {
-                addHub(null, i);
-            }
-        });
-    },
-    onStateChange: function (hub, callback, logToConsole) {
-        _this = this;
-        _this.logToConsole = logToConsole ? logToConsole : false;
+                        })
+                        .fail(function (a, b, c, d) {
+                            console.log(a, b, c, d);
+                        });
+                } catch (e) {
 
-        function updateState(change) {
-            var state = change.newState;
-            if (_this.logToConsole) console.log('%s [State Changed] %s', hub.url, state);
-            if (callback) callback(state);
-        }
-
-        hub.connectionSlow(function () {
-            updateState("{ newState: 'slow' }");
-        });
-
-        hub.stateChanged(function (change) {
-            updateState(change.newState);
-        });
-
-        updateState(stateName(hub.state));
-
-        return {
-            start: function () {
-                _this.logToConsole = true;
-            },
-            stop: function () {
-                _this.logToConsole = false;
-            }
-        };
-    },
-    forceReconnect: function (hub, callback, timeout) {
-        _this = this;
-        _this.tryingToReconnect = true;
-
-        timeout = timeout ? timeout * 1000 : 5000;
-
-        function connect() {
-            console.log('%s [Force Reconnect] Establishing a new connection', hub.url);
-            hub.start().done(function () {
-                console.log('%s [Force Reconnect] Connection started with id %s', hub.url, hub.id);
-                if (callback) callback();
+                    console.log(e);
+                }
             });
-        }
 
-        hub.disconnected(function () {
-            if (_this.tryingToReconnect) {
-                console.log('%s [Force Reconnect] Disconnection detected. Attempting to reconnect in %d second(s)...', hub.url, timeout / 1000);
-                setTimeout(function () {
-                    connect();
-                }, timeout);
+        });
+    },
+
+    onLoading: function (hub, callback, logToConsole) {
+        _this = this;
+        count = 0;
+        logToConsole = logToConsole ? logToConsole : true;
+
+        updateLoading = function (loading) {
+            if (logToConsole) console.log('%s [Loading] %o', hub.url, loading);
+            if (callback) callback(count);
+        };
+
+        jQuery.ajaxSetup({
+            beforeSend: function (xhr) {
+                count += 1;
+                if (count == 1) updateLoading(true);
+            },
+            complete: function (xhr, status) {
+                count -= 1;
+                if (count == 0) updateLoading(false);
             }
         });
+    },
 
-        return {
-            start: function () {
-                _this.tryingToReconnect = true;
-                connect();
-                return this;
-            },
-            stop: function () {
-                _this.tryingToReconnect = false;
-                hub.stop();
-                console.log('%s [Force reconnect] Connection stopped.', hub.url);
-                return this;
+    onStateChanged: function (hub, callback, logToConsole) {
+        _this = this;
+
+        return new Promise(function (resolve) {
+            function updateState(state) {
+                if (logToConsole) console.log('%s [State] %s', hub.url, state);
+                if (callback) callback(state);
+                resolve(state);
             }
-        }
+
+            hub.connectionSlow(function () {
+                updateState("slow");
+            });
+
+            hub.stateChanged(function (change) {
+                updateState(_this.stateName(change.newState));
+            });
+
+            updateState(_this.stateName(hub.state));
+        });
+    },
+    forceReconnect: function (hub, callback, logToConsole, timeout) {
+        return new Promise(function (resolve) {
+            connectToHub = function () {
+                if (logToConsole) console.log('%s [Force Reconnect] Attempting to connect', hub.url);
+    
+                hub.start().done(function () {
+                    if (logToConsole) {
+                        console.log('%s [Force Reconnect] Client Id: %s', hub.url, hub.id);
+                        console.log('%s [Force Reconnect] Transport: %s', hub.url, hub.transport.name);
+                    }
+    
+                    if (callback) callback();
+                    resolve();
+                });
+            };
+    
+            // If hub becomes disconnected, attempt to reconnect in 5 seconds.
+            hub.disconnected(function () {
+                if (logToConsole) console.log('%s [Force Reconnect] Disconnection detected', hub.url);
+                if (logToConsole) console.log('%s [Force Reconnect] Trying again in %d ms', hub.url, timeout);
+                setTimeout(function () {
+                    connectToHub();
+                }, timeout);
+            })
+    
+            connectToHub();
+        })
     }
 };
 
