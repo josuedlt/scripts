@@ -1,11 +1,26 @@
 <script>
-    Notification.requestPermission().then(response => {
-        if (response == 'granted') {
+    var i = 0;
 
-            var n = new Notification("Hello from javascript!", {
-                title: "Welcome"
+    function sendNotification() {
+        //var n = new Notification("New Notification", { body: 'This is the body.' });
+        setInterval(() => {
+            i++;
+            var n = new Notification("Notification " + i, { 
+                body: new Date()
             });
+        }, 3000)
 
-        }
-    });
+    }
+
+    if ("Notification" in window) {
+        if (Notification.permission == "granted")
+            sendNotification();
+        else
+            Notification.requestPermission((result) => {
+                if (result == 'granted')
+                    sendNotification();
+            })
+    } else {
+        alert("Your browser does not support notifications.")
+    }
 </script>

@@ -1,0 +1,52 @@
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
+<script type="text/javascript" src="../signalr/jdlt.signalR.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+
+<body ng-app="app">
+    <pre ng-bind="proxy.hubName"></pre>
+</body>
+
+<script>
+    var proxy = null;
+    var app = angular.module('app', [])
+        .service('armoredService', function ($rootScope) {
+            signalR.connectToHub('https://integration.nisd.net')
+                .then(function (hub) {
+                    proxy = hub.proxies.armoredservicehub;
+                    proxy.client = {
+                        refresh() {
+                            console.log("refresh");
+                        },
+                        depositBagCreated(data) {
+                            console.log("depositBagCreated", data);
+                            listeners.depositBagCreated.forEach(function (callback) { callback(data); });
+                        }
+                        , depositBagUpdated(data) {
+                            console.log("depositBagUpdated", data);
+                            listeners.depositBagUpdated.forEach(function (callback) { callback(data); });
+                        }
+                        , depositBagDeleted(data) {
+                            console.log("depositBagDeleted", data);
+                            listeners.depositBagDeleted.forEach(function (callback) { callback(data); });
+                        }
+                        , hostBagCreated(data) {
+                            console.log("hostBagCreated", data);
+                            listeners.hostBagCreated.forEach(function (callback) { callback(data); });
+                        }
+                        , hostBagUpdated(data) {
+                            console.log("hostBagUpdated", data);
+                            listeners.hostBagUpdated.forEach(function (callback) { callback(data); });
+                        }
+                        , hostBagDeleted(data) {
+                            console.log("hostBagDeleted", data);
+                            listeners.hostBagDeleted.forEach(function (callback) { callback(data); });
+                        }
+                    };
+                });
+        })
+        .run(function (armoredService) { })
+</script>

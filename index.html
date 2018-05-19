@@ -205,8 +205,8 @@
                             [_.min(longitudes), _.min(latitudes)],
                             [_.max(longitudes), _.max(latitudes)]
                         ], {
-                            padding: 40
-                        });
+                                padding: 40
+                            });
 
                         $scope.locations = locations;
                     })
@@ -334,6 +334,12 @@
                         $scope.$apply();
 
                         updateSignalRMap($scope.connections);
+
+                        Notification.requestPermission().then(response => {
+                            if (response == 'granted') { 
+                                //new Notification('New Position');
+                            }
+                        });
                     }
                 }
                 signalR.forceReconnect(hub).start();
