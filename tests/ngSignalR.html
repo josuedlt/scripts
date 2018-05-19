@@ -11,12 +11,13 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
     <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.geolocation.js"></script>
-    <script type="text/javascript" src="../signalr/jdlt.signalr.js"></script>
+    <script type="text/javascript" src="../signalr/jdlt.signalR.js"></script>
     <!-- <script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.signalr.js"></script> -->
     <!-- <script type="text/javascript" src="https://webservices.nisd.net/scripts/ws-connection.js?n=1"></script> -->
 
     <!-- AngularjJS -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-animate.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
 
     <!-- Semantic UI -->
@@ -79,11 +80,11 @@
     </div>
     <div class="ui inverted vertical segment">
         <div class="ui two statistics container">
-            <div class="ui inverted yellow statistic">
+            <div class="ui inverted statistic" ng-class="{'yellow': !loading}">
                 <div class="value">
-                    <i class="icon" ng-class="{'signal': $storage.connectionState == 'connected', 'unlink': $storage.connectionState == 'disconnected', 'redo': $storage.connectionState == 'connecting', 'sync': $storage.connectionState == 'reconnecting', 'exclamation triangle': $storage.connectionState == 'slow' }"></i>
+                    <i class="icon" ng-class="{'signal': connectionState == 'connected', 'unlink': connectionState == 'disconnected', 'redo': connectionState == 'connecting', 'sync': connectionState == 'reconnecting', 'exclamation triangle': connectionState == 'slow' }"></i>
                 </div>
-                <div class="label">{{$storage.connectionState}}</div>
+                <div class="label">{{connectionState}}</div>
             </div>
             <div class="ui inverted blue statistic" ng-if="$storage.connections" ng-click="$storage.visible = !$storage.visible">
                 <div class="value">
@@ -97,7 +98,7 @@
         </div>
     </div>
     <div class="ui vertical segment container">
-        <div class="ui inverted dimmer" ng-class="{'active': $storage.connectionState != 'connected'}" style="min-height: 200px">
+        <div class="ui inverted dimmer" ng-class="{'active': connectionState != 'connected'}" style="min-height: 200px">
             <div class="ui text loader">Loading</div>
         </div>
 
@@ -111,7 +112,7 @@
             </p>
         </div>
         <div ng-if="$storage.visible">
-            <div class="ui relaxed divided list">
+            <ul class="ui relaxed divided list">
                 <div class="ui item" ng-repeat="(key, connections) in $storage.groupedConnections">
                     <div class="ui right floated label label-primary" ng-bind="connections.length" ng-click="showConnections = !showConnections"></div>
                     <small>
@@ -125,13 +126,19 @@
                         <cards />
                     </div>
                 </div>
-            </div>
+            </ul>
         </div>
 </body>
 
 <script>
+    var uniqueId = function (prefix, length) {
+        prefix = prefix ? prefix : 'id';
+        length = length ? length : 16;
+        return prefix + '-' + Math.random().toString(36).substr(2, length);
+    };
+
     var proxy;
-    var app = angular.module('app', ['ngStorage'])
+    var app = angular.module('app', ['ngAnimate', 'ngStorage'])
         .directive('cards', function () {
             return {
                 templateUrl: 'cards.html',
@@ -144,14 +151,15 @@
             }
         })
         .run(function ($rootScope, $localStorage) {
-            $localStorage.$reset({
-                visible: true,
+            $localStorage.$default({
+                connectionState: 'disconnected',
                 connections: [],
-                connectionState: 'disconnected'
-            });
+                visible: true
+            })
 
             $rootScope.$storage = $localStorage;
             updateConnections = function (connections) {
+                document.title = "Connections: " + connections.length;
                 $rootScope.$apply(function () {
                     $localStorage.connections = connections;
                     $localStorage.connectionsRefreshDate = new Date();
@@ -187,10 +195,15 @@
                     }
                 }
 
-                proxy.logger = signalR.logConnectionStates(hub, function (o) {
-                    $localStorage.connectionState = o;
+                signalR.onLoading(hub, function (loading) {
+                    $rootScope.loading = loading;
                     $rootScope.$apply();
-                }).start();
+                })
+
+                proxy.logger = signalR.onStateChanged(hub, function (state) {
+                    $rootScope.connectionState = state;
+                    $rootScope.$apply();
+                }, true);
 
                 proxy.force = signalR.forceReconnect(hub, function () {
                     $localStorage.connectionId = hub.id;
@@ -203,7 +216,7 @@
                         message.name = 'reload';
                         proxy.server.sendMessage(c.ConnectionId, message);
                     };
-                }).start();
+                }, true, 3000);
             })
         });
 </script>

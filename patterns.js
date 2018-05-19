@@ -4,16 +4,16 @@ var KeyedSubscriber = function () {
   return {
     fire: function (key, o) {
       if (handlers[key])
-        handlers[key].forEach(function (fn) { fn(o) });
+        handlers[key].forEach(function (fn) { fn(o); });
     },
     on: function (key, fn) {
       if (!handlers[key])
-        handlers[key] = new Array;
+        handlers[key] = [];
 
       handlers[key].push(fn);
     }
-  }
-}
+  };
+};
 
 var Subscriber = function () {
   var handlers = [];
@@ -38,7 +38,7 @@ var Subscriber = function () {
         }
       );
     }
-  }
+  };
 };
 
 var Singleton = (function () {
