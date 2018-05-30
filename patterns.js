@@ -55,5 +55,5 @@ var Singleton = (function () {
       }
       return instance;
     }
-  }
+  };
 })();

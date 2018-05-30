@@ -125,7 +125,7 @@
             $scope.flyTo = function (center) {
                 mapbox.flyTo({
                     center: [center.Longitude, center.Latitude],
-                    zoom: 16
+                    zoom: 17
                 });
             };
 
@@ -176,11 +176,13 @@
                                         "Arial Unicode MS Bold"
                                     ],
                                     //"text-offset": [0, 0.6],
-                                    "text-anchor": "top",
-                                    "text-size": 10
+                                    "text-anchor": "center",
+                                    "text-size": 15
                                 },
                                 "paint": {
-                                    "text-color": '#888888'
+                                    "text-color": '#000',
+                                    "text-halo-color": "#eee",
+                                    "text-halo-width": 10
                                 }
                             });
 
@@ -344,7 +346,7 @@
     mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
     var mapbox = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v10',
+        style: 'mapbox://styles/mapbox/satellite-streets-v10',
         center: [-98.5, 29.43],
         zoom: 10
     });

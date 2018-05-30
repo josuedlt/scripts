@@ -23,23 +23,23 @@ signalR.prototype = {
             });
         });
     },
+    // Get connection state name.
+    getStateName: function (state) {
+        switch (state) {
+            case ($.signalR.connectionState.connecting):
+                return "connecting";
+            case ($.signalR.connectionState.connected):
+                return "connected";
+            case ($.signalR.connectionState.disconnected):
+                return "disconnected";
+            case ($.signalR.connectionState.reconnecting):
+                return "reconnecting";
+        }
+    },
     onStateChanged: function (hub, callback) {
         _this = this;
         _this.stateChangedCallback = callback;
 
-        // Get connection state name.
-        stateName = function (state) {
-            switch (state) {
-                case ($.signalR.connectionState.connecting):
-                    return "connecting";
-                case ($.signalR.connectionState.connected):
-                    return "connected";
-                case ($.signalR.connectionState.disconnected):
-                    return "disconnected";
-                case ($.signalR.connectionState.reconnecting):
-                    return "reconnecting";
-            }
-        }
 
         hub.connectionSlow(function () {
             if (_this.logging) console.log('%s connection slow');
@@ -47,19 +47,19 @@ signalR.prototype = {
 
         hub.stateChanged(function (change) {
             if (_this.logging) {
-                console.log('%s state changed from %s to %s', hub.url, stateName(change.oldState),
-                    stateName(change.newState));
+                console.log('%s state changed from %s to %s', hub.url, _this.getStateName(change.oldState),
+                    _this.getStateName(change.newState));
             }
 
             _this.change = {
-                newState: stateName(change.newState),
-                oldState: stateName(change.oldState)
+                newState: _this.getStateName(change.newState),
+                oldState: _this.getStateName(change.oldState)
             };
             if (_this.stateChangedCallback) _this.stateChangedCallback(_this.change);
         });
 
         _this.change = {
-            newState: stateName(hub.state)
+            newState: _this.getStateName(hub.state)
         };
 
         return {
@@ -76,7 +76,7 @@ signalR.prototype = {
     },
     forceReconnect: function (hub, callback, timeout) {
         _this = this;
-        _this.timeout = timeout ? timeout : 5000;
+        _this.timeout = timeout ? timeout * 1000 : 5000;
         _this.reconnectCallback = callback;
 
         function connect() {
@@ -89,7 +89,7 @@ signalR.prototype = {
 
         hub.disconnected(function () {
             if (_this.tryingToReconnect) {
-                console.log('%s [Force Reconnect] Reconnecting in %d milliseconds...', hub.url, _this.timeout);
+                console.log('%s [Force Reconnect] Reconnecting in %d seconds...', hub.url, _this.timeout / 1000);
                 setTimeout(function () {
                     connect();
                 }, _this.timeout);

@@ -13,9 +13,16 @@
 </head>
 
 <div ng-app="app">
-    <h3 ng-bind="state"></h3>
-    <h4 am-time-ago="$storage.refreshedOn"></h4>
-    <pre ng-bind="$storage.connections | json"></pre>
+    <p>
+        <span ng-bind="state.name"></span>
+        <span am-time-ago="state.date"></span><br />
+        <small ng-bind="state.date | date: 'medium'"></small>
+    </p>
+    <p>
+        synced data <span am-time-ago="refreshedOn"></span><br />
+        <small ng-bind="refreshedOn | date: 'medium'"></small>
+    </p>
+    <pre ng-bind="connections | json"></pre>
 </div>
 
 <script>
@@ -26,13 +33,30 @@
             $rootScope.connections = $localStorage.connections;
 
             $rootScope.$watch('connections', function () {
-                $localStorage.connections = $rootScope.connections;
-                $localStorage.refreshedOn = new Date();
+                $rootScope.refreshedOn = new Date();
+                //$rootScope.$apply();
             });
 
             signalR.connectToHub('https://webservices.nisd.net', function (hub) {
+                hub.forceReconnect = signalR.forceReconnect(hub, function () {
+                    console.log('Started!');
+                }, 1).start();
+
+                // State changed
+                function doOnStateChanged() {
+                    $rootScope.state = {
+                        name: signalR.getStateName(hub.state),
+                        date: new Date()
+                    };
+                    $rootScope.$apply();
+                }
+                doOnStateChanged();
+                hub.logger = signalR.onStateChanged(hub, function () {
+                    doOnStateChanged();
+                })
+
+                // Configure proxy client
                 var proxy = hub.proxies.connectionshub;
-                //Connections Hub - Client
                 proxy.client = {
                     hasConnected: function (c) {
                         if (c.ConnectionId == hub.id) {
@@ -64,16 +88,6 @@
                         $rootScope.$apply();
                     }
                 }
-
-                hub.forceReconnect = signalR.forceReconnect(hub, function() {
-                    console.log('Started!');
-                }, 1500).start();
-                hub.logger = signalR.onStateChanged(hub, function (change) {
-                    $rootScope.state = hub.logger.getState();
-                    $rootScope.$apply();
-                })
-                $rootScope.state = hub.logger.getState();
-                $rootScope.$apply();
 
                 hubConnection = hub;
             });
