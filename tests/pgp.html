@@ -64,15 +64,15 @@
     scanner.addListener('scan', content => {
         scanner.stop();
         pgp.decryptMessage(content).then(data => {
-            console.log(data);
-        })
-    })
+            alert(data);
+        });
+    });
 
     Instascan.Camera.getCameras().then(cameras => {
         scanner.start(cameras[0]);
     }).catch(e => {
-        console.log(e);
-    })
+        alert(e);
+    });
 
    
 </script>
