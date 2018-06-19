@@ -1,0 +1,80 @@
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openpgp/3.0.11/openpgp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        canvas {
+            width: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="preview"></video>
+    <canvas id="qr"></canvas>
+</body>
+
+<script>
+    var pgp = {
+        passphrase: "Business Office Technology Services",
+        publicKey: "-----BEGIN PGP PUBLIC KEY BLOCK-----\r\nVersion: OpenPGP.js v3.0.11\r\nComment: https://openpgpjs.org\r\n\r\n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\nf5ExmRHmgUsgRBs=\r\n=dubx\r\n-----END PGP PUBLIC KEY BLOCK-----\r\n\r\n",
+        privateKey: "-----BEGIN PGP PRIVATE KEY BLOCK-----\r\nVersion: OpenPGP.js v3.0.11\r\nComment: https://openpgpjs.org\r\n\r\n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\r\n=xzsJ\r\n-----END PGP PRIVATE KEY BLOCK-----\r\n",
+        generateKeys() {
+            openpgp.generateKey({
+                userIds: [{ name: 'Josue de la Torre', email: 'josue.delatorre@nisd.net' }],
+                numBits: 4096,
+                passphrase: passphrase
+            }).then(key => {
+                localStorage.setItem('key', JSON.stringify(key));
+            })
+        },
+        async encryptMessage(message) {
+            var encryptedMessage = await openpgp.encrypt({
+                data: message,
+                compression: openpgp.enums.compression.zip,
+                publicKeys: openpgp.key.readArmored(this.publicKey).keys
+            });
+            return encryptedMessage.data;
+        },
+        async decryptMessage(message) {
+            var pk = openpgp.key.readArmored(this.privateKey).keys[0];
+            await pk.decrypt(this.passphrase);
+
+            var decryptedMessage = await openpgp.decrypt({
+                message: openpgp.message.readArmored(message),
+                privateKeys: [pk]
+            })
+            return decryptedMessage.data;
+        }
+    }
+
+    //Encrypt a message with public key 
+    // pgp.encryptMessage("Hello World").then(data => {
+    //     var qr = new QRious({
+    //         element: document.getElementById('qr'),
+    //         size: 300,
+    //         value: data
+    //     });
+    // });
+
+    var scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+    scanner.addListener('scan', content => {
+        scanner.stop();
+        pgp.decryptMessage(content).then(data => {
+            console.log(data);
+        })
+    })
+
+    Instascan.Camera.getCameras().then(cameras => {
+        scanner.start(cameras[0]);
+    }).catch(e => {
+        console.log(e);
+    })
+
+   
+</script>
+
+</html>
