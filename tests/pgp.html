@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/openpgp/3.0.11/openpgp.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
@@ -13,8 +14,12 @@
 </head>
 
 <body>
+    <div>
+        <button id="encode">encode</button>
+        <button id="decode">decode</button>
+    </div>
+    <img id="qr"></img>
     <video id="preview"></video>
-    <canvas id="qr"></canvas>
 </body>
 
 <script>
@@ -50,31 +55,46 @@
             return decryptedMessage.data;
         }
     }
+</script>
+<script>
+    var tests = {
+        encodeToQR(message) {
+            pgp.encryptMessage(message).then(data => {
+                var qr = new QRious({
+                    element: document.getElementById('qr'),
+                    size: 400,
+                    value: data
+                });
+            });
+        },
+        decodeQR() {
+            var scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+            scanner.addListener('scan', content => {
+                scanner.stop();
+                pgp.decryptMessage(content).then(data => {
+                    alert(data);
+                });
+            });
 
-    //Encrypt a message with public key 
-    // pgp.encryptMessage("Hello World").then(data => {
-    //     var qr = new QRious({
-    //         element: document.getElementById('qr'),
-    //         size: 300,
-    //         value: data
-    //     });
-    // });
+            Instascan.Camera.getCameras().then(cameras => {
+                scanner.start(cameras[cameras.length - 1]);
+            }).catch(e => {
+                alert(e);
+            });
+        }
+    }
+</script>
+<script>
+    $('#encode').click(e => {
+        e.preventDefault();
+        var message = prompt('Please enter a message.');
+        if (message != null) tests.encodeToQR(message);
+    })
 
-    var scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
-    scanner.addListener('scan', content => {
-        scanner.stop();
-        pgp.decryptMessage(content).then(data => {
-            alert(data);
-        });
-    });
-
-    Instascan.Camera.getCameras().then(cameras => {
-        scanner.start(cameras[0]);
-    }).catch(e => {
-        alert(e);
-    });
-
-   
+    $('#decode').click(e => {
+        e.preventDefault();
+        tests.decodeQR();
+    })
 </script>
 
 </html>
