@@ -17,10 +17,13 @@ signalR.prototype = {
     },
 
     connectToHub: function (url, callback) {
-        return this.connectToHubs([url])
-            .then(function (hubs) {
-                callback(hubs[0]);
-            });
+        var _this = this;
+        return new Promise( function(resolve){
+            _this.connectToHubs([url], function (hubs) {
+                if (callback) callback(hubs[0]);
+                resolve(hubs[0]);
+            })    
+        })
     },
 
     connectToHubs: function (urls, callback) {

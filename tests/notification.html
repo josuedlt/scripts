@@ -1,17 +1,17 @@
 <script>
-    Notification.requestPermission().then(response => {
-        if (response == 'granted') {
-            var n = new Notification("Hello from javascript!");
-        }
-    });
+   if (window.Notification && Notification.permission !== "denied") {
+        Notification.requestPermission((status) => {
+            sendNotification();
+        })
+    }
 
-    if (window.Notification && Notification.permission !== "denied") {
-	Notification.requestPermission((status) => {
-    // status is "granted", if accepted by user
-		var n = new Notification('Title', {
-			body: 'I am the body text!',
-			icon: '/path/to/icon.png' // optional
-		})
-	})
-}
+    function sendNotification() {
+        var i = 0;
+        setInterval(() => {
+            i++;
+            var n = new Notification("Notification " + i, { 
+                body: new Date()
+            });
+        }, 3000)
+    }
 </script>

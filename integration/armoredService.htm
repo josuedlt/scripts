@@ -1,0 +1,192 @@
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+
+<script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
+<script type="text/javascript" src="https://webservices.nisd.net/scripts/jdlt.geolocation.js"></script>
+<script type="text/javascript" src="../signalr/jdlt.signalR.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/jtblin/angular-chart.js/master/angular-chart.js"></script>
+
+
+<body ng-app="app">
+    <form ng-submit="doLogin(username, password)">
+        <input ng-model="username" placeholder="username" />
+        <input ng-model="password" placeholder="password" />
+        <button type="submit">Submit</button>
+    </form>
+    <pre ng-bind="$storage.user.Username"></pre>
+    <div ng-show="false">
+        <button type="button" ng-click="getUserInfo()">Get User Info</button>
+        <pre ng-bind="$storage.token"></pre>
+    </div>
+    <div ng-controller="controller">
+        <canvas id="bar" class="chart chart-doughnut" chart-data="data($storage.bags)" chart-labels="labels($storage.bags)" chart-series="series($storage.bags)"></canvas>
+        Bags to collect: {{ bagCount }}
+        <!-- <div ng-repeat="location in locations">
+            <div ng-bind="location.Name + ' ' + location.bags.length" ng-click="show = !show"></div>
+            <pre ng-if="show" ng-bind="location | json"></pre>
+        </div> -->
+    </div>
+    <button ng-click="getSubmittedDepositBags()">Submitted</button>
+    <button ng-click="getUnpreparedDepositBags()">Unprepared</button>
+    <pre ng-bind="'bags: ' + $storage.bags.length"></pre>
+
+
+    <script>
+        var proxy = null;
+        var app = angular.module('app', ['angular.filter', 'chart.js', 'ngStorage'])
+            .controller('controller', function ($scope, armoredService) {
+                var $storage = $scope.$storage;
+                armoredService.getLocations().then((locations) => {
+
+                    // Assign bags to locations...
+                    $scope.locations = locations = _(locations)
+                        .orderBy('Name')
+                        .each((l) => {
+                            l.bags = _.filter($storage.bags, (b) => {
+                                return b.Location == l.Code + ' ' + l.Name && b.ReceiptedDate == null;
+                            })
+                        });
+
+                    geolocation
+                        .on('position', (p) => {
+                            _.each(locations, (l) => {
+                                if (geolocation) {
+                                    l.Distance = geolocation.getDistance(p.latitude, p.longitude, l.Latitude, l.Longitude);
+                                }
+                            });
+                            _.orderBy(locations, 'Distance');
+                            console.log(p);
+                        }).start();
+
+                    $scope.labels = _.map(locations, 'Name');
+                    $scope.data = _.map(locations, (l) => { return l.bags.length; });
+                    $scope.bagCount = _.reduce(locations, (r, v) => {
+                        return r += v.bags.length;
+                    }, 0);
+                });
+            })
+            .service('signalR', function () {
+                var handlers = {};
+
+                function fire(key, o) {
+                    if (handlers[key])
+                        handlers[key].forEach(function (fn) { fn(o); });
+                }
+
+                signalR.connectToHub('https://integration.nisd.net')
+                    .then((hub) => {
+                        proxy = hub.proxies.armoredservicehub;
+                        proxy.client = {
+                            refresh() {
+                                fire("refresh");
+                            },
+                            depositBagCreated(data) {
+                                fire("depositBagCreated", data);
+                            }
+                            , depositBagUpdated(data) {
+                                fire("depositBagUpdated", data);
+                            }
+                            , depositBagDeleted(data) {
+                                fire("depositBagDeleted", data);
+                            }
+                            , hostBagCreated(data) {
+                                fire("hostBagCreated", data);
+                            }
+                            , hostBagUpdated(data) {
+                                fire("hostBagUpdated", data);
+                            }
+                            , hostBagDeleted(data) {
+                                fire("hostBagDeleted", data);
+                            }
+                        };
+                        proxy.connection.start().done(() => {
+                            fire("connected", proxy);
+                        });
+                    });
+
+                return {
+                    on: function (key, fn) {
+                        if (!handlers[key]) handlers[key] = [];
+                        handlers[key].push(fn);
+                    }
+                };
+            })
+            .service('armoredService', function ($q) {
+                var baseUrl = 'https://integration.nisd.net/';
+                var api = baseUrl + 'ArmoredService/DepositBags/';
+
+                $.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + $storage.token);
+                    }
+                });
+
+                return {
+                    // Authorization Calls
+                    getUserToken: function (username, password) {
+                        return $q((resolve, reject) => {
+                            $.post(baseUrl + 'api/User/Token', JSON.stringify({ username, password })).then(resolve, reject);
+                        })
+                    },
+                    getUserInfo: function () {
+                        return $q((resolve, reject) => {
+                            $.get(baseUrl + '/api/User/Info').then(resolve, reject)
+                        })
+                    },
+                    // API Calls 
+                    getLocations: function () {
+                        return $q((resolve, reject) => {
+                            $.get(api + 'GetLocations').then(resolve, reject);
+                        })
+                    },
+                    getSubmittedDepositBags: function () {
+                        return $q((resolve, reject) => {
+                            $.get(api + 'GetSubmittedDepositBags').then(resolve, reject);
+                        })
+                    },
+                    getUnpreparedDepositBags: function () {
+                        return $q((resolve, reject) => {
+                            $.get(api + 'getUnpreparedDepositBags').then(resolve, reject);
+                        })
+                    }
+                }
+            })
+            .run(function ($rootScope, $localStorage, armoredService) {
+                $storage = $rootScope.$storage = $localStorage;
+
+                $rootScope.doLogin = (username, password) => {
+                    armoredService.getUserToken(username, password)
+                        .then((token) => {
+                            $storage.token = token.AccessToken;
+                            $rootScope.getUserInfo()
+                        });
+                }
+
+                $rootScope.getUserInfo = function () {
+                    armoredService.getUserInfo()
+                        .then((user) => {
+                            $storage.user = user;
+                        })
+                }
+
+                $rootScope.getSubmittedDepositBags = function () {
+                    armoredService.getSubmittedDepositBags()
+                        .then((bags) => {
+                            $storage.bags = bags;
+                        })
+                }
+
+                $rootScope.getUnpreparedDepositBags = function () {
+                    armoredService.getUnpreparedDepositBags()
+                        .then((bags) => {
+                            $storage.bags = bags;
+                        })
+                }
+            })
+    </script>
