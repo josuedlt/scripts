@@ -19,11 +19,13 @@
     <style>
         #position {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 0px;
+            left: 0px;
+            right: 0px;
             z-index: 1;
-            color: #000;
-            font-size: 1.2em;
+            color: #fff;
+            background-color: #0008;
+            margin: 10px;
         }
     </style>
 </head>
@@ -104,8 +106,8 @@
 
                 return {
                     accuracy: +p.coords.accuracy.toFixed(2),
-                    latitude: +p.coords.latitude.toFixed(4),
-                    longitude: +p.coords.longitude.toFixed(4),
+                    latitude: +p.coords.latitude.toFixed(6),
+                    longitude: +p.coords.longitude.toFixed(6),
                     timestamp: Date(p.timestamp)
                 }
             };
