@@ -1,0 +1,115 @@
+<html>
+<script src="https://cdn.jsdelivr.net/npm/angular@1.7.2/angular.min.js"></script>
+<script src="https://cdn.rawgit.com/ninjatronic/ngGeolocation/dba4346b/ngGeolocation.js"></script>
+
+<!-- Mapbox GL JS -->
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/angular-filter@0.5.17/dist/angular-filter.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script> -->
+
+
+<style>
+    #position {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1;
+    }
+</style>
+
+<body ng-app="myApp" style="margin: 0px;">
+    <div id="map" style="height: calc(100vh)"></div>
+    <pre id="position" ng-bind="flyTo(position) | json"></pre>
+</body>
+<script>
+    angular
+        .module('myApp', ['ngGeolocation'])
+        .run(function ($geolocation, $rootScope) {
+            mapboxgl.accessToken =
+                'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+
+            var mapbox = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v10',
+                center: [-98.5, 29.43],
+                zoom: 10
+            });
+
+            $rootScope.flyTo = function (p) {
+                if (typeof p.coords === 'undefined') return;
+
+                geo_locations = {
+                    'type': 'FeatureCollection',
+                    'features': [{
+                        'type': "Feature",
+                        'properties': {
+                            //'marker-symbol': 'school',
+                            'title': 'here'
+                        },
+                        'geometry': {
+                            'type': "Point",
+                            'coordinates': [p.coords.longitude, p.coords.latitude]
+                        }
+                    }]
+                };
+
+                // Add locations as a source
+                if (!mapbox.getSource('markers'))
+                    mapbox.addSource('markers', {
+                        'type': 'geojson',
+                        'data': geo_locations
+                    });
+                else
+                    mapbox.getSource('markers').setData(geo_locations);
+
+                if (!mapbox.getLayer('markers-layer')) {
+                    mapbox.addLayer({
+                        "id": 'markers-layer',
+                        "type": 'symbol',
+                        "source": 'markers',
+                        "layout": {
+                            "icon-image": "{marker-symbol}-15",
+                            "icon-size": 1,
+                            "text-field": "{title}",
+                            "text-font": [
+                                "Open Sans Semibold",
+                                "Arial Unicode MS Bold"
+                            ],
+                            //"text-offset": [0, 0.6],
+                            "text-anchor": "center",
+                            "text-size": 15
+                        },
+                        "paint": {
+                            "text-color": '#000',
+                            "text-halo-color": "#eee",
+                            "text-halo-width": 10
+                        }
+                    });
+                }
+
+                mapbox.flyTo({
+                    center: [p.coords.longitude, p.coords.latitude],
+                    zoom: 17
+                });
+
+                return {
+                    accuracy: +p.coords.accuracy.toFixed(2),
+                    latitude: +p.coords.latitude.toFixed(4),
+                    longitude: +p.coords.longitude.toFixed(4),
+                    timestamp: Date(p.timestamp)
+                }
+            };
+
+            $geolocation.watchPosition({
+                timeout: 60000,
+                maximumAge: 250,
+                enableHighAccuracy: true
+            });
+            $rootScope.position = $geolocation.position; // this is regularly updated
+        })
+</script>
+
+</html>
