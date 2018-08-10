@@ -10,8 +10,14 @@
 </head>
 
 <body ng-app="app" u2f>
+    <p>
     <button ng-click="register()">Register</button>
     <button ng-click="sign()">Sign</button>
+    </p>
+    <p>
+        <input type="text" ng-model="b" />
+        <button ng-click="b64decode(b)">Decode</button>
+    </p>
     <pre ng-bind="data | json"></pre>
 </body>
 
@@ -55,6 +61,17 @@
 
                             window.REG_DATA = ok;
                         });
+                    }
+
+                    scope.b64decode = function (b) {
+                        // websafe base64 to normal base64
+                        var padding = ((4 - b.length % 4) % 4);
+                        for (var i = 0; i < padding; i++) {
+                            b += '=';
+                        }
+                        b = b.replace(/_/g, '/').replace(/-/g, '+');
+
+                        return JSON.parse(atob(b));
                     }
 
                     scope.sign = function () {
