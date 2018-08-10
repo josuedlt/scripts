@@ -20,6 +20,7 @@
         .directive('u2f', () => {
             return {
                 link: (scope) => {
+
                     function make_chal() {
                         var chal = new Uint8Array(32);
 
@@ -29,14 +30,14 @@
                         return chal;
                     };
 
+                    var req = {
+                        'version': 'U2F_V2',
+                        'challenge': make_chal(),
+                        'appId': window.location.origin
+                    };
+
                     scope.data = {};
                     scope.register = function () {
-                        var req = {
-                            'version': 'U2F_V2',
-                            'challenge': make_chal(),
-                            'appId': window.location.origin
-                        };
-
                         window.u2f.register([req], [], function (data) {
                             if (data.errorCode) {
                                 console.error("U2F Register Failed", data);
@@ -45,27 +46,20 @@
                             alert("U2F Register Success");
                             console.log("U2F Register Success", data);
                             scope.data.register = data;
-
-                            // see ashtuchkin-u2f.js
-                            var ok = ASH.checkRegistration(req, data);
-                            console.log("U2F Register Decode", ok);
-                            scope.data.ok = ok;
                             scope.$apply();
-
-                            window.REG_DATA = ok;
                         });
                     }
 
                     scope.sign = function () {
-                        if (!window.REG_DATA) return;
-
-                        var req = {
-                            'version': 'U2F_V2',
-                            'challenge': make_chal(),
-                            'keyHandle': window.REG_DATA.keyHandle,
-                            'appId': window.location.origin
+                        if (!window.REG_DATA) {
+                            // see ashtuchkin-u2f.js
+                            var check = ASH.checkRegistration(scope.data.register);
+                            console.log("U2F Register Decode", check);
+                            scope.data.check = check;
+                            window.REG_DATA = check;
                         };
 
+                        req.keyHandle = window.REG_DATA.keyHandle;
                         window.u2f.sign([req], function (data) {
                             if (data.errorCode) {
                                 console.error("U2F Sign Failed", data);
