@@ -49,6 +49,7 @@
                             var ok = ASH.checkRegistration(req, data);
                             console.log("U2F Register Decode", ok);
                             scope.data.register.ok
+                            scope.$apply();
 
                             window.REG_DATA = ok;
                         });
@@ -72,6 +73,7 @@
                             alert("U2F Sign Success");
                             console.log("U2F Sign Success", data);
                             scope.data.sign = data;
+                            scope.$apply();
                         });
                     }
                 }
