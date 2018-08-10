@@ -38,12 +38,14 @@
                                 console.error("U2F Register Failed", data);
                                 return;
                             }
-                            console.log("U2F Register Success", data);
                             alert("U2F Register Success");
+                            console.log("U2F Register Success", data);
+                            scope.data.register = data;
 
                             // see ashtuchkin-u2f.js
                             var ok = ASH.checkRegistration(req, data);
                             console.log("U2F Register Decode", ok);
+                            scope.data.register.ok
 
                             window.REG_DATA = ok;
                         });
@@ -64,8 +66,9 @@
                                 console.error("U2F Sign Failed", data);
                                 return;
                             }
-                            console.log("U2F Sign Success", data);
                             alert("U2F Sign Success");
+                            console.log("U2F Sign Success", data);
+                            scope.data.sign = data;
                         });
                     }
                 }
