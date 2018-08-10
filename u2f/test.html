@@ -1,0 +1,46 @@
+<script src="u2f-api.js"></script>
+<script>
+    function make_chal() {
+        var chal = new Uint8Array(32);
+
+        window.crypto.getRandomValues(chal);
+        chal = btoa(String.fromCharCode.apply(null, chal)).replace(/(\/|\+)/g, 'A');
+
+        return chal;
+    }
+
+    function register() {
+        var req = {
+            'version': 'U2F_V2',
+            'challenge': make_chal(),
+            'appId': window.location.origin
+        };
+
+        window.u2f.register([req], [], function (data) {
+            if (data.errorCode) {
+                console.error("U2F Register Failed: ", data);
+                return;
+            }
+            console.log("Success", data);
+            alert("Register: Success!");
+        });
+    }
+
+    function sign() {
+        var req = {
+            'version': 'U2F_V2',
+            'challenge': make_chal(),
+            'keyHandle': window.REG_DATA.keyHandle,
+            'appId': window.location.origin
+        };
+
+        window.u2f.sign([req], function (data) {
+            if (data.errorCode) {
+                console.error("U2F Sign Failed: ", data);
+                return;
+            }
+            console.log("Success", data);
+            alert("Sign: Success!");
+        });
+    }
+</script>
