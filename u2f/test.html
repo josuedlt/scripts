@@ -49,7 +49,7 @@
                             // see ashtuchkin-u2f.js
                             var ok = ASH.checkRegistration(req, data);
                             console.log("U2F Register Decode", ok);
-                            scope.data.register.ok = ok;
+                            scope.data.ok = ok;
                             scope.$apply();
 
                             window.REG_DATA = ok;
