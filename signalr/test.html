@@ -2,94 +2,98 @@
 <script src="jquery.signalR-2.2.2.min.js"></script>
 <script src="jdlt.signalR.js?n=1"></script>
 <script>
-    // IntegrationConnectionsHubHandler = function (hub) {
-    //     proxy = hub.proxies.connectionshub;
-    //     proxy.client = {
-    //         receivedEvent: function (event) {
-    //             console.log(hub.url, event)
-    //         },
-    //         reload: function () {
-    //             location.reload(true);
-    //         },
-    //         redirect: function (path) {
-    //             location.href = path;
-    //         },
-    //         notify: function (message) {
-    //             alert(message);
-    //         },
-    //         speak: function (phrase) {
-    //             if (window.SpeechSynthesisUtterance != undefined) {
-    //                 var utterance = new SpeechSynthesisUtterance(phrase);
-    //                 utterance.lang = "en-us";
-    //                 window.speechSynthesis.speak(utterance);
-    //             }
-    //         }
-    //     }
-    //     return proxy;
-    // }
+    IntegrationConnectionsHubHandler = function (hub) {
+        proxy = hub.proxies.connectionshub;
+        proxy.client = {
+            receivedEvent: function (event) {
+                console.log(hub.url, event)
+            },
+            reload: function () {
+                location.reload(true);
+            },
+            redirect: function (path) {
+                location.href = path;
+            },
+            notify: function (message) {
+                alert(message);
+            },
+            speak: function (phrase) {
+                if (window.SpeechSynthesisUtterance != undefined) {
+                    var utterance = new SpeechSynthesisUtterance(phrase);
+                    utterance.lang = "en-us";
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+        }
+        return proxy;
+    }
 
-    // WebServiceConnectionsHubHandler = function (hub) {
-    //     proxy = hub.proxies.connectionshub;
-    //     // proxy.client = {
-    //     //     hasConnected: function (c) {
-    //     //         console.log(hub.url, 'connected', c);
-    //     //     },
-    //     //     hasDisconnected: function (c) {
-    //     //         console.log(hub.url, 'disconnected', c);
-    //     //     },
-    //     //     hasUpdatedPosition: function (c, p) {
-    //     //         console.log(hub.url, 'position', c, p);
-    //     //     },
-    //     //     newMessage: (message) => {
-    //     //         switch (message.name) {
-    //     //             case "log":
-    //     //                 console.log(message.name, message.value);
-    //     //                 break;
-    //     //             case "redirect":
-    //     //                 location.href = message.value;
-    //     //                 break;
-    //     //             case "reload":
-    //     //                 location.reload(true);
-    //     //                 break;
-    //     //             case "locate":
-    //     //                 if (typeof geolocation != 'undefined')
-    //     //                     geolocation.start();
-    //     //                 else {
-    //     //                     ws_hub.server.sendMessage(message.sender, {
-    //     //                         name: 'alert',
-    //     //                         value: 'Geolocation service is missing.'
-    //     //                     });
-    //     //                 }
-    //     //                 break;
-    //     //             case "ipinfo":
-    //     //                 $.get("https://ipinfo.io", (ipinfo) => {
-    //     //                     ws_hub.server.sendMessage(message.sender, {
-    //     //                         name: 'alert',
-    //     //                         value: ipinfo
-    //     //                     });
-    //     //                 }, "jsonp");
-    //     //                 break;
-    //     //             case "alert":
-    //     //                 alert(JSON.stringify(message, null, ' '));
-    //     //                 break;
-    //     //         }
-    //     //     }
-    //     // }
-    //     return proxy;
-    // }
+    WebServiceConnectionsHubHandler = function (hub) {
+        proxy = hub.proxies.connectionshub;
+        proxy.client = {
+            hasConnected: function (c) {
+                console.log(hub.url, 'connected', c);
+            },
+            hasDisconnected: function (c) {
+                console.log(hub.url, 'disconnected', c);
+            },
+            hasUpdatedPosition: function (c, p) {
+                console.log(hub.url, 'position', c, p);
+            },
+            newMessage: (message) => {
+                switch (message.name) {
+                    case "log":
+                        console.log(message.name, message.value);
+                        break;
+                    case "redirect":
+                        location.href = message.value;
+                        break;
+                    case "reload":
+                        location.reload(true);
+                        break;
+                    case "locate":
+                        if (typeof geolocation != 'undefined')
+                            geolocation.start();
+                        else {
+                            ws_hub.server.sendMessage(message.sender, {
+                                name: 'alert',
+                                value: 'Geolocation service is missing.'
+                            });
+                        }
+                        break;
+                    case "ipinfo":
+                        $.get("https://ipinfo.io", (ipinfo) => {
+                            ws_hub.server.sendMessage(message.sender, {
+                                name: 'alert',
+                                value: ipinfo
+                            });
+                        }, "jsonp");
+                        break;
+                    case "alert":
+                        alert(JSON.stringify(message, null, ' '));
+                        break;
+                }
+            }
+        }
+        return proxy;
+    }
 
     // ArmoredServiceConnectionsHubHandler = function (hub) {
     //     var proxy = hub.proxies.armoredservicehub;
     //     return proxy;
     // }
 
+    var proxies = [];
     var hubs = [
-        'https://webservices.nisd.net',
         'https://integration.nisd.net',
+        'https://webservices.nisd.net',
     ];
     signalR.connectToHubs(hubs)
         .then(function (h) {
-            hubs = h;
+            proxies['in-connections'] = new IntegrationConnectionsHubHandler(h[0]);
+            proxies["ws-connections"] = new WebServiceConnectionsHubHandler(h[1]);
+            h[0].start();
+            h[1].start();
         });
 
     // signalR.connectToHub('https://webservices.nisd.net', function (hub) {

@@ -23,10 +23,18 @@
             }
             console.log("Success", data);
             alert("Register: Success!");
+
+          // see ashtuchkin-u2f.js
+          var ok = ASH.checkRegistration(req, data);
+          console.log("decoded", ok);
+
+          window.REG_DATA = ok;
         });
     }
 
     function sign() {
+        if(!window.REG_DATA) return;
+
         var req = {
             'version': 'U2F_V2',
             'challenge': make_chal(),
