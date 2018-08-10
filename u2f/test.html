@@ -35,15 +35,15 @@
 
                         window.u2f.register([req], [], function (data) {
                             if (data.errorCode) {
-                                console.error("U2F Register Failed: ", data);
+                                console.error("U2F Register Failed", data);
                                 return;
                             }
-                            console.log("Success", data);
-                            alert("Register: Success!");
+                            console.log("U2F Register Success", data);
+                            alert("U2F Register Success");
 
                             // see ashtuchkin-u2f.js
                             var ok = ASH.checkRegistration(req, data);
-                            console.log("decoded", ok);
+                            console.log("U2F Register Decode", ok);
 
                             window.REG_DATA = ok;
                         });
@@ -61,11 +61,11 @@
 
                         window.u2f.sign([req], function (data) {
                             if (data.errorCode) {
-                                console.error("U2F Sign Failed: ", data);
+                                console.error("U2F Sign Failed", data);
                                 return;
                             }
-                            console.log("Success", data);
-                            alert("Sign: Success!");
+                            console.log("U2F Sign Success", data);
+                            alert("U2F Sign Success");
                         });
                     }
                 }
