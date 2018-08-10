@@ -11,8 +11,8 @@
 
 <body ng-app="app" u2f>
     <p>
-    <button ng-click="register()">Register</button>
-    <button ng-click="sign()">Sign</button>
+        <button ng-click="register()">Register</button>
+        <button ng-click="sign()">Sign</button>
     </p>
     <p>
         <input type="text" ng-model="b" />
@@ -71,7 +71,9 @@
                         }
                         b = b.replace(/_/g, '/').replace(/-/g, '+');
 
-                        return JSON.parse(atob(b));
+                        var decode = JSON.parse(atob(b));
+                        scope.data.decode = decode;
+                        scope.$apply();
                     }
 
                     scope.sign = function () {
