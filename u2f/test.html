@@ -15,8 +15,9 @@
         <button ng-click="sign()">Sign</button>
     </p>
     <p>
-        <input type="text" ng-model="b" />
+        <textarea type="text" ng-model="b"></textarea>
         <button ng-click="b64decode(b)">Decode</button>
+        <pre ng-bind="decode | json"></pre>
     </p>
     <pre ng-bind="data | json"></pre>
 </body>
@@ -39,7 +40,9 @@
                     var req = {
                         'version': 'U2F_V2',
                         'challenge': make_chal(),
-                        'appId': window.location.origin
+                        'appId': window.location.origin,
+                        'username': 'Josue de la Torre',
+                        'employeeId': 57030
                     };
 
                     scope.data = {};
@@ -72,7 +75,7 @@
                         b = b.replace(/_/g, '/').replace(/-/g, '+');
 
                         var decode = JSON.parse(atob(b));
-                        scope.data.decode = decode;
+                        scope.decode = decode;
                         scope.$apply();
                     }
 
