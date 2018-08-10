@@ -46,18 +46,19 @@
                             alert("U2F Register Success");
                             console.log("U2F Register Success", data);
                             scope.data.register = data;
+
+                            // see ashtuchkin-u2f.js
+                            var ok = ASH.checkRegistration(req, data);
+                            console.log("U2F Register Decode", ok);
+                            scope.data.ok = ok;
                             scope.$apply();
+
+                            window.REG_DATA = ok;
                         });
                     }
 
                     scope.sign = function () {
-                        if (!window.REG_DATA) {
-                            // see ashtuchkin-u2f.js
-                            var check = ASH.checkRegistration(scope.data.register);
-                            console.log("U2F Register Decode", check);
-                            scope.data.check = check;
-                            window.REG_DATA = check;
-                        };
+                        if (!window.REG_DATA) return;
 
                         req.keyHandle = window.REG_DATA.keyHandle;
                         window.u2f.sign([req], function (data) {
