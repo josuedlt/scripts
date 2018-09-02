@@ -1,4 +1,3 @@
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
 
@@ -9,66 +8,184 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
-<script type="text/javascript" src="https://cdn.rawgit.com/jtblin/angular-chart.js/master/angular-chart.js"></script>
 
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/accounting.js/0.4.1/accounting.min.js"></script>
+
+<!-- Mapbox GL JS -->
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+
+<head>
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
 
 <body ng-app="app">
-    <form ng-submit="doLogin(username, password)">
-        <input ng-model="username" placeholder="username" />
-        <input ng-model="password" placeholder="password" />
+    <form ng-submit="doLogin(username, password)" ng-if="!$storage.token">
+        <input ng-model="username" placeholder="username" type="text" />
+        <input ng-model="password" placeholder="password" type="password" />
         <button type="submit">Submit</button>
     </form>
-    <pre ng-bind="$storage.user.Username"></pre>
-    <div ng-show="false">
-        <button type="button" ng-click="getUserInfo()">Get User Info</button>
-        <pre ng-bind="$storage.token"></pre>
+    <div mapbox ng-if="$storage.token">
+        <div id="map"></div>
+        <div style="position: absolute; top: 4px; left: 4px; z-index: 999">
+            <button type="reset" ng-click="$storage.token = null">Logout</button>
+            <button type="submit" ng-click="fitBounds(locations)">Fit Bounds</button>
+            <div ng-bind="'Pending bags: ' + pendingDepositBags.length"></div>
+            <div ng-bind="'Collected bags: ' + collectedDepositBags.length"></div>
+        </div>
     </div>
-    <div ng-controller="controller">
-        <canvas id="bar" class="chart chart-doughnut" chart-data="data($storage.bags)" chart-labels="labels($storage.bags)" chart-series="series($storage.bags)"></canvas>
-        Bags to collect: {{ bagCount }}
-        <!-- <div ng-repeat="location in locations">
+    <div ng-controller="controller" ng-if='$scope.token'>
+        <div ng-repeat="location in locations">
             <div ng-bind="location.Name + ' ' + location.bags.length" ng-click="show = !show"></div>
             <pre ng-if="show" ng-bind="location | json"></pre>
-        </div> -->
+        </div>
     </div>
-    <button ng-click="getSubmittedDepositBags()">Submitted</button>
-    <button ng-click="getUnpreparedDepositBags()">Unprepared</button>
-    <pre ng-bind="'bags: ' + $storage.bags.length"></pre>
-
 
     <script>
         var proxy = null;
-        var app = angular.module('app', ['angular.filter', 'chart.js', 'ngStorage'])
-            .controller('controller', function ($scope, armoredService) {
-                var $storage = $scope.$storage;
-                armoredService.getLocations().then((locations) => {
+        var app = angular.module('app', ['angular.filter', 'ngStorage'])
+            .directive('mapbox', () => {
+                return {
+                    controller: ($scope, armoredService, signalR) => {
+                        mapboxgl.accessToken =
+                            'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
 
-                    // Assign bags to locations...
-                    $scope.locations = locations = _(locations)
-                        .orderBy('Name')
-                        .each((l) => {
-                            l.bags = _.filter($storage.bags, (b) => {
-                                return b.Location == l.Code + ' ' + l.Name && b.ReceiptedDate == null;
-                            })
+                        var mapbox = new mapboxgl.Map({
+                            container: 'map',
+                            style: 'mapbox://styles/mapbox/streets-v10/',
+                            center: [-98.5, 29.43],
+                            zoom: 10
                         });
 
-                    geolocation
-                        .on('position', (p) => {
-                            _.each(locations, (l) => {
-                                if (geolocation) {
-                                    l.Distance = geolocation.getDistance(p.latitude, p.longitude, l.Latitude, l.Longitude);
-                                }
-                            });
-                            _.orderBy(locations, 'Distance');
-                            console.log(p);
-                        }).start();
+                        $scope.sumBags = function (bags) {
+                            return _.reduce(bags, function (sum, bag) {
+                                return sum + accounting.parse(bag.TotalAmount);
+                            }, 0)
+                        }
 
-                    $scope.labels = _.map(locations, 'Name');
-                    $scope.data = _.map(locations, (l) => { return l.bags.length; });
-                    $scope.bagCount = _.reduce(locations, (r, v) => {
-                        return r += v.bags.length;
-                    }, 0);
-                });
+                        $scope.fitBounds = function (locations) {
+                            // Fit markers to view
+                            var latitudes = _.map(locations, 'Latitude');
+                            var longitudes = _.map(locations, 'Longitude');
+                            mapbox.fitBounds([[_.min(longitudes), _.min(latitudes)], [_.max(longitudes), _.max(latitudes)]], { padding: 40 });
+                        }
+
+                        function loadLocations(locations, sourceName, textSize = 10) {
+                            geo_locations = {
+                                'type': 'FeatureCollection',
+                                'features': _.map(locations, function (l) {
+                                    return {
+                                        'type': "Feature",
+                                        'properties': {
+                                            'color': '#000',
+                                            //'marker-symbol': 'school',
+                                            'title': accounting.formatMoney($scope.sumBags(l.pendingDepositBags))
+                                        },
+                                        'geometry': {
+                                            'type': "Point",
+                                            'coordinates': [l.Longitude, l.Latitude]
+                                        }
+                                    }
+                                })
+                            };
+
+                            // Add locations as a source
+                            if (!mapbox.getSource(sourceName))
+                                mapbox.addSource(sourceName, {
+                                    'type': 'geojson',
+                                    'data': geo_locations
+                                });
+                            else
+                                mapbox.getSource(sourceName).setData(geo_locations);
+
+                            // Add marker layer with new source
+                            if (!mapbox.getLayer(sourceName + '-layer')) {
+                                mapbox.addLayer({
+                                    "id": sourceName + '-layer',
+                                    "type": 'symbol',
+                                    "source": sourceName,
+                                    "layout": {
+                                        "icon-image": "{marker-symbol}-15",
+                                        "icon-size": 1,
+                                        "text-field": "{title}",
+                                        "text-font": [
+                                            "Open Sans Semibold",
+                                            "Arial Unicode MS Bold"
+                                        ],
+                                        //"text-offset": [0, 0.6],
+                                        "text-anchor": "center",
+                                        "text-size": textSize
+                                    },
+                                    "paint": {
+                                        "text-color": '#000',
+                                        "text-halo-color": "#eee",
+                                        "text-halo-width": 3,
+                                    }
+                                });
+
+                            }
+
+                            //Trap click events on marker layer
+                            mapbox.on('click', sourceName + '-layer', function (e) {
+
+                                mapbox.flyTo({
+                                    center: e.features[0].geometry.coordinates,
+                                    zoom: 16
+                                });
+                            });
+
+                        }
+
+                        function loadPendingDepositBags(locations) {
+                            armoredService.getPendingDepositBags()
+                                .then((bags => {
+                                    $scope.pendingDepositBags = bags;
+
+                                    // Assign bags to locations...
+                                    $scope.locations = locations = _(locations)
+                                        .each((l) => {
+                                            l.pendingDepositBags = _.filter(bags, (b) => { return b.Location == l.Code + ' ' + l.Name; })
+                                        });
+
+                                    loadLocations(_.filter(locations, (l) => { return (0 < $scope.sumBags(l.pendingDepositBags) && $scope.sumBags(l.pendingDepositBags) <= 1000) }), 'min', 10);
+                                    loadLocations(_.filter(locations, (l) => { return (1000 < $scope.sumBags(l.pendingDepositBags) && $scope.sumBags(l.pendingDepositBags) <= 5000) }), 'mid', 12);
+                                    loadLocations(_.filter(locations, (l) => { return (5000 < $scope.sumBags(l.pendingDepositBags)) }), 'max', 15);
+                                }))
+
+                        }
+
+                        function loadCollectedDepositBags() {
+                            armoredService.getCollectedDepositBags()
+                                .then((bags => {
+                                    $scope.collectedDepositBags = bags;
+                                }))
+                        }
+
+                        mapbox.on('load', function () {
+
+                            signalR.on('refresh', () => {
+                                loadPendingDepositBags(locations);
+                            })
+
+                            // Load locations first...
+                            armoredService.getLocations()
+                                .then((locations) => {
+
+                                    loadPendingDepositBags(locations);
+                                    loadCollectedDepositBags();
+                                    $scope.fitBounds(locations);
+                                })
+                        })
+                    }
+                }
             })
             .service('signalR', function () {
                 var handlers = {};
@@ -117,8 +234,7 @@
                 };
             })
             .service('armoredService', function ($q) {
-                var baseUrl = 'https://integration.nisd.net/';
-                var api = baseUrl + 'ArmoredService/DepositBags/';
+                var baseUrl = 'https://integration.nisd.net/api/';
 
                 $.ajaxSetup({
                     beforeSend: function (xhr) {
@@ -131,28 +247,28 @@
                     // Authorization Calls
                     getUserToken: function (username, password) {
                         return $q((resolve, reject) => {
-                            $.post(baseUrl + 'api/User/Token', JSON.stringify({ username, password })).then(resolve, reject);
+                            $.post(baseUrl + 'User/Token', JSON.stringify({ username, password })).then(resolve, reject);
                         })
                     },
                     getUserInfo: function () {
                         return $q((resolve, reject) => {
-                            $.get(baseUrl + '/api/User/Info').then(resolve, reject)
+                            $.get(baseUrl + 'User/Info').then(resolve, reject)
                         })
                     },
                     // API Calls 
                     getLocations: function () {
                         return $q((resolve, reject) => {
-                            $.get(api + 'GetLocations').then(resolve, reject);
+                            $.get(baseUrl + 'ArmoredService/GetLocations').then(resolve, reject);
                         })
                     },
-                    getSubmittedDepositBags: function () {
+                    getPendingDepositBags: function () {
                         return $q((resolve, reject) => {
-                            $.get(api + 'GetSubmittedDepositBags').then(resolve, reject);
+                            $.get(baseUrl + 'ArmoredService/GetPendingDepositBags').then(resolve, reject);
                         })
                     },
-                    getUnpreparedDepositBags: function () {
+                    getCollectedDepositBags: function () {
                         return $q((resolve, reject) => {
-                            $.get(api + 'getUnpreparedDepositBags').then(resolve, reject);
+                            $.get(baseUrl + 'ArmoredService/GetCollectedDepositBags').then(resolve, reject);
                         })
                     }
                 }
@@ -164,7 +280,7 @@
                     armoredService.getUserToken(username, password)
                         .then((token) => {
                             $storage.token = token.AccessToken;
-                            $rootScope.getUserInfo()
+                            // $rootScope.getUserInfo()
                         });
                 }
 
@@ -172,20 +288,22 @@
                     armoredService.getUserInfo()
                         .then((user) => {
                             $storage.user = user;
+                        }, (e) => {
+                            console.log(e);
                         })
                 }
 
-                $rootScope.getSubmittedDepositBags = function () {
-                    armoredService.getSubmittedDepositBags()
+                $rootScope.getPendingDepositBags = function () {
+                    armoredService.getPendingDepositBags()
                         .then((bags) => {
-                            $storage.bags = bags;
+                            $rootScope.pendingDepositBags = bags;
                         })
                 }
 
-                $rootScope.getUnpreparedDepositBags = function () {
-                    armoredService.getUnpreparedDepositBags()
+                $rootScope.getCollectedDepositBags = function () {
+                    armoredService.getCollectedDepositBags()
                         .then((bags) => {
-                            $storage.bags = bags;
+                            $rootScope.collectedDepositBags = bags;
                         })
                 }
             })
