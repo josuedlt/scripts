@@ -32,6 +32,15 @@
         body {
             margin: 0;
         }
+
+        dl dt {
+            
+        }
+
+        dl dd {
+            margin-left: 8;
+            font-size: smaller;
+        }
     </style>
 </head>
 
@@ -43,11 +52,16 @@
     </form>
     <div mapbox ng-if="$storage.token">
         <div id="map"></div>
-        <div style="position: absolute; top: 4px; left: 4px; z-index: 999">
-            <button type="reset" ng-click="$storage.token = null">Logout</button>
+        <div style="position: absolute; top: 4px; left: 4px; right: 4px; z-index: 999">
+            <button style="float: right;" type="reset" ng-click="$storage.token = null">Logout</button>
             <button type="submit" ng-click="fitBounds(locations)">Fit Bounds</button>
-            <div ng-bind="'Pending bags: ' + pendingDepositBags.length"></div>
-            <div ng-bind="'Collected bags: ' + collectedDepositBags.length"></div>
+            <dl>
+                <dt>Pending: <span ng-bind="pendingDepositBags.length"></span></dt>
+                <dd ng-bind="(sumBags(pendingDepositBags) | currency)"></dd>
+
+                <dt>Collected: <span ng-bind="collectedDepositBags.length"></span></dt>
+                <dd ng-bind="(sumBags(collectedDepositBags) | currency)"></dd>
+            </dl>
         </div>
     </div>
     <div ng-controller="controller" ng-if='$scope.token'>
@@ -94,8 +108,6 @@
                                 return {
                                     'type': "Feature",
                                     'properties': {
-                                        'color': '#000',
-                                        //'marker-symbol': 'school',
                                         'title': accounting.formatMoney($scope.sumBags(l.pendingDepositBags))
                                     },
                                     'geometry': {
@@ -153,20 +165,21 @@
 
                     }
 
-                    function loadPendingDepositBags(locations) {
+                    function loadPendingDepositBags() {
                         armoredService.getPendingDepositBags()
                             .then((bags => {
                                 $scope.pendingDepositBags = bags;
 
                                 // Assign bags to locations...
-                                $scope.locations = locations = _(locations)
-                                    .each((l) => {
-                                        l.pendingDepositBags = _.filter(bags, (b) => { return b.Location == l.Code + ' ' + l.Name; })
-                                    });
+                                var locations = $scope.locations;
+                                _.each(locations, (l) => {
+                                    l.pendingDepositBags = _.filter(bags, (b) => { return b.Location == l.Code + ' ' + l.Name; })
+                                });
 
-                                loadLocations(_.filter(locations, (l) => { return (0 < $scope.sumBags(l.pendingDepositBags) && $scope.sumBags(l.pendingDepositBags) <= 1000) }), 'min', 10);
-                                loadLocations(_.filter(locations, (l) => { return (1000 < $scope.sumBags(l.pendingDepositBags) && $scope.sumBags(l.pendingDepositBags) <= 5000) }), 'mid', 12);
-                                loadLocations(_.filter(locations, (l) => { return (5000 < $scope.sumBags(l.pendingDepositBags)) }), 'max', 15);
+                                loadLocations(_.filter(locations, (l) => { return (0 < $scope.sumBags(l.pendingDepositBags) && $scope.sumBags(l.pendingDepositBags) <= 5000) }), '5k', 10);
+                                loadLocations(_.filter(locations, (l) => { return (5000 < $scope.sumBags(l.pendingDepositBags) && $scope.sumBags(l.pendingDepositBags) <= 10000) }), '10k', 12);
+                                loadLocations(_.filter(locations, (l) => { return (10000 < $scope.sumBags(l.pendingDepositBags)) }), '10k+', 14);
+
                             }))
 
                     }
@@ -181,14 +194,16 @@
                     mapbox.on('load', function () {
 
                         signalR.on('refresh', () => {
-                            loadPendingDepositBags(locations);
+                            loadPendingDepositBags();
+                            loadCollectedDepositBags();
                         })
 
                         // Load locations first...
                         armoredService.getLocations()
                             .then((locations) => {
+                                $scope.locations = locations;
 
-                                loadPendingDepositBags(locations);
+                                loadPendingDepositBags();
                                 loadCollectedDepositBags();
                                 $scope.fitBounds(locations);
                             })
