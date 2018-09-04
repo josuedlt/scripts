@@ -1,0 +1,188 @@
+<html ng-app='app'>
+
+<head>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/accounting.js/0.4.1/accounting.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+
+    <!-- Mapbox GL JS -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+
+    <script src="angular-nisdAuthorization.js"></script>
+    <script src="angular-nisdArmoredService.js"></script>
+    <script src="angular-nisdMapbox.js"></script>
+
+    <style>
+        .fixed-top {
+            position: absolute;
+            top: 10;
+            left: 10;
+            right: 10;
+            z-index: 9;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        dl dd {
+            margin-left: 8;
+            font-size: smaller;
+        }
+
+        .full-height {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <auth-form class="fixed-top">
+        <form name="authForm" ng-if="!$storage.auth" ng-submit="login({username, password})">
+            <input type="text" name="username" ng-model="username">
+            <input type="password" name="password" ng-model="password">
+            <button type="submit">Submit</button>
+        </form>
+    </auth-form>
+
+    <div ng-if="$storage.auth" armored-service>
+        <auth-form class="fixed-top">
+            <button ng-click="logout()">Logout</button>
+            <button ng-click="fitBounds()">Fit Bounds</button>
+        </auth-form>
+        <div mapbox class="full-height"></div>
+    </div>
+</body>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+    angular.module('app', ['ngStorage', 'nisdAuthorization', 'nisdArmoredService', 'nisdMapbox'])
+        .directive('authForm', () => {
+            return {
+                controller: ($scope, LoginService) => {
+                    $scope.login = LoginService.login;
+                    $scope.logout = LoginService.logout;
+                    $scope.getInfo = LoginService.getInfo;
+                }
+            }
+        })
+        .directive('armoredService', () => {
+            return {
+                controller: ($scope, ArmoredService) => {
+
+                    $scope.fitBounds = () => {
+                        // Fit markers to view
+                        var locations = $scope.locations;
+                        var latitudes = _.map(locations, 'Latitude');
+                        var longitudes = _.map(locations, 'Longitude');
+                        $scope.mapbox.fitBounds([[_.min(longitudes), _.min(latitudes)], [_.max(longitudes), _.max(latitudes)]], { padding: 40 });
+                    }
+                    
+                    $scope.sumBags = function (bags) {
+                        return _.reduce(bags, function (sum, bag) {
+                            return sum + accounting.parse(bag.TotalAmount);
+                        }, 0)
+                    }
+
+                    ArmoredService.GetLocations().then((response) => {
+                        var locations = $scope.locations = response.data;
+
+                        ArmoredService.GetSubmittedDepositBags().then((response) => {
+                            locations.forEach((l) => {
+                                l.bags = response.data.filter((b) => b.Location == l.Code + ' ' + l.Name);
+                                l.bagSum = $scope.sumBags(l.bags);
+                                l.bagAmount = accounting.formatMoney($scope.sumBags(l.bags));
+                            });
+
+                            var glSources = [{
+                                'id': 'locations',
+                                'type': 'geojson',
+                                'data': {
+                                    'type': 'FeatureCollection',
+                                    'features': _.map(locations, function (l) {
+                                        return {
+                                            'type': "Feature",
+                                            'properties': {
+                                                'bagCount': l.bags.length,
+                                                'bagSum': l.bagSum,
+                                                'bagAmount': l.bagAmount,
+                                                'title': l.Name
+                                            },
+                                            'geometry': {
+                                                'type': "Point",
+                                                'coordinates': [l.Longitude, l.Latitude]
+                                            }
+                                        }
+                                    })
+                                }
+                            }]
+
+                            var glLayers = [{
+                                "id": '0',
+                                "type": 'symbol',
+                                "source": 'locations',
+                                "filter": [">", 'bagSum', 0],
+                                "layout": {
+                                    "text-field": "{bagAmount}",
+                                    "text-anchor": "center",
+                                    "text-size": 10
+                                }
+                            }, {
+                                "id": '1',
+                                "type": 'symbol',
+                                "source": 'locations',
+                                "filter": [">", 'bagSum', 1000],
+                                "layout": {
+                                    "text-field": "{bagAmount}",
+                                    "text-anchor": "center",
+                                    "text-size": 12
+                                }
+                            }, {
+                                "id": '2',
+                                "type": 'symbol',
+                                "source": 'locations',
+                                "filter": [">", 'bagSum', 5000],
+                                "layout": {
+                                    "text-field": "{bagAmount}",
+                                    "text-anchor": "center",
+                                    "text-size": 14
+                                }
+                            }, {
+                                "id": '3',
+                                "type": 'symbol',
+                                "source": 'locations',
+                                "filter": [">", 'bagSum', 10000],
+                                "layout": {
+                                    "text-field": "{bagAmount}",
+                                    "text-anchor": "center",
+                                    "text-size": 16
+                                }
+                            }, {
+                                "id": '4',
+                                "type": 'symbol',
+                                "source": 'locations',
+                                "filter": [">", 'bagSum', 15000],
+                                "layout": {
+                                    "text-field": "{bagAmount}",
+                                    "text-anchor": "center",
+                                    "text-size": 18
+                                }
+                            }]
+
+                            var mapbox = $scope.mapbox;
+                            mapbox.on('load', () => {
+                                mapbox.mapSources(glSources);
+                                mapbox.mapLayers(glLayers);
+                                $scope.fitBounds();
+                            })
+                        });
+                    });
+                }
+            }
+        })
+
+
+</script>
+
+</html>
