@@ -1,6 +1,11 @@
 <html ng-app='app'>
 
 <head>
+    <title>Deposit Bag Tracker</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+    <meta name="theme-color" content="#000000">
+
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/accounting.js/0.4.1/accounting.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
@@ -78,7 +83,7 @@
                         var longitudes = _.map(locations, 'Longitude');
                         $scope.mapbox.fitBounds([[_.min(longitudes), _.min(latitudes)], [_.max(longitudes), _.max(latitudes)]], { padding: 40 });
                     }
-                    
+
                     $scope.sumBags = function (bags) {
                         return _.reduce(bags, function (sum, bag) {
                             return sum + accounting.parse(bag.TotalAmount);
