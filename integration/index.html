@@ -9,6 +9,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/accounting.js/0.4.1/accounting.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -59,7 +60,19 @@
 
     <div ng-if="$storage.auth" armored-service>
         <auth-form class="fixed-top">
-            <button style="float: right;" ng-click="logout()">Logout</button>
+            <div style="float: right; text-align: right;">
+                <button ng-click="logout()">Logout</button>
+                <div>
+                    <dl>
+                        <dd ng-repeat-start='(key, bags) in collected | groupBy: "ReceiptedBy"'>{{key}}</dd>
+                        <dt ng-repeat-end>
+                            <small ng-bind="bags.length"></small>
+                            <span ng-bind="sumBags(bags) | currency"></span>
+                        </dt>
+                    </dl>
+                </div>
+
+            </div>
             <button ng-click="fitBounds()">Fit Bounds</button>
             <dl>
                 <dt>Submitted: <span ng-bind="submitted.length"></span></dt>
@@ -74,7 +87,7 @@
 </body>
 <script>
     mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
-    angular.module('app', ['ngStorage', 'nisdAuthorization', 'nisdArmoredService'])
+    angular.module('app', ['angular.filter', 'ngStorage', 'nisdAuthorization', 'nisdArmoredService'])
         .directive('authForm', () => {
             return {
                 controller: ($scope, LoginService) => {
@@ -141,50 +154,65 @@
                                 "id": 'submitted-0',
                                 "type": 'symbol',
                                 "source": 'submitted',
+                                "layout": {
+                                    "icon-image": "marker-15",
+                                    "icon-allow-overlap": true,
+                                    "icon-anchor": 'center',
+                                    "icon-size": 1,
+                                }
+                            }, {
+                                "id": 'submitted-1',
+                                "type": 'symbol',
+                                "source": 'submitted',
                                 "filter": [">", 'bagSum', 0],
                                 "layout": {
                                     "text-field": "{bagAmount}",
                                     "text-anchor": "center",
+                                    "text-offset": [0, 1],
                                     "text-size": 10
                                 }
                             }, {
-                                "id": 'submitted-1',
+                                "id": 'submitted-2',
                                 "type": 'symbol',
                                 "source": 'submitted',
                                 "filter": [">", 'bagSum', 1000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
                                     "text-anchor": "center",
+                                    "text-offset": [0, 1],
                                     "text-size": 12
                                 }
                             }, {
-                                "id": 'submitted-2',
+                                "id": 'submitted-3',
                                 "type": 'symbol',
                                 "source": 'submitted',
                                 "filter": [">", 'bagSum', 5000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
                                     "text-anchor": "center",
+                                    "text-offset": [0, 1],
                                     "text-size": 14
                                 }
                             }, {
-                                "id": 'submitted-3',
+                                "id": 'submitted-4',
                                 "type": 'symbol',
                                 "source": 'submitted',
                                 "filter": [">", 'bagSum', 10000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
                                     "text-anchor": "center",
+                                    "text-offset": [0, 1],
                                     "text-size": 16
                                 }
                             }, {
-                                "id": 'submitted-4',
+                                "id": 'submitted-5',
                                 "type": 'symbol',
                                 "source": 'submitted',
                                 "filter": [">", 'bagSum', 15000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
                                     "text-anchor": "center",
+                                    "text-offset": [0, 1],
                                     "text-size": 18
                                 }
                             }]
@@ -219,7 +247,7 @@
                                                 'host': c.Headers.Host,
                                                 'referer': c.Headers.Referer,
                                                 'timestamp': c.Timestamp,
-                                                'marker-symbol': 'star'
+                                                'marker-symbol': 'car'
                                             },
                                             'geometry': {
                                                 'type': "Point",
@@ -235,9 +263,17 @@
                                 "type": 'symbol',
                                 "source": 'collected',
                                 "layout": {
+                                    "icon-image": "{marker-symbol}-15",
+                                    "icon-allow-overlap": true,
+                                    "icon-size": 1,
                                     "text-field": "{address}",
+                                    "text-allow-overlap": true,
                                     "text-anchor": "center",
-                                    "text-size": 10
+                                    "text-size": 10,
+                                    "text-offset": [0, 1],
+                                },
+                                "paint": {
+                                    "text-color": '#842'
                                 }
                             }]
 
