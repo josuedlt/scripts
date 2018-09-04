@@ -11,6 +11,10 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
 
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://webservices.nisd.net/scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script type="text/javascript" src="../signalr/jdlt.signalR.js"></script>
+
     <!-- Mapbox GL JS -->
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
@@ -18,6 +22,7 @@
     <script src="angular-nisdAuthorization.js"></script>
     <script src="angular-nisdArmoredService.js"></script>
     <script src="angular-nisdMapbox.js"></script>
+    <script src="../signalr/jdlt.signalR.js"></script>
 
     <style>
         .fixed-top {
@@ -64,12 +69,12 @@
                 <dd ng-bind="(sumBags(collected) | currency)"></dd>
             </dl>
         </auth-form>
-        <div mapbox class="full-height"></div>
+        <div id="map" class="full-height"></div>
     </div>
 </body>
 <script>
     mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
-    angular.module('app', ['ngStorage', 'nisdAuthorization', 'nisdArmoredService', 'nisdMapbox'])
+    angular.module('app', ['ngStorage', 'nisdAuthorization', 'nisdArmoredService'])
         .directive('authForm', () => {
             return {
                 controller: ($scope, LoginService) => {
@@ -79,38 +84,38 @@
                 }
             }
         })
+
         .directive('armoredService', () => {
             return {
                 controller: ($scope, ArmoredService) => {
 
+                    // Script to map sources
                     $scope.fitBounds = () => {
                         // Fit markers to view
                         var locations = $scope.locations;
                         var latitudes = _.map(locations, 'Latitude');
                         var longitudes = _.map(locations, 'Longitude');
-                        $scope.mapbox.fitBounds([[_.min(longitudes), _.min(latitudes)], [_.max(longitudes), _.max(latitudes)]], { padding: 40 });
+                        mapbox.fitBounds([[_.min(longitudes), _.min(latitudes)], [_.max(longitudes), _.max(latitudes)]], { padding: 40 });
                     }
 
                     $scope.sumBags = function (bags) {
-                        return _.reduce(bags, function (sum, bag) {
-                            return sum + accounting.parse(bag.TotalAmount);
-                        }, 0)
+                        return _.reduce(bags, function (sum, bag) { return sum + accounting.parse(bag.TotalAmount); }, 0)
                     }
 
-                    ArmoredService.GetLocations().then((response) => {
-                        var locations = $scope.locations = response.data;
-
-                        ArmoredService.GetSubmittedDepositBags().then((response) => {
-                            var submitted = $scope.submitted = response.data;
+                    function updateSubmittedBags() {
+                        function mapSubmitted() {
+                            var bags = $scope.submitted;
+                            var locations = $scope.locations;
+                            var mapbox = $scope.mapbox;
 
                             locations.forEach((l) => {
-                                l.bags = response.data.filter((b) => b.Location == l.Code + ' ' + l.Name);
+                                l.bags = bags.filter((b) => b.Location == l.Code + ' ' + l.Name);
                                 l.bagSum = $scope.sumBags(l.bags);
                                 l.bagAmount = accounting.formatMoney($scope.sumBags(l.bags));
                             });
 
                             var glSources = [{
-                                'id': 'locations',
+                                'id': 'submitted',
                                 'type': 'geojson',
                                 'data': {
                                     'type': 'FeatureCollection',
@@ -133,9 +138,9 @@
                             }]
 
                             var glLayers = [{
-                                "id": '0',
+                                "id": 'submitted-0',
                                 "type": 'symbol',
-                                "source": 'locations',
+                                "source": 'submitted',
                                 "filter": [">", 'bagSum', 0],
                                 "layout": {
                                     "text-field": "{bagAmount}",
@@ -143,9 +148,9 @@
                                     "text-size": 10
                                 }
                             }, {
-                                "id": '1',
+                                "id": 'submitted-1',
                                 "type": 'symbol',
-                                "source": 'locations',
+                                "source": 'submitted',
                                 "filter": [">", 'bagSum', 1000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
@@ -153,9 +158,9 @@
                                     "text-size": 12
                                 }
                             }, {
-                                "id": '2',
+                                "id": 'submitted-2',
                                 "type": 'symbol',
-                                "source": 'locations',
+                                "source": 'submitted',
                                 "filter": [">", 'bagSum', 5000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
@@ -163,9 +168,9 @@
                                     "text-size": 14
                                 }
                             }, {
-                                "id": '3',
+                                "id": 'submitted-3',
                                 "type": 'symbol',
-                                "source": 'locations',
+                                "source": 'submitted',
                                 "filter": [">", 'bagSum', 10000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
@@ -173,9 +178,9 @@
                                     "text-size": 16
                                 }
                             }, {
-                                "id": '4',
+                                "id": 'submitted-4',
                                 "type": 'symbol',
-                                "source": 'locations',
+                                "source": 'submitted',
                                 "filter": [">", 'bagSum', 15000],
                                 "layout": {
                                     "text-field": "{bagAmount}",
@@ -184,16 +189,112 @@
                                 }
                             }]
 
-                            var mapbox = $scope.mapbox;
-                            mapbox.on('load', () => {
-                                mapbox.mapSources(glSources);
-                                mapbox.mapLayers(glLayers);
-                                $scope.fitBounds();
-                            })
+                            $scope.mapSources(glSources);
+                            $scope.mapLayers(glLayers);
+                        }
+
+                        ArmoredService.GetSubmittedDepositBags().then((response) => {
+                            var submitted = $scope.submitted = response.data;
+                            mapSubmitted();
                         });
-                    
+                    }
+
+                    function updateCollectedBags() {
+                        function mapCollected() {
+                            var mapbox = $scope.mapbox;
+                            var connections = $scope.connections;
+
+                            var glSources = [{
+                                'id': 'collected',
+                                'type': 'geojson',
+                                'data': {
+                                    'type': 'FeatureCollection',
+                                    'features': _.map(_.filter(connections, 'Position'), function (c) {
+                                        var name = c.RequestCookies.name;
+                                        return {
+                                            'type': "Feature",
+                                            'properties': {
+                                                'title': c.UserHostAddress,
+                                                'address': (name) ? name.Value : 'Anonymous',
+                                                'host': c.Headers.Host,
+                                                'referer': c.Headers.Referer,
+                                                'timestamp': c.Timestamp,
+                                                'marker-symbol': 'star'
+                                            },
+                                            'geometry': {
+                                                'type': "Point",
+                                                'coordinates': [c.Position.Longitude, c.Position.Latitude]
+                                            }
+                                        }
+                                    })
+                                }
+                            }]
+
+                            var glLayers = [{
+                                "id": 'collected-0',
+                                "type": 'symbol',
+                                "source": 'collected',
+                                "layout": {
+                                    "text-field": "{address}",
+                                    "text-anchor": "center",
+                                    "text-size": 10
+                                }
+                            }]
+
+                            $scope.mapSources(glSources);
+                            $scope.mapLayers(glLayers);
+                        }
+
                         ArmoredService.GetCollectedDepositBags().then((response) => {
                             var collected = $scope.collected = response.data;
+                            mapCollected();
+                        })
+                    }
+
+                    mapboxgl.accessToken =
+                        'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+
+                    var mapbox = $scope.mapbox = new mapboxgl.Map({
+                        container: 'map',
+                        style: 'mapbox://styles/mapbox/streets-v10/',
+                        center: [-98.5, 29.43],
+                        zoom: 10
+                    });
+
+                    $scope.mapSources = (sources) => {
+                        sources.forEach((s) => {
+                            if (!mapbox.getSource(s.id))
+                                mapbox.addSource(s.id, { 'type': 'geojson', 'data': s.data });
+                            else
+                                mapbox.getSource(s.id).setData(s.data);
+                        })
+                    }
+
+                    $scope.mapLayers = (layers) => {
+                        layers.forEach((l) => {
+                            if (!mapbox.getLayer(l.id))
+                                mapbox.addLayer(l);
+                        })
+                    }
+
+
+                    ArmoredService.SignalR.on('connections', (connections) => {
+                        var connections = $scope.connections = connections.filter(c => c.Position != null);
+                        updateCollectedBags();
+                    })
+
+                    ArmoredService.SignalR.on('refresh', () => {
+                        updateSubmittedBags();
+                        updateCollectedBags();
+                    })
+
+                    ArmoredService.GetLocations().then((response) => {
+                        var locations = $scope.locations = response.data;
+                        $scope.fitBounds();
+
+                        mapbox.on('load', () => {
+                            updateSubmittedBags();
+                            updateCollectedBags();
                         })
                     });
                 }
