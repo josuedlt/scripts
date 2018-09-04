@@ -54,8 +54,15 @@
 
     <div ng-if="$storage.auth" armored-service>
         <auth-form class="fixed-top">
-            <button ng-click="logout()">Logout</button>
+            <button style="float: right;" ng-click="logout()">Logout</button>
             <button ng-click="fitBounds()">Fit Bounds</button>
+            <dl>
+                <dt>Submitted: <span ng-bind="submitted.length"></span></dt>
+                <dd ng-bind="(sumBags(submitted) | currency)"></dd>
+
+                <dt>Collected: <span ng-bind="collected.length"></span></dt>
+                <dd ng-bind="(sumBags(collected) | currency)"></dd>
+            </dl>
         </auth-form>
         <div mapbox class="full-height"></div>
     </div>
@@ -94,6 +101,8 @@
                         var locations = $scope.locations = response.data;
 
                         ArmoredService.GetSubmittedDepositBags().then((response) => {
+                            var submitted = $scope.submitted = response.data;
+
                             locations.forEach((l) => {
                                 l.bags = response.data.filter((b) => b.Location == l.Code + ' ' + l.Name);
                                 l.bagSum = $scope.sumBags(l.bags);
@@ -182,6 +191,10 @@
                                 $scope.fitBounds();
                             })
                         });
+                    
+                        ArmoredService.GetCollectedDepositBags().then((response) => {
+                            var collected = $scope.collected = response.data;
+                        })
                     });
                 }
             }
