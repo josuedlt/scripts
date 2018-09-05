@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000000">
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/accounting.js/0.4.1/accounting.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.0/lodash.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
@@ -123,6 +123,7 @@
                             l.bags = bags.filter((b) => b.Location == l.Code + ' ' + l.Name);
                             l.bagSum = $scope.sumBags(l.bags);
                             l.bagAmount = accounting.formatMoney($scope.sumBags(l.bags));
+                            l.bagGroup = (Math.ceil(l.bagSum / 1000));
                         });
 
                         var glSources = [{
@@ -136,6 +137,7 @@
                                         'properties': {
                                             'bagCount': l.bags.length,
                                             'bagSum': l.bagSum,
+                                            'bagGroup': l.bagGroup,
                                             'bagAmount': l.bagAmount,
                                             'title': l.Name
                                         },
@@ -148,72 +150,26 @@
                             }
                         }]
 
-                        var glLayers = [{
-                            //     "id": 'submitted-0',
-                            //     "type": 'symbol',
-                            //     "source": 'submitted',
-                            //     "layout": {
-                            //         "icon-image": "marker-15",
-                            //         "icon-allow-overlap": true,
-                            //         "icon-anchor": 'center',
-                            //         "icon-size": 1,
-                            //     }
-                            // }, {
-                            "id": 'submitted-1',
-                            "type": 'symbol',
-                            "source": 'submitted',
-                            "filter": [">", 'bagSum', 0],
-                            "layout": {
-                                "text-field": "{bagAmount}",
-                                "text-anchor": "center",
-                                "text-offset": [0, 1],
-                                "text-size": 10
+                        var groups = _.chain(locations)
+                                    .map('bagGroup')
+                                    .uniq()
+                                    .sortBy()
+                                    .filter(g => g > 0)
+                                    .value();
+
+                        var glLayers = _.map(groups, (g) => {
+                            return {
+                                "id": 'submitted-' + g,
+                                "type": 'symbol',
+                                "source": 'submitted',
+                                "filter": ["==", 'bagGroup', g],
+                                "layout": {
+                                    "text-field": "{bagAmount}",
+                                    "text-anchor": "center",
+                                    "text-size": 8 + (g)
+                                }
                             }
-                        }, {
-                            "id": 'submitted-2',
-                            "type": 'symbol',
-                            "source": 'submitted',
-                            "filter": [">", 'bagSum', 1000],
-                            "layout": {
-                                "text-field": "{bagAmount}",
-                                "text-anchor": "center",
-                                "text-offset": [0, 1],
-                                "text-size": 12
-                            }
-                        }, {
-                            "id": 'submitted-3',
-                            "type": 'symbol',
-                            "source": 'submitted',
-                            "filter": [">", 'bagSum', 5000],
-                            "layout": {
-                                "text-field": "{bagAmount}",
-                                "text-anchor": "center",
-                                "text-offset": [0, 1],
-                                "text-size": 14
-                            }
-                        }, {
-                            "id": 'submitted-4',
-                            "type": 'symbol',
-                            "source": 'submitted',
-                            "filter": [">", 'bagSum', 10000],
-                            "layout": {
-                                "text-field": "{bagAmount}",
-                                "text-anchor": "center",
-                                "text-offset": [0, 1],
-                                "text-size": 16
-                            }
-                        }, {
-                            "id": 'submitted-5',
-                            "type": 'symbol',
-                            "source": 'submitted',
-                            "filter": [">", 'bagSum', 15000],
-                            "layout": {
-                                "text-field": "{bagAmount}",
-                                "text-anchor": "center",
-                                "text-offset": [0, 1],
-                                "text-size": 18
-                            }
-                        }]
+                        });
 
                         $scope.mapSources(glSources);
                         $scope.mapLayers(glLayers);
@@ -321,7 +277,7 @@
                             })
 
                             ArmoredService.SignalR.on('refresh', () => {
-                                mapDepositBags();
+                                refresh();
                             })
 
                             refresh()
