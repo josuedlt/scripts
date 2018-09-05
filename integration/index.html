@@ -23,7 +23,6 @@
     <script src="angular-nisdAuthorization.js"></script>
     <script src="angular-nisdArmoredService.js"></script>
     <script src="angular-nisdMapbox.js"></script>
-    <script src="../signalr/jdlt.signalR.js"></script>
 
     <style>
         .fixed-top {
@@ -115,176 +114,163 @@
                         return _.reduce(bags, function (sum, bag) { return sum + accounting.parse(bag.TotalAmount); }, 0)
                     }
 
-                    function updateSubmittedBags() {
-                        function mapSubmitted() {
-                            var bags = $scope.submitted;
-                            var locations = $scope.locations;
-                            var mapbox = $scope.mapbox;
+                    function mapDepositBags() {
+                        var bags = $scope.submitted;
+                        var locations = $scope.locations;
+                        var mapbox = $scope.mapbox;
 
-                            locations.forEach((l) => {
-                                l.bags = bags.filter((b) => b.Location == l.Code + ' ' + l.Name);
-                                l.bagSum = $scope.sumBags(l.bags);
-                                l.bagAmount = accounting.formatMoney($scope.sumBags(l.bags));
-                            });
-
-                            var glSources = [{
-                                'id': 'submitted',
-                                'type': 'geojson',
-                                'data': {
-                                    'type': 'FeatureCollection',
-                                    'features': _.map(locations, function (l) {
-                                        return {
-                                            'type': "Feature",
-                                            'properties': {
-                                                'bagCount': l.bags.length,
-                                                'bagSum': l.bagSum,
-                                                'bagAmount': l.bagAmount,
-                                                'title': l.Name
-                                            },
-                                            'geometry': {
-                                                'type': "Point",
-                                                'coordinates': [l.Longitude, l.Latitude]
-                                            }
-                                        }
-                                    })
-                                }
-                            }]
-
-                            var glLayers = [{
-                                //     "id": 'submitted-0',
-                                //     "type": 'symbol',
-                                //     "source": 'submitted',
-                                //     "layout": {
-                                //         "icon-image": "marker-15",
-                                //         "icon-allow-overlap": true,
-                                //         "icon-anchor": 'center',
-                                //         "icon-size": 1,
-                                //     }
-                                // }, {
-                                "id": 'submitted-1',
-                                "type": 'symbol',
-                                "source": 'submitted',
-                                "filter": [">", 'bagSum', 0],
-                                "layout": {
-                                    "text-field": "{bagAmount}",
-                                    "text-anchor": "center",
-                                    "text-offset": [0, 1],
-                                    "text-size": 10
-                                }
-                            }, {
-                                "id": 'submitted-2',
-                                "type": 'symbol',
-                                "source": 'submitted',
-                                "filter": [">", 'bagSum', 1000],
-                                "layout": {
-                                    "text-field": "{bagAmount}",
-                                    "text-anchor": "center",
-                                    "text-offset": [0, 1],
-                                    "text-size": 12
-                                }
-                            }, {
-                                "id": 'submitted-3',
-                                "type": 'symbol',
-                                "source": 'submitted',
-                                "filter": [">", 'bagSum', 5000],
-                                "layout": {
-                                    "text-field": "{bagAmount}",
-                                    "text-anchor": "center",
-                                    "text-offset": [0, 1],
-                                    "text-size": 14
-                                }
-                            }, {
-                                "id": 'submitted-4',
-                                "type": 'symbol',
-                                "source": 'submitted',
-                                "filter": [">", 'bagSum', 10000],
-                                "layout": {
-                                    "text-field": "{bagAmount}",
-                                    "text-anchor": "center",
-                                    "text-offset": [0, 1],
-                                    "text-size": 16
-                                }
-                            }, {
-                                "id": 'submitted-5',
-                                "type": 'symbol',
-                                "source": 'submitted',
-                                "filter": [">", 'bagSum', 15000],
-                                "layout": {
-                                    "text-field": "{bagAmount}",
-                                    "text-anchor": "center",
-                                    "text-offset": [0, 1],
-                                    "text-size": 18
-                                }
-                            }]
-
-                            $scope.mapSources(glSources);
-                            $scope.mapLayers(glLayers);
-                        }
-
-                        ArmoredService.GetSubmittedDepositBags().then((response) => {
-                            var submitted = $scope.submitted = response.data;
-                            mapSubmitted();
+                        locations.forEach((l) => {
+                            l.bags = bags.filter((b) => b.Location == l.Code + ' ' + l.Name);
+                            l.bagSum = $scope.sumBags(l.bags);
+                            l.bagAmount = accounting.formatMoney($scope.sumBags(l.bags));
                         });
+
+                        var glSources = [{
+                            'id': 'submitted',
+                            'type': 'geojson',
+                            'data': {
+                                'type': 'FeatureCollection',
+                                'features': _.map(locations, function (l) {
+                                    return {
+                                        'type': "Feature",
+                                        'properties': {
+                                            'bagCount': l.bags.length,
+                                            'bagSum': l.bagSum,
+                                            'bagAmount': l.bagAmount,
+                                            'title': l.Name
+                                        },
+                                        'geometry': {
+                                            'type': "Point",
+                                            'coordinates': [l.Longitude, l.Latitude]
+                                        }
+                                    }
+                                })
+                            }
+                        }]
+
+                        var glLayers = [{
+                            //     "id": 'submitted-0',
+                            //     "type": 'symbol',
+                            //     "source": 'submitted',
+                            //     "layout": {
+                            //         "icon-image": "marker-15",
+                            //         "icon-allow-overlap": true,
+                            //         "icon-anchor": 'center',
+                            //         "icon-size": 1,
+                            //     }
+                            // }, {
+                            "id": 'submitted-1',
+                            "type": 'symbol',
+                            "source": 'submitted',
+                            "filter": [">", 'bagSum', 0],
+                            "layout": {
+                                "text-field": "{bagAmount}",
+                                "text-anchor": "center",
+                                "text-offset": [0, 1],
+                                "text-size": 10
+                            }
+                        }, {
+                            "id": 'submitted-2',
+                            "type": 'symbol',
+                            "source": 'submitted',
+                            "filter": [">", 'bagSum', 1000],
+                            "layout": {
+                                "text-field": "{bagAmount}",
+                                "text-anchor": "center",
+                                "text-offset": [0, 1],
+                                "text-size": 12
+                            }
+                        }, {
+                            "id": 'submitted-3',
+                            "type": 'symbol',
+                            "source": 'submitted',
+                            "filter": [">", 'bagSum', 5000],
+                            "layout": {
+                                "text-field": "{bagAmount}",
+                                "text-anchor": "center",
+                                "text-offset": [0, 1],
+                                "text-size": 14
+                            }
+                        }, {
+                            "id": 'submitted-4',
+                            "type": 'symbol',
+                            "source": 'submitted',
+                            "filter": [">", 'bagSum', 10000],
+                            "layout": {
+                                "text-field": "{bagAmount}",
+                                "text-anchor": "center",
+                                "text-offset": [0, 1],
+                                "text-size": 16
+                            }
+                        }, {
+                            "id": 'submitted-5',
+                            "type": 'symbol',
+                            "source": 'submitted',
+                            "filter": [">", 'bagSum', 15000],
+                            "layout": {
+                                "text-field": "{bagAmount}",
+                                "text-anchor": "center",
+                                "text-offset": [0, 1],
+                                "text-size": 18
+                            }
+                        }]
+
+                        $scope.mapSources(glSources);
+                        $scope.mapLayers(glLayers);
+
                     }
 
-                    function updateCollectedBags() {
-                        function mapCollected() {
-                            var mapbox = $scope.mapbox;
-                            var connections = $scope.connections;
+                    function mapDrivers() {
+                        var mapbox = $scope.mapbox;
+                        var connections = $scope.connections;
 
-                            var glSources = [{
-                                'id': 'collected',
-                                'type': 'geojson',
-                                'data': {
-                                    'type': 'FeatureCollection',
-                                    'features': _.map(_.filter(connections, 'Position'), function (c) {
-                                        var name = c.RequestCookies.name;
-                                        return {
-                                            'type': "Feature",
-                                            'properties': {
-                                                'title': c.UserHostAddress,
-                                                'address': (name) ? name.Value : 'Anonymous',
-                                                'host': c.Headers.Host,
-                                                'referer': c.Headers.Referer,
-                                                'timestamp': c.Timestamp,
-                                                'marker-symbol': 'car'
-                                            },
-                                            'geometry': {
-                                                'type': "Point",
-                                                'coordinates': [c.Position.Longitude, c.Position.Latitude]
-                                            }
+                        var glSources = [{
+                            'id': 'collected',
+                            'type': 'geojson',
+                            'data': {
+                                'type': 'FeatureCollection',
+                                'features': _.map(_.filter(connections, 'Position'), function (c) {
+                                    var name = c.RequestCookies.name;
+                                    return {
+                                        'type': "Feature",
+                                        'properties': {
+                                            'title': c.UserHostAddress,
+                                            'address': (name) ? name.Value : 'Anonymous',
+                                            'host': c.Headers.Host,
+                                            'referer': c.Headers.Referer,
+                                            'timestamp': c.Timestamp,
+                                            'marker-symbol': 'car'
+                                        },
+                                        'geometry': {
+                                            'type': "Point",
+                                            'coordinates': [c.Position.Longitude, c.Position.Latitude]
                                         }
-                                    })
-                                }
-                            }]
+                                    }
+                                })
+                            }
+                        }]
 
-                            var glLayers = [{
-                                "id": 'collected-0',
-                                "type": 'symbol',
-                                "source": 'collected',
-                                "layout": {
-                                    "icon-image": "{marker-symbol}-15",
-                                    "icon-allow-overlap": true,
-                                    "icon-size": 1,
-                                    "text-field": "{address}",
-                                    "text-allow-overlap": true,
-                                    "text-anchor": "center",
-                                    "text-size": 10,
-                                    "text-offset": [0, 1],
-                                },
-                                "paint": {
-                                    "text-color": '#842'
-                                }
-                            }]
+                        var glLayers = [{
+                            "id": 'collected-0',
+                            "type": 'symbol',
+                            "source": 'collected',
+                            "layout": {
+                                "icon-image": "{marker-symbol}-15",
+                                "icon-allow-overlap": true,
+                                "icon-size": 1,
+                                "text-field": "{address}",
+                                "text-allow-overlap": true,
+                                "text-anchor": "center",
+                                "text-size": 10,
+                                "text-offset": [0, 1],
+                            },
+                            "paint": {
+                                "text-color": '#842'
+                            }
+                        }]
 
-                            $scope.mapSources(glSources);
-                            $scope.mapLayers(glLayers);
-                        }
-
-                        mapCollected();
-                        ArmoredService.GetCollectedDepositBags().then((response) => {
-                            var collected = $scope.collected = response.data;
-                        })
+                        $scope.mapSources(glSources);
+                        $scope.mapLayers(glLayers);
                     }
 
                     mapboxgl.accessToken =
@@ -318,18 +304,27 @@
                             var locations = $scope.locations = response.data;
                             $scope.fitBounds();
 
+                            function refresh() {
+                                ArmoredService.GetSubmittedDepositBags().then((response) => {
+                                    var submitted = $scope.submitted = response.data;
+                                    mapDepositBags();
+                                });
+
+                                ArmoredService.GetCollectedDepositBags().then((response) => {
+                                    var collected = $scope.collected = response.data;
+                                })
+                            }
+
                             ArmoredService.SignalR.on('connections', (connections) => {
                                 var connections = $scope.connections = connections.filter(c => c.Position != null);
-                                updateCollectedBags();
+                                mapDrivers();
                             })
 
                             ArmoredService.SignalR.on('refresh', () => {
-                                updateSubmittedBags();
-                                updateCollectedBags();
+                                mapDepositBags();
                             })
 
-                            updateSubmittedBags();
-                            updateCollectedBags();
+                            refresh()
                         });
                     })
                 }

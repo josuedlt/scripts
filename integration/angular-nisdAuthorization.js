@@ -14,7 +14,7 @@ var app = angular.module('nisdAuthorization', ['ngStorage'])
     .config(($httpProvider) => {
         $httpProvider.interceptors.push('AuthorizationInterceptor');
     })
-    .factory('AuthorizationInterceptor', ($localStorage, $q) => {
+    .factory('AuthorizationInterceptor', ($localStorage) => {
         function errorHandler(response) {
             if (response.status == 401) {
                 delete $localStorage.auth;
@@ -27,9 +27,8 @@ var app = angular.module('nisdAuthorization', ['ngStorage'])
                 return config;
             },
             responseError: (response) => {
-                $localStorage.error = response.data;
                 errorHandler(response);
-                return $q.reject(response);
+                return response;
             }
         }
     })
