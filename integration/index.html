@@ -151,16 +151,16 @@
                             }]
 
                             var glLayers = [{
-                                "id": 'submitted-0',
-                                "type": 'symbol',
-                                "source": 'submitted',
-                                "layout": {
-                                    "icon-image": "marker-15",
-                                    "icon-allow-overlap": true,
-                                    "icon-anchor": 'center',
-                                    "icon-size": 1,
-                                }
-                            }, {
+                                //     "id": 'submitted-0',
+                                //     "type": 'symbol',
+                                //     "source": 'submitted',
+                                //     "layout": {
+                                //         "icon-image": "marker-15",
+                                //         "icon-allow-overlap": true,
+                                //         "icon-anchor": 'center',
+                                //         "icon-size": 1,
+                                //     }
+                                // }, {
                                 "id": 'submitted-1',
                                 "type": 'symbol',
                                 "source": 'submitted',
@@ -281,9 +281,9 @@
                             $scope.mapLayers(glLayers);
                         }
 
+                        mapCollected();
                         ArmoredService.GetCollectedDepositBags().then((response) => {
                             var collected = $scope.collected = response.data;
-                            mapCollected();
                         })
                     }
 
@@ -313,26 +313,25 @@
                         })
                     }
 
+                    mapbox.on('load', () => {
+                        ArmoredService.GetLocations().then((response) => {
+                            var locations = $scope.locations = response.data;
+                            $scope.fitBounds();
 
-                    ArmoredService.SignalR.on('connections', (connections) => {
-                        var connections = $scope.connections = connections.filter(c => c.Position != null);
-                        updateCollectedBags();
-                    })
+                            ArmoredService.SignalR.on('connections', (connections) => {
+                                var connections = $scope.connections = connections.filter(c => c.Position != null);
+                                updateCollectedBags();
+                            })
 
-                    ArmoredService.SignalR.on('refresh', () => {
-                        updateSubmittedBags();
-                        updateCollectedBags();
-                    })
+                            ArmoredService.SignalR.on('refresh', () => {
+                                updateSubmittedBags();
+                                updateCollectedBags();
+                            })
 
-                    ArmoredService.GetLocations().then((response) => {
-                        var locations = $scope.locations = response.data;
-                        $scope.fitBounds();
-
-                        mapbox.on('load', () => {
                             updateSubmittedBags();
                             updateCollectedBags();
-                        })
-                    });
+                        });
+                    })
                 }
             }
         })
