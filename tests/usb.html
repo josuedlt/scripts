@@ -1,0 +1,28 @@
+<html>
+<button id="connect">Connect</button>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        var VENDOR_ID = 0x1452;
+
+        navigator.usb.getDevices({
+            filters: [{ vendorId: VENDOR_ID }]
+        }).then(devices => {
+            console.log(devices);
+        }).catch(e => { console.log("Error: ", e); })
+
+        let button = document.getElementById('connect');
+        button.addEventListener('click', async () => {
+            navigator.usb.requestDevice({
+                filters: [{ vendorId: VENDOR_ID }]
+            }).then(device => {
+                console.log('Found device: ', device);
+            }).catch(e => {
+                console.log('Error: ', e)
+            });
+        })
+
+    })
+
+</script>
+
+</html>
