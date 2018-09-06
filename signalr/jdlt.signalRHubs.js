@@ -1,27 +1,34 @@
-var signalR = function () {};
+var signalR = function () { };
 signalR.prototype = {
     connectToHub: function (url, callback) {
-        this.connectToHubs([url], function (hubs) {
-            callback(hubs[0]);
+        return new Promise((resolve) => {
+            this.connectToHubs([url], function (hubs) {
+                if (callback) callback(hubs[0], callback);
+                resolve(hubs[0]);
+            })
         });
     },
     connectToHubs: function (urls, callback) {
-        var hubs = [];
-        urls.forEach(function (url) {
-            $.ajax({
-                async: false,
-                cache: false,
-                dataType: 'script',
-                url: url + '/signalr/hubs',
-                complete: function () {
-                    h = $.hubConnection(url);
-                    h.createHubProxies();
-                    hubs.push(h);
-                    if (hubs.length == urls.length)
-                        callback(hubs);
-                }
+        return new Promise((resolve) => {
+            var hubs = [];
+            urls.forEach(function (url) {
+                $.ajax({
+                    async: false,
+                    cache: false,
+                    dataType: 'script',
+                    url: url + '/signalr/hubs',
+                    complete: function () {
+                        h = $.hubConnection(url);
+                        h.createHubProxies();
+                        hubs.push(h);
+                        if (hubs.length == urls.length) {
+                            if (callback) callback(hubs);
+                            resolve(hubs)
+                        }
+                    }
+                });
             });
-        });
+        })
     },
     // Get connection state name.
     getStateName: function (state) {

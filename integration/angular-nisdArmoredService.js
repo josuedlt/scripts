@@ -18,7 +18,7 @@ var app = angular.module('nisdArmoredService', [])
                             fire("refresh");
                         }
                     };
-                    hub.start();
+                    signalR.forceReconnect(hub).start();
                 });
 
             // Connect to webservices to get connection updates
@@ -58,7 +58,7 @@ var app = angular.module('nisdArmoredService', [])
                             fire('connections', _connections);
                         }
                     }
-                    hub.start();
+                    signalR.forceReconnect(hub).start();
                 })
 
             return {
