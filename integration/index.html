@@ -74,10 +74,14 @@
             </div>
             <button ng-click="fitBounds()">Fit Bounds</button>
             <dl>
-                <dt>Submitted: <span ng-bind="submitted.length"></span></dt>
+                <dt>Submitted:
+                    <span ng-bind="submitted.length"></span>
+                </dt>
                 <dd ng-bind="(sumBags(submitted) | currency)"></dd>
 
-                <dt>Collected: <span ng-bind="collected.length"></span></dt>
+                <dt>Collected:
+                    <span ng-bind="collected.length"></span>
+                </dt>
                 <dd ng-bind="(sumBags(collected) | currency)"></dd>
             </dl>
         </auth-form>
@@ -107,11 +111,18 @@
                         var locations = $scope.locations;
                         var latitudes = _.map(locations, 'Latitude');
                         var longitudes = _.map(locations, 'Longitude');
-                        mapbox.fitBounds([[_.min(longitudes), _.min(latitudes)], [_.max(longitudes), _.max(latitudes)]], { padding: 40 });
+                        mapbox.fitBounds([
+                            [_.min(longitudes), _.min(latitudes)],
+                            [_.max(longitudes), _.max(latitudes)]
+                        ], {
+                            padding: 40
+                        });
                     }
 
                     $scope.sumBags = function (bags) {
-                        return _.reduce(bags, function (sum, bag) { return sum + accounting.parse(bag.TotalAmount); }, 0)
+                        return _.reduce(bags, function (sum, bag) {
+                            return sum + accounting.parse(bag.TotalAmount);
+                        }, 0)
                     }
 
                     function mapDepositBags() {
@@ -167,7 +178,7 @@
                                     "text-anchor": "center",
                                     "text-field": "{bagAmount}",
                                     "text-offset": [0, 0],
-                                    "text-size": 8 + (g)
+                                    "text-size": 8 + (g / 2)
                                 }
                             }
                         });
@@ -307,7 +318,10 @@
                     $scope.mapSources = (sources) => {
                         sources.forEach((s) => {
                             if (!mapbox.getSource(s.id))
-                                mapbox.addSource(s.id, { 'type': 'geojson', 'data': s.data });
+                                mapbox.addSource(s.id, {
+                                    'type': 'geojson',
+                                    'data': s.data
+                                });
                             else
                                 mapbox.getSource(s.id).setData(s.data);
                         })
@@ -338,7 +352,8 @@
                             }
 
                             ArmoredService.SignalR.on('connections', (connections) => {
-                                var connections = $scope.connections = connections.filter(c => c.Position != null);
+                                var connections = $scope.connections = connections.filter(
+                                    c => c.Position != null);
                                 mapDrivers();
                             })
 
@@ -352,8 +367,6 @@
                 }
             }
         })
-
-
 </script>
 
 </html>
