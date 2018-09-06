@@ -115,8 +115,8 @@
                             [_.min(longitudes), _.min(latitudes)],
                             [_.max(longitudes), _.max(latitudes)]
                         ], {
-                            padding: 40
-                        });
+                                padding: 40
+                            });
                     }
 
                     $scope.sumBags = function (bags) {
@@ -202,7 +202,7 @@
                             .toPairs()
                             .value();
 
-                        var glSources = _.map(routes, r => ({
+                        $scope.mapSources(_.map(routes, r => ({
                             id: r[0],
                             type: 'geojson',
                             data: {
@@ -214,42 +214,54 @@
                                     'title': r[0]
                                 }
                             }
-                        }));
+                        })));
 
-                        var glLayers = _.map(routes, r => {
-                            return {
-                                id: r[0] + '-line',
-                                type: 'line',
-                                source: r[0],
-                                layout: {
-                                    'line-join': 'round',
-                                    'line-cap': 'round',
-                                },
-                                paint: {
-                                    'line-color': '#bbb',
-                                    'line-width': 1
-                                }
+                        $scope.mapLayers(_.map(routes, r => ({
+                            id: r[0] + '-line',
+                            type: 'line',
+                            source: r[0],
+                            layout: {
+                                'line-join': 'round',
+                                'line-cap': 'round',
+                            },
+                            paint: {
+                                'line-opacity': 0.2,
+                                'line-width': 1
                             }
-                        });
+                        })));
 
-                        var glLabels = _.map(routes, r => {
-                            return {
-                                id: r[0] + '-symbol',
-                                type: 'symbol',
-                                source: r[0],
-                                layout: {
-                                    'symbol-placement': 'line',
-                                    'text-field': '{title}',
-                                    'text-size': 10
-                                },
-                                paint: {
-                                    'text-color': '#aaa'
-                                }
+                        $scope.mapLayers(_.map(routes, r => ({
+                            id: r[0] + '-line-labels',
+                            type: 'symbol',
+                            source: r[0],
+                            layout: {
+                                'symbol-placement': 'line',
+                                'text-allow-overlap': true,
+                                'text-field': '{title}',
+                                'text-size': 8,
+                                'text-offset': [0, 0],
+                            },
+                            paint: {
+                                'text-color': '#000',
+                                'text-opacity': 0.5,
                             }
-                        })
-                        $scope.mapSources(glSources);
-                        $scope.mapLayers(glLayers);
-                        $scope.mapLayers(glLabels);
+                        })));
+
+                        $scope.mapLayers(_.map(routes, r => ({
+                            id: r[0] + '-arrows',
+                            type: 'symbol',
+                            source: r[0],
+                            layout: {
+                                'symbol-placement': 'line',
+                                'symbol-spacing': 5,
+                                'icon-allow-overlap': true,
+                                'icon-image': 'arrow',
+                                'icon-size': 0.08
+                            },
+                            paint: {
+                                'icon-opacity': 0.2
+                            }
+                        })));
                     }
 
                     function mapDrivers() {
@@ -305,14 +317,17 @@
                         $scope.mapLayers(glLayers);
                     }
 
-                    mapboxgl.accessToken =
-                        'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
-
                     var mapbox = $scope.mapbox = new mapboxgl.Map({
                         container: 'map',
                         style: 'mapbox://styles/mapbox/streets-v10/',
                         center: [-98.5, 29.43],
                         zoom: 10
+                    });
+
+                    var url = 'https://image.flaticon.com/icons/png/128/25/25283.png';
+                    mapbox.loadImage(url, function (err, image) {
+                        if (err) return;
+                        mapbox.addImage('arrow', image);
                     });
 
                     $scope.mapSources = (sources) => {
@@ -334,9 +349,10 @@
                         })
                     }
 
-                    mapbox.on('load', () => {
-                        ArmoredService.GetLocations().then((response) => {
-                            var locations = $scope.locations = response.data;
+                    ArmoredService.GetLocations().then((response) => {
+                        var locations = $scope.locations = response.data;
+
+                        mapbox.on('load', () => {
                             $scope.fitBounds();
 
                             function refresh() {
@@ -362,8 +378,8 @@
                             })
 
                             refresh()
-                        });
-                    })
+                        })
+                    });
                 }
             }
         })
