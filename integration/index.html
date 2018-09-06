@@ -151,11 +151,11 @@
                         }]
 
                         var groups = _.chain(locations)
-                                    .map('bagGroup')
-                                    .uniq()
-                                    .sortBy()
-                                    .filter(g => g > 0)
-                                    .value();
+                            .map('bagGroup')
+                            .uniq()
+                            .sortBy()
+                            .filter(g => g > 0)
+                            .value();
 
                         var glLayers = _.map(groups, (g) => {
                             return {
@@ -175,6 +175,70 @@
                         $scope.mapSources(glSources);
                         $scope.mapLayers(glLayers);
 
+                    }
+
+                    function mapCollectionRoute() {
+                        var mapbox = $scope.mapbox;
+                        var locations = $scope.locations;
+
+                        var locations = _.map($scope.locations, (l) => { return { Location: l.Code + ' ' + l.Name, Position: [l.Longitude, l.Latitude] } });
+                        var routes = _($scope.collected)
+                            .sortBy('ReceiptedDate')
+                            .groupBy('ReceiptedBy')
+                            .mapValues((v) => {
+                                return _.map(_.uniq(_.map(v, 'Location')), (b) => _.find(locations, (l) => { return l.Location == b }).Position);
+                            })
+                            .toPairs()
+                            .value();
+
+                        var glSources = _.map(routes, r => ({
+                            id: r[0],
+                            type: 'geojson',
+                            data: {
+                                type: 'Feature',
+                                geometry: {
+                                    type: 'LineString',
+                                    coordinates: r[1]
+                                }, properties: {
+                                    'title': r[0]
+                                }
+                            }
+                        }));
+
+                        var glLayers = _.map(routes, r => {
+                            return {
+                                id: r[0] + '-line',
+                                type: 'line',
+                                source: r[0],
+                                layout: {
+                                    'line-join': 'round',
+                                    'line-cap': 'round',
+                                },
+                                paint: {
+                                    'line-color': '#bbb',
+                                    'line-width': 1
+                                }
+                            }
+                        });
+
+                        var glLabels = _.map(routes, r => {
+                            return {
+                                id: r[0] + '-symbol',
+                                type: 'symbol',
+                                source: r[0],
+                                layout: {
+                                    'symbol-placement': 'line',
+                                    'text-field': '{title}',
+                                    'text-size': 10
+                                },
+                                paint: {
+                                    'text-color': '#aaa'
+                                }
+                            }
+                        })
+                        $scope.mapSources(glSources);
+                        $scope.mapLayers(glLayers);
+                        $scope.mapLayers(glLabels);
                     }
 
                     function mapDrivers() {
@@ -269,6 +333,7 @@
 
                                 ArmoredService.GetCollectedDepositBags().then((response) => {
                                     var collected = $scope.collected = response.data;
+                                    mapCollectionRoute();
                                 })
                             }
 
