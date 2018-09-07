@@ -71,7 +71,11 @@
                     </dl>
                 </div> -->
             </div>
-            <button ng-click="fitBounds()">Fit Bounds</button>
+            <button ng-click="fitBounds(locations)">Fit Bounds</button>
+            <button ng-click="mapDrivers(connections)">Map Drivers</button>
+            <button ng-click="mapCollectionRoute(locations, collected)">Collected</button>
+            <button ng-click="mapSubmittedBags(locations, submitted)">Submitted</button>
+            <div ng-bind="fitBounds(locations)"></div>
             <!-- <dl>
                 <dt>Submitted:
                     <span ng-bind="submitted.length"></span>
@@ -84,7 +88,7 @@
                 <dd ng-bind="(sumBags(collected) | currency)"></dd>
             </dl> -->
         </auth-form>
-        <div id="map" class="full-height"></div>
+        <div id="map" armored-service-map class="full-height"></div>
     </div>
 </body>
 <script>
@@ -99,40 +103,62 @@
                 }
             }
         })
-
-        .directive('armoredService', () => {
+        .directive('armoredServiceMap', () => {
             return {
-                controller: ($scope, ArmoredService) => {
+                link: (scope, elem, attrs) => {
 
-                    // Script to map sources
-                    $scope.fitBounds = () => {
-                        // Fit markers to view
-                        var locations = $scope.locations;
+                    var mapbox = scope.mapbox = new mapboxgl.Map({
+                        container: elem[0],
+                        style: 'mapbox://styles/mapbox/streets-v10/',
+                        center: [-98.5, 29.43],
+                        zoom: 10
+                    });
+
+                    // Load arrow image to indicate line direction
+                    var url = 'https://image.flaticon.com/icons/png/128/25/25283.png';
+                    mapbox.loadImage(url, function (err, image) {
+                        if (err) return;
+                        mapbox.addImage('arrow', image);
+                    });
+
+                    scope.mapSources = (sources) => {
+                        sources.forEach((s) => {
+                            if (!mapbox.getSource(s.id))
+                                mapbox.addSource(s.id, {
+                                    'type': 'geojson',
+                                    'data': s.data
+                                });
+                            else
+                                mapbox.getSource(s.id).setData(s.data);
+                        })
+                    }
+
+                    scope.mapLayers = (layers) => {
+                        layers.forEach((l) => {
+                            if (!mapbox.getLayer(l.id))
+                                mapbox.addLayer(l);
+                        })
+                    }
+
+                    scope.fitBounds = (locations) => {
+                        if (!locations) return;
                         var latitudes = _.map(locations, 'Latitude');
                         var longitudes = _.map(locations, 'Longitude');
                         mapbox.fitBounds([
                             [_.min(longitudes), _.min(latitudes)],
                             [_.max(longitudes), _.max(latitudes)]
                         ], {
-                                padding: 40
-                            });
+                            padding: 40
+                        });
                     }
 
-                    $scope.sumBags = function (bags) {
-                        return _.reduce(bags, function (sum, bag) {
-                            return sum + accounting.parse(bag.TotalAmount);
-                        }, 0)
-                    }
-
-                    function mapDepositBags() {
-                        var bags = $scope.submitted;
-                        var locations = $scope.locations;
-                        var mapbox = $scope.mapbox;
+                    scope.mapSubmittedBags = (locations, submitted) => {
+                        var mapbox = scope.mapbox;
 
                         locations.forEach((l) => {
-                            l.bags = bags.filter((b) => b.Location == l.Code + ' ' + l.Name);
-                            l.bagSum = $scope.sumBags(l.bags);
-                            l.bagAmount = accounting.formatMoney($scope.sumBags(l.bags));
+                            l.bags = submitted.filter((b) => b.Location == l.Code + ' ' + l.Name);
+                            l.bagSum = scope.sumBags(l.bags);
+                            l.bagAmount = accounting.formatMoney(scope.sumBags(l.bags));
                             l.bagGroup = (Math.ceil(l.bagSum / 1000));
                         });
 
@@ -182,26 +208,33 @@
                             }
                         });
 
-                        $scope.mapSources(glSources);
-                        $scope.mapLayers(glLayers);
+                        scope.mapSources(glSources);
+                        scope.mapLayers(glLayers);
 
                     }
 
-                    function mapCollectionRoute() {
-                        var mapbox = $scope.mapbox;
-                        var locations = $scope.locations;
+                    scope.mapCollectionRoute = (locations, collected) => {
+                        var mapbox = scope.mapbox;
+                        var locations = scope.locations;
 
-                        var locations = _.map($scope.locations, (l) => { return { Location: l.Code + ' ' + l.Name, Position: [l.Longitude, l.Latitude] } });
-                        var routes = _($scope.collected)
+                        var locations = _.map(scope.locations, (l) => {
+                            return {
+                                Location: l.Code + ' ' + l.Name,
+                                Position: [l.Longitude, l.Latitude]
+                            }
+                        });
+                        var routes = _(collected)
                             .sortBy('ReceiptedDate')
                             .groupBy('ReceiptedBy')
                             .mapValues((v) => {
-                                return _.map(_.uniq(_.map(v, 'Location')), (b) => _.find(locations, (l) => { return l.Location == b }).Position);
+                                return _.map(_.uniq(_.map(v, 'Location')), (b) => _.find(locations, (l) => {
+                                    return l.Location == b
+                                }).Position);
                             })
                             .toPairs()
                             .value();
 
-                        $scope.mapSources(_.map(routes, r => ({
+                        scope.mapSources(_.map(routes, r => ({
                             id: r[0],
                             type: 'geojson',
                             data: {
@@ -209,13 +242,14 @@
                                 geometry: {
                                     type: 'LineString',
                                     coordinates: r[1]
-                                }, properties: {
+                                },
+                                properties: {
                                     'title': r[0]
                                 }
                             }
                         })));
 
-                        $scope.mapLayers(_.map(routes, r => ({
+                        scope.mapLayers(_.map(routes, r => ({
                             id: r[0] + '-line',
                             type: 'line',
                             source: r[0],
@@ -229,7 +263,7 @@
                             }
                         })));
 
-                        $scope.mapLayers(_.map(routes, r => ({
+                        scope.mapLayers(_.map(routes, r => ({
                             id: r[0] + '-line-labels',
                             type: 'symbol',
                             source: r[0],
@@ -245,7 +279,7 @@
                             }
                         })));
 
-                        $scope.mapLayers(_.map(routes, r => ({
+                        scope.mapLayers(_.map(routes, r => ({
                             id: r[0] + '-arrows',
                             type: 'symbol',
                             source: r[0],
@@ -262,9 +296,8 @@
                         })));
                     }
 
-                    function mapDrivers() {
-                        var mapbox = $scope.mapbox;
-                        var connections = $scope.connections;
+                    scope.mapDrivers = (connections) => {
+                        var mapbox = scope.mapbox;
 
                         var glSources = [{
                             'id': 'collected',
@@ -285,7 +318,9 @@
                                         },
                                         'geometry': {
                                             'type': "Point",
-                                            'coordinates': [c.Position.Longitude, c.Position.Latitude]
+                                            'coordinates': [c.Position.Longitude, c.Position
+                                                .Latitude
+                                            ]
                                         }
                                     }
                                 })
@@ -311,72 +346,42 @@
                             }
                         }]
 
-                        $scope.mapSources(glSources);
-                        $scope.mapLayers(glLayers);
+                        scope.mapSources(glSources);
+                        scope.mapLayers(glLayers);
                     }
+                }
+            }
+        })
+        .directive('armoredService', () => {
+            return {
+                controller: ($scope, ArmoredService) => {
 
-                    var mapbox = $scope.mapbox = new mapboxgl.Map({
-                        container: 'map',
-                        style: 'mapbox://styles/mapbox/streets-v10/',
-                        center: [-98.5, 29.43],
-                        zoom: 10
-                    });
 
-                    var url = 'https://image.flaticon.com/icons/png/128/25/25283.png';
-                    mapbox.loadImage(url, function (err, image) {
-                        if (err) return;
-                        mapbox.addImage('arrow', image);
-                    });
-
-                    $scope.mapSources = (sources) => {
-                        sources.forEach((s) => {
-                            if (!mapbox.getSource(s.id))
-                                mapbox.addSource(s.id, {
-                                    'type': 'geojson',
-                                    'data': s.data
-                                });
-                            else
-                                mapbox.getSource(s.id).setData(s.data);
-                        })
-                    }
-
-                    $scope.mapLayers = (layers) => {
-                        layers.forEach((l) => {
-                            if (!mapbox.getLayer(l.id))
-                                mapbox.addLayer(l);
-                        })
+                    $scope.sumBags = function (bags) {
+                        return _.reduce(bags, function (sum, bag) {
+                            return sum + accounting.parse(bag.TotalAmount);
+                        }, 0)
                     }
 
                     ArmoredService.GetLocations().then((response) => {
-                        var locations = $scope.locations = response.data;
+                        $scope.locations = response.data;
 
-                        mapbox.on('load', () => {
-                            $scope.fitBounds();
+                        function refresh() {
+                            ArmoredService.GetSubmittedDepositBags().then((response) => {
+                                $scope.submitted = response.data;
+                            });
 
-                            function refresh() {
-                                ArmoredService.GetSubmittedDepositBags().then((response) => {
-                                    var submitted = $scope.submitted = response.data;
-                                    mapDepositBags();
-                                });
-
-                                ArmoredService.GetCollectedDepositBags().then((response) => {
-                                    var collected = $scope.collected = response.data;
-                                    mapCollectionRoute();
-                                })
-                            }
-
-                            ArmoredService.SignalR.on('connections', (connections) => {
-                                var connections = $scope.connections = connections.filter(
-                                    c => c.Position != null);
-                                mapDrivers();
+                            ArmoredService.GetCollectedDepositBags().then((response) => {
+                                $scope.collected = response.data;
                             })
+                        }
 
-                            ArmoredService.SignalR.on('refresh', () => {
-                                refresh();
-                            })
-
-                            refresh()
+                        ArmoredService.SignalR.on('connections', (connections) => {
+                            $scope.connections = connections.filter(c => c.Position != null);
                         })
+
+                        ArmoredService.SignalR.on('refresh', () => { refresh(); })
+                        refresh()
                     });
                 }
             }
