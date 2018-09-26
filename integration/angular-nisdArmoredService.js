@@ -77,8 +77,10 @@ var app = angular.module('nisdArmoredService', [])
             GetSubmittedDepositBags: function () {
                 return $http.get(baseUrl + '/api/ArmoredService/GetPendingDepositBags');
             },
-            GetCollectedDepositBags: function () {
-                return $http.get(baseUrl + '/api/ArmoredService/GetCollectedDepositBags');
+            GetCollectedDepositBags: function (date) {
+                if (date) {
+                    return $http.get(baseUrl + '/api/ArmoredService/GetCollectedDepositBags/?id=' + date.toJSON());
+                }
             },
             SignalR: SignalR(),
         }

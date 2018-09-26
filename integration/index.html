@@ -3,7 +3,7 @@
 <head>
     <title>Deposit Bag Tracker</title>
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=no">
     <meta name="theme-color" content="#000000">
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/accounting.js/0.4.1/accounting.min.js"></script>
@@ -17,8 +17,8 @@
     <script type="text/javascript" src="../signalr/jdlt.signalRHubs.js"></script>
 
     <!-- Mapbox GL JS -->
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />
 
     <script src="angular-nisdAuthorization.js"></script>
     <script src="angular-nisdArmoredService.js"></script>
@@ -61,7 +61,7 @@
         <auth-form class="fixed-top">
             <div style="float: right; text-align: right;">
                 <button ng-click="logout()">Logout</button>
-                <!-- <div>
+                <div>
                     <dl>
                         <dd ng-repeat-start='(key, bags) in collected | groupBy: "ReceiptedBy"'>{{key}}</dd>
                         <dt ng-repeat-end>
@@ -69,14 +69,14 @@
                             <span ng-bind="sumBags(bags) | currency"></span>
                         </dt>
                     </dl>
-                </div> -->
+                </div>
             </div>
-            <button ng-click="fitBounds(locations)">Fit Bounds</button>
-            <button ng-click="mapDrivers(connections)">Map Drivers</button>
-            <button ng-click="mapCollectionRoute(locations, collected)">Collected</button>
-            <button ng-click="mapSubmittedBags(locations, submitted)">Submitted</button>
-            <div ng-bind="fitBounds(locations)"></div>
-            <!-- <dl>
+            <button ng-click="fitBounds(locations)">Fit</button>
+            <button ng-click="mapDrivers(connections)">Drivers</button>
+            <button ng-click="mapDepositBags(locations, submitted)">Submitted</button>
+            <button ng-click="mapDepositBags(locations, collected)">Collected</button>
+            <input type="date" ng-model="collectedDate" ng-change="refresh()">
+            <dl>
                 <dt>Submitted:
                     <span ng-bind="submitted.length"></span>
                 </dt>
@@ -86,7 +86,7 @@
                     <span ng-bind="collected.length"></span>
                 </dt>
                 <dd ng-bind="(sumBags(collected) | currency)"></dd>
-            </dl> -->
+            </dl>
         </auth-form>
         <div id="map" armored-service-map class="full-height"></div>
     </div>
@@ -141,18 +141,18 @@
                     }
 
                     scope.fitBounds = (locations) => {
-                        if (!locations) return;
                         var latitudes = _.map(locations, 'Latitude');
                         var longitudes = _.map(locations, 'Longitude');
                         mapbox.fitBounds([
                             [_.min(longitudes), _.min(latitudes)],
                             [_.max(longitudes), _.max(latitudes)]
                         ], {
-                            padding: 40
-                        });
+                                padding: 40
+                            });
                     }
 
-                    scope.mapSubmittedBags = (locations, submitted) => {
+                    scope.mapDepositBags = (locations, submitted) => {
+                        if (!locations) return;
                         var mapbox = scope.mapbox;
 
                         locations.forEach((l) => {
@@ -167,7 +167,7 @@
                             'type': 'geojson',
                             'data': {
                                 'type': 'FeatureCollection',
-                                'features': _.map(locations, function (l) {
+                                'features': _.map(locations, (l) => {
                                     return {
                                         'type': "Feature",
                                         'properties': {
@@ -213,11 +213,10 @@
 
                     }
 
-                    scope.mapCollectionRoute = (locations, collected) => {
+                    scope.mapRoutes = (locations, collected) => {
                         var mapbox = scope.mapbox;
-                        var locations = scope.locations;
 
-                        var locations = _.map(scope.locations, (l) => {
+                        var locations = _.map(locations, (l) => {
                             return {
                                 Location: l.Code + ' ' + l.Name,
                                 Position: [l.Longitude, l.Latitude]
@@ -234,43 +233,48 @@
                             .toPairs()
                             .value();
 
-                        scope.mapSources(_.map(routes, r => ({
-                            id: r[0],
+                        scope.mapSources([{
+                            id: 'routes',
                             type: 'geojson',
                             data: {
-                                type: 'Feature',
-                                geometry: {
-                                    type: 'LineString',
-                                    coordinates: r[1]
-                                },
-                                properties: {
-                                    'title': r[0]
-                                }
+                                type: 'FeatureCollection',
+                                features: _.map(routes, r => ({
+                                    type: 'Feature',
+                                    geometry: {
+                                        type: 'LineString',
+                                        coordinates: r[1]
+                                    },
+                                    properties: {
+                                        'driver': r[0],
+                                    }
+                                }))
                             }
-                        })));
+                        }]);
 
                         scope.mapLayers(_.map(routes, r => ({
-                            id: r[0] + '-line',
+                            id: 'routes-' + r[0] + '-line',
                             type: 'line',
-                            source: r[0],
+                            source: 'routes',
+                            filter: ['==', 'driver', r[0]],
                             layout: {
                                 'line-join': 'round',
                                 'line-cap': 'round',
                             },
                             paint: {
-                                'line-opacity': 0.3,
+                                'line-opacity': 0.5,
                                 'line-width': 1
                             }
                         })));
 
                         scope.mapLayers(_.map(routes, r => ({
-                            id: r[0] + '-line-labels',
+                            id: 'routes-' + r[0] + '-line-labels',
                             type: 'symbol',
-                            source: r[0],
+                            source: 'routes',
+                            filter: ['==', 'driver', r[0]],
                             layout: {
                                 'symbol-placement': 'line',
                                 'text-allow-overlap': true,
-                                'text-field': '{title}',
+                                'text-field': '{driver}',
                                 'text-size': 8,
                                 'text-offset': [0, 1],
                             },
@@ -280,15 +284,15 @@
                         })));
 
                         scope.mapLayers(_.map(routes, r => ({
-                            id: r[0] + '-arrows',
+                            id: 'routes-' + r[0] + '-arrows',
                             type: 'symbol',
-                            source: r[0],
+                            source: 'routes',
                             layout: {
                                 'symbol-placement': 'line',
-                                'symbol-spacing': 5,
+                                'symbol-spacing': 1,
                                 'icon-allow-overlap': true,
                                 'icon-image': 'arrow',
-                                'icon-size': 0.05
+                                'icon-size': 0.06
                             },
                             paint: {
                                 'icon-opacity': 0.3
@@ -304,7 +308,7 @@
                             'type': 'geojson',
                             'data': {
                                 'type': 'FeatureCollection',
-                                'features': _.map(_.filter(connections, 'Position'), function (c) {
+                                'features': _.map(_.filter(connections, 'Position'), (c) => {
                                     var name = c.RequestCookies.name;
                                     return {
                                         'type': "Feature",
@@ -342,7 +346,8 @@
                                 "text-offset": [0, 1],
                             },
                             "paint": {
-                                "text-color": '#842'
+                                'icon-opacity': 0.8,
+                                'text-opacity': 0.8
                             }
                         }]
 
@@ -354,35 +359,40 @@
         })
         .directive('armoredService', () => {
             return {
-                controller: ($scope, ArmoredService) => {
+                controller: ($scope, ArmoredService, $location) => {
 
-
-                    $scope.sumBags = function (bags) {
-                        return _.reduce(bags, function (sum, bag) {
+                    $scope.collectedDate = new Date;
+                    $scope.sumBags = (bags) => {
+                        return _.reduce(bags, (sum, bag) => {
                             return sum + accounting.parse(bag.TotalAmount);
                         }, 0)
                     }
 
                     ArmoredService.GetLocations().then((response) => {
                         $scope.locations = response.data;
-
-                        function refresh() {
-                            ArmoredService.GetSubmittedDepositBags().then((response) => {
-                                $scope.submitted = response.data;
-                            });
-
-                            ArmoredService.GetCollectedDepositBags().then((response) => {
-                                $scope.collected = response.data;
-                            })
-                        }
-
-                        ArmoredService.SignalR.on('connections', (connections) => {
-                            $scope.connections = connections.filter(c => c.Position != null);
-                        })
-
-                        ArmoredService.SignalR.on('refresh', () => { refresh(); })
-                        refresh()
+                        $scope.fitBounds($scope.locations);
                     });
+
+                    $scope.refresh = () => {
+                        ArmoredService.GetSubmittedDepositBags().then((response) => {
+                            $scope.submitted = response.data;
+                            //$scope.mapDepositBags($scope.locations, $scope.submitted);
+                        });
+
+                        ArmoredService.GetCollectedDepositBags($scope.collectedDate).then((response) => {
+                            $scope.collected = response.data;
+                            $scope.mapRoutes($scope.locations, $scope.collected);
+                            $scope.mapDepositBags($scope.locations, $scope.collected);
+                        })
+                    }
+
+                    ArmoredService.SignalR.on('connections', (connections) => {
+                        $scope.connections = connections.filter(c => c.Position != null);
+                        //$scope.mapDrivers($scope.connections);
+                    })
+
+                    ArmoredService.SignalR.on('refresh', () => { refresh() });
+                    $scope.refresh()
                 }
             }
         })
