@@ -391,7 +391,7 @@
                         //$scope.mapDrivers($scope.connections);
                     })
 
-                    ArmoredService.SignalR.on('refresh', () => { refresh() });
+                    ArmoredService.SignalR.on('refresh', () => { $scope.refresh() });
                     $scope.refresh()
                 }
             }
