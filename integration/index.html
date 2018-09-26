@@ -376,7 +376,7 @@
                     $scope.refresh = () => {
                         ArmoredService.GetSubmittedDepositBags().then((response) => {
                             $scope.submitted = response.data;
-                            //$scope.mapDepositBags($scope.locations, $scope.submitted);
+                            $scope.mapDepositBags($scope.locations, $scope.submitted);
                         });
 
                         ArmoredService.GetCollectedDepositBags($scope.collectedDate).then((response) => {
