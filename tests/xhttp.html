@@ -1,0 +1,86 @@
+<html>
+
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue2-filters@0.3.0/dist/vue2-filters.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-toolbar app>
+                <v-toolbar-title>Vue Test</v-toolbar-title>
+            </v-toolbar>
+            <v-navigation-drawer app></v-navigation-drawer>
+            <v-content>
+                <v-container fluid>
+                    <v-data-table>
+                        <tr v-for="b in pendingDepositBags">
+                            <td>{{ b.DepositBagNumber }}</td>
+                            <td>{{ b.Location }}</td>
+                            <td>{{ b.TotalAmount | currency }}</td>
+                        </tr>
+                    </v-data-table>
+                </v-container>
+            </v-content>
+            <v-footer></v-footer>
+        </v-app>
+
+    </div>
+</body>
+<script>
+    function api() {
+        _this = this;
+        _this.baseUrl = 'https://integration.nisd.net/api/ArmoredService/';
+        _this.token =
+            'F8yxySsSTR5IeOrCJ-sLYsbcwBgwBKv2wKaQio4_HptMWtVXwElxH1v0a9A86wFYKSgYkDmJg_y7rvT6mjGmzpnAFvFVM9upB2Gfb4iJZyf-K_xgIRkGNCbPMYn-Ev76gT-MXVzwz5EQKqOGUm7OQc_nOMAvBXfy3WLYyO0CZr3LUHS8aOlXbw72nDjslHa6_G1qfI-XPqCjw5d7Z7BpDcO5OvMzao50dPzrPjwKDAwrJ6bKrIGN6EDQ32a_SoMo6Dpqpwav1EQSc0EYlmZoMx-e4yPBuUkPDVnyxoovsM0LrX2mITfTbe1fwdH6OjW0b62CGnvWjzVgc-IBHwNH9CZzVteI6Sj6KZA6djVVjHG322gPB1ZAOKtM26frejrGFPhRIyxhKtai67hoWpe5XKDdkKX3uoKfhfTVm-YbKNDwTcoSQs4GErUesI1cvUQqjAO-pktzxWGYj8r6ItIskNGxq0nqM-BWBbld-BCT0dMw-VX3DbdpCxDsp-nxC7bukvWwbFu8HS6yl_8mp-fzeMQWP9cYjbHYN4LxOzrfgaPWyLjR5TNiUFymqBjyWU73dtpUzSRtsq_YHqJUaqFUVW79doNgVb961vmxBbMBA1tswzmoPgzrQ0Cc-TMHWNySdYJ6gsf5WE84OyLZISCfRiVUHtUueq80oY-IhDIRnOFkBi5ZhmgO3NxRjTJZ7P3VK35ZMsBfW0tns5JJjwcdLRJiAncNLzufPa3KBLY2kX_Cg8ELElqBnDMWr0QgsVjeiSiwTySvOvOpvim1r1rAqcOKV-MUUM9mU-T6cmpV04hpZgS1DrA27jWydr6JTdsE45EHUTOt72-_FsCaE7A3AYCyqTN7PbhF5Tz7J-RFVGfXm5hcRs3Ad08UX9mMuVJAACwiBprRwU8xg5rCeIcpjmIHrPeKdrKFJyKboUpfueiYRjL32S7u6nolgEUe3YN2KOyEt85tUclhgDNrLabyeZ-ihT5XhpbvoD2Orad-sY3qt4d-XIJE97RO7EDcJ_D5q82MvMQhjA_LJ1CZxgX_MuUkKUQ23AJ19iPlYSaoa7JLrTRdc_l4BfNOOK7-iG0mWMoUNxnnsVL5OGjj4EKKbD1MTShCLIy7xxj9w3YRZsXlsquZRmhcdDTNITIc1hIPSvBNNLtqC7y2YwuTlqn8Pd6SgnaTwXaOl5gShJdicAGu0axBQXNMgU1aa0B5TLbwmUQMngMrSvuNayTq9b7HcUitjK4k4SBq96t1fQOOoRQ'
+
+        _this.onError = (error) => {
+            if (error.response.status === 401) {
+                alert(error.response.statusText);
+            }
+        }
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${_this.token}`;
+        return {
+            getPendingDepositBags: () => {
+                return new Promise((resolve, reject) => {
+                    axios.get(_this.baseUrl + 'GetPendingDepositBags')
+                        .then(resolve, reject)
+                        .catch(_this.onError)
+                })
+            },
+
+            getLocations: () => {
+                return new Promise((resolve, reject) => {
+                    axios.get(_this.baseUrl + 'GetLocations')
+                        .then(resolve, reject)
+                        .catch(_this.onError)
+                })
+            }
+        }
+    }
+    Vue.config.devtools = true;
+    var app = new Vue({
+        el: '#app',
+        data: {
+            pendingDepositBags: [],
+            locations: []
+        }
+    })
+
+    var api = new api();
+    api.getPendingDepositBags()
+        .then(response => app.pendingDepositBags = response.data);
+    api.getLocations()
+        .then(response => app.locations = response.data);
+</script>
+
+</html>
