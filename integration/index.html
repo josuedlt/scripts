@@ -388,7 +388,7 @@
 
                     ArmoredService.SignalR.on('connections', (connections) => {
                         $scope.connections = connections.filter(c => c.Position != null);
-                        //$scope.mapDrivers($scope.connections);
+                        $scope.mapDrivers($scope.connections);
                     })
 
                     ArmoredService.SignalR.on('refresh', () => { $scope.refresh() });
