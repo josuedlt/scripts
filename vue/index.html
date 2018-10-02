@@ -1,25 +1,89 @@
 <html>
 
 <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
+
 </head>
 
 <body>
     <div id="app">
-        {{ message }}
-    
-        <span v-bind:title="message">
-            Hover your mouse over me for a few seconds
-            to see my dynamically bound title!
-        </span>
+        <nisd-auth inline-template>
+            <div>
+                <div v-if="!this.$parent.token">
+                    <div @keydown.enter="login(username,password)">
+                        <h3>Login</h3>
+                        <label>Username
+                            <input type="text" v-model="username">
+                        </label>
+                        <label>Password
+                            <input type="password" v-model="password">
+                        </label>
+                    </div>
+                </div>
+                <div v-if="this.$parent.token">
+                    <div @click="getInfo()">Info</div>
+                    <div @click="logout()">Logout</div>
+                    <pre>{{ this.userInfo }}</pre>
+                </div>
+            </div>
+        </nisd-auth>
     </div>
 </body>
 <script>
+    var nisdAuth = {
+        baseUrl: 'https://integration.nisd.net/',
+        getToken: (username, password) => {
+            return new Promise((resolve, reject) => {
+                axios.post(nisdAuth.baseUrl + 'api/User/Token', { username, password })
+                    .then(resolve, reject);
+            })
+        },
+        getInfo: () => {
+            return new Promise((resolve, reject) => {
+                axios.get(nisdAuth.baseUrl + 'api/User/Info')
+                    .then(resolve, reject);
+            })
+        },
+    }
+
+    var auth = Vue.component('nisd-auth', {
+        data: () => {
+            return {
+                username: null,
+                password: null,
+                userInfo: null
+            }
+        },
+        beforeMount() {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${this.$parent.token}`;
+        },
+        methods: {
+            login(username, password) {
+                nisdAuth.getToken(username, password)
+                    .then(response => {
+                        var token = this.$parent.token = response.data.AccessToken;
+                        localStorage.setItem('token', JSON.stringify(token));
+                    })
+            },
+            logout() {
+                this.$parent.token = localStorage.token = null;
+            },
+            getInfo() {
+                nisdAuth.getInfo()
+                    .then(response => {
+                        this.userInfo = (response.data.Username);
+                    });
+            }
+        },
+    })
+
+    Vue.prototype.$http = axios;
     var app = new Vue({
         el: '#app',
         data: {
-            message: 'Hello Vue!'
-        }
+            token: (localStorage.token) ? JSON.parse(localStorage.token) : null,
+        },
     })
 </script>
 
