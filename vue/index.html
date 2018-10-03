@@ -1,89 +1,259 @@
 <html>
 
 <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 
+    <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
+    <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet">
+
+    <!-- Mapbox GL JS -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.45.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.45.0/mapbox-gl.css' rel='stylesheet' />
+
+    <script src="https://unpkg.com/lodash@4.17.11/lodash.js"></script>
 </head>
 
 <body>
     <div id="app">
-        <nisd-auth inline-template>
-            <div>
-                <div v-if="!this.$parent.token">
-                    <div @keydown.enter="login(username,password)">
-                        <h3>Login</h3>
-                        <label>Username
-                            <input type="text" v-model="username">
-                        </label>
-                        <label>Password
-                            <input type="password" v-model="password">
-                        </label>
-                    </div>
-                </div>
-                <div v-if="this.$parent.token">
-                    <div @click="getInfo()">Info</div>
-                    <div @click="logout()">Logout</div>
-                    <pre>{{ this.userInfo }}</pre>
-                </div>
+
+        <div v-if="!token">
+            <div @keydown.enter="login(username,password)">
+                <h3>Login</h3>
+                <label>Username
+                    <input type="text" v-model="username">
+                </label>
+                <label>Password
+                    <input type="password" v-model="password">
+                </label>
+                <button type="submit" @click="login(username, password)">Submit</button>
             </div>
-        </nisd-auth>
+        </div>
+
+        <mapbox>
+            <div v-if="token">
+                
+                    
+                
+            </div>
+        </mapbox>
     </div>
 </body>
 <script>
-    var nisdAuth = {
-        baseUrl: 'https://integration.nisd.net/',
-        getToken: (username, password) => {
-            return new Promise((resolve, reject) => {
-                axios.post(nisdAuth.baseUrl + 'api/User/Token', { username, password })
-                    .then(resolve, reject);
-            })
-        },
-        getInfo: () => {
-            return new Promise((resolve, reject) => {
-                axios.get(nisdAuth.baseUrl + 'api/User/Info')
-                    .then(resolve, reject);
-            })
-        },
-    }
+    mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+    url = 'https://integration.nisd.net';
 
-    var auth = Vue.component('nisd-auth', {
+    var mixinAuth = {
         data: () => {
             return {
-                username: null,
-                password: null,
-                userInfo: null
+                username: '',
+                password: '',
+                token: '',
             }
-        },
-        beforeMount() {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${this.$parent.token}`;
         },
         methods: {
             login(username, password) {
-                nisdAuth.getToken(username, password)
+                axios.post(url + '/api/User/Token', { username, password })
                     .then(response => {
-                        var token = this.$parent.token = response.data.AccessToken;
+                        var token = this.token = response.data;
                         localStorage.setItem('token', JSON.stringify(token));
+                    }, error => {
+                        console.log(error);
+                        alert(error);
                     })
             },
             logout() {
-                this.$parent.token = localStorage.token = null;
+                this.token = null;
+                localStorage.removeItem('token');
             },
-            getInfo() {
-                nisdAuth.getInfo()
-                    .then(response => {
-                        this.userInfo = (response.data.Username);
-                    });
+        },
+        mounted() {
+            this.token = (localStorage.token) ? JSON.parse(localStorage.token) : null
+            axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            axios.interceptors.response.use(null, function (error) {
+                if (error.response.status === 401) {
+                    this.token = '';
+                }
+                return Promise.reject(error);
+            });
+        },
+        watch: {
+            token: (val) => {
+                if (val) {
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${val}`;
+                } else {
+                    axios.defaults.headers.common['Authorization'] = null;
+                }
             }
         },
+    }
+
+    var mixinUserInfo = {
+        data: () => {
+            return {
+                userInfo: '',
+            }
+        },
+        mounted() {
+            axios.get(url + '/api/User/Info')
+                .then(response => {
+                    this.userInfo = (response.data.Username);
+                });
+        },
+
+    }
+
+    Vue.component('mapbox', {
+        data: () => {
+            return {
+                mapbox: Object,
+                locations: [],
+            }
+        },
+        methods: {
+            fitBounds(locations) {
+                if (!locations) return;
+                if (locations.length == 0) return;
+
+                var latitudes = _.map(locations, 'Latitude');
+                var longitudes = _.map(locations, 'Longitude');
+                this.mapbox.fitBounds([
+                    [_.min(longitudes), _.min(latitudes)],
+                    [_.max(longitudes), _.max(latitudes)]
+                ], {
+                        padding: 40
+                    });
+            },
+            plotLocations(locations) {
+                mapbox = this.mapbox;
+
+                locations.forEach(location => {
+                    if (location.Name.endsWith(' ES'))
+                        location.Type = 'ES';
+                    else if (location.Name.endsWith(' MS'))
+                        location.Type = 'MS';
+                    else if (location.Name.endsWith(' HS'))
+                        location.Type = 'HS'
+                    else
+                        location.Type = 'Other';
+                })
+
+                geo_locations = {
+                    'type': 'FeatureCollection',
+                    'features': _.map(this.locations, function (l) {
+                        return {
+                            'type': "Feature",
+                            'properties': {
+                                'marker-symbol': 'marker',
+                                'title': l.Name,
+                                'type': l.Type,
+                            },
+                            'geometry': {
+                                'type': "Point",
+                                'coordinates': [l.Longitude, l.Latitude]
+                            }
+                        }
+                    })
+                };
+
+                // Add locations as a source
+                if (!mapbox.getSource('markers'))
+                    mapbox.addSource('markers', {
+                        'type': 'geojson',
+                        'data': geo_locations
+                    });
+                else
+                    mapbox.getSource('markers').setData(geo_locations);
+
+                // Add marker layer with new source
+                if (!mapbox.getLayer('markers-layer')) {
+                    mapbox.addLayer({
+                        "id": 'markers-layer',
+                        "type": 'symbol',
+                        "source": 'markers',
+                        "layout": {
+                            "text-field": "{title}",
+                            "text-font": [
+                                "Open Sans Semibold",
+                                "Arial Unicode MS Bold"
+                            ],
+                            "text-offset": [0, 1],
+                            "text-anchor": "top",
+                            "text-size": 8
+                        },
+                        "paint": {
+                            "icon-color": "#842",
+                            "text-color": '#222',
+                            "text-halo-color": "#eee",
+                            "text-halo-width": 1
+                        }
+                    });
+
+                    mapbox.addLayer({
+                        'id': 'circles',
+                        'type': 'circle',
+                        'source': 'markers',
+                        'paint': {
+                            // make circles larger as the user zooms from z12 to z22
+                            'circle-radius': {
+                                'base': 1.75,
+                                'stops': [[12, 2], [20, 15]]
+                            },
+                            'circle-color': [
+                                'match',
+                                ['get', 'type'],
+                                'ES', '#fbb03b',
+                                'MS', '#b03bfb',
+                                'HS', '#3bb0fb',
+                                /* other */ '#888'
+                            ]
+                        }
+                    })
+                    //Trap click events on marker layer
+                    mapbox.on('click', 'circles', function (e) {
+                        // new mapboxgl.Popup()
+                        //     .setLngLat(e.features[0].geometry.coordinates)
+                        //     .setHTML(e.features[0].properties.title)
+                        //     .addTo(mapbox);
+
+                        mapbox.flyTo({
+                            center: e.features[0].geometry.coordinates,
+                            zoom: 16
+                        });
+                    });
+                }
+            }
+        },
+        mounted() {
+            mapbox = this.mapbox = new mapboxgl.Map({
+                container: this.$el.firstChild,
+                style: 'mapbox://styles/mapbox/streets-v10/',
+                center: [-98.5, 29.43],
+                zoom: 10
+            });
+
+            mapbox.on('load', () => {
+                axios.get(url + '/api/ArmoredService/GetLocations')
+                    .then(response => {
+                        this.locations = response.data;
+                        this.fitBounds(this.locations);
+                        this.plotLocations(this.locations);
+                    });
+            })
+        },
+        template: '<div><div style="height: 100%;"></div><div style="z-index: 9; position: absolute; top: 0"><div @click="fitBounds(locations)">Fit Bounds</div></div></div>',
+        watch: {
+            locations: (val) => {
+            }
+        }
     })
 
-    Vue.prototype.$http = axios;
     var app = new Vue({
         el: '#app',
-        data: {
-            token: (localStorage.token) ? JSON.parse(localStorage.token) : null,
-        },
+        mixins: [mixinAuth, mixinUserInfo],
+
+
     })
 </script>
 

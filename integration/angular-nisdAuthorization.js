@@ -49,8 +49,7 @@ var app = angular.module('nisdAuthorization', ['ngStorage'])
                     $http.post(baseUrl + "api/User/Token", loginData)
                         .then(function (response) {
                             var auth = {
-                                token: response.data.AccessToken,
-                                user: response.data.Username
+                                token: response.data
                             }
                             $localStorage.auth = auth;
                             announceLoggedIn(auth.user);
