@@ -23,7 +23,7 @@ var app = angular.module('nisdAuthorization', ['ngStorage'])
         return {
             request: (config) => {
                 if ($localStorage.auth)
-                    config.headers['Authorization'] = 'Bearer ' + $localStorage.auth.token;
+                    config.headers['Authorization'] = 'Bearer ' + JSON.parse($localStorage.auth.token);
                 return config;
             },
             responseError: (response) => {
