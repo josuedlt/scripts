@@ -1,9 +1,14 @@
 <html>
 
 <head>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
-    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+    <script src="https://unpkg.com/lodash"></script>
+
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vue-router"></script>
 
     <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
     <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet">
@@ -11,34 +16,42 @@
     <!-- Mapbox GL JS -->
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.45.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.45.0/mapbox-gl.css' rel='stylesheet' />
-
-    <script src="https://unpkg.com/lodash@4.17.11/lodash.js"></script>
 </head>
 
 <body>
-    <div id="app">
-
-        <div v-if="!token">
-            <div @keydown.enter="login(username,password)">
-                <h3>Login</h3>
-                <label>Username
-                    <input type="text" v-model="username">
-                </label>
-                <label>Password
-                    <input type="password" v-model="password">
-                </label>
-                <button type="submit" @click="login(username, password)">Submit</button>
-            </div>
-        </div>
-
-        <mapbox>
-            <div v-if="token">
-                
-                    
-                
-            </div>
-        </mapbox>
-    </div>
+    <v-app id="app">
+        <v-navigation-drawer app v-model="drawer"></v-navigation-drawer>
+        <v-toolbar color="primary" dark app>
+            <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+            <v-toolbar-title>Vue</v-toolbar-title>
+        </v-toolbar>
+        <v-content>
+            <v-container fluid>
+                <div v-if="!token">
+                    <v-form @submit.prevent="login(username,password)">
+                        <v-card>
+                            <v-toolbar color="secondary" dark>
+                                <v-toolbar-title>Login</v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text>
+                                <v-text-field label="Username" prepend-icon="person" type="text" v-model="username"></v-text-field>
+                                <v-text-field label="Password" prepend-icon="lock" type="password" v-model="password"></v-text-field>
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="primary" type="submit">submit</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-form>
+                </div>
+                <div v-if="token">
+                    <v-card>
+                        <mapbox />
+                    </v-card>
+                </div>
+            </v-container>
+        </v-content>
+    </v-app>
 </body>
 <script>
     mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
@@ -54,7 +67,10 @@
         },
         methods: {
             login(username, password) {
-                axios.post(url + '/api/User/Token', { username, password })
+                axios.post(url + '/api/User/Token', {
+                        username,
+                        password
+                    })
                     .then(response => {
                         var token = this.token = response.data;
                         localStorage.setItem('token', JSON.stringify(token));
@@ -122,8 +138,8 @@
                     [_.min(longitudes), _.min(latitudes)],
                     [_.max(longitudes), _.max(latitudes)]
                 ], {
-                        padding: 40
-                    });
+                    padding: 40
+                });
             },
             plotLocations(locations) {
                 mapbox = this.mapbox;
@@ -198,7 +214,10 @@
                             // make circles larger as the user zooms from z12 to z22
                             'circle-radius': {
                                 'base': 1.75,
-                                'stops': [[12, 2], [20, 15]]
+                                'stops': [
+                                    [12, 2],
+                                    [20, 15]
+                                ]
                             },
                             'circle-color': [
                                 'match',
@@ -206,7 +225,8 @@
                                 'ES', '#fbb03b',
                                 'MS', '#b03bfb',
                                 'HS', '#3bb0fb',
-                                /* other */ '#888'
+                                /* other */
+                                '#888'
                             ]
                         }
                     })
@@ -227,7 +247,7 @@
         },
         mounted() {
             mapbox = this.mapbox = new mapboxgl.Map({
-                container: this.$el.firstChild,
+                container: this.$el,
                 style: 'mapbox://styles/mapbox/streets-v10/',
                 center: [-98.5, 29.43],
                 zoom: 10
@@ -242,15 +262,17 @@
                     });
             })
         },
-        template: '<div><div style="height: 100%;"></div><div style="z-index: 9; position: absolute; top: 0"><div @click="fitBounds(locations)">Fit Bounds</div></div></div>',
+        template: '<div style="height: 400px"></div>',
         watch: {
-            locations: (val) => {
-            }
+            locations: (val) => {}
         }
     })
 
     var app = new Vue({
         el: '#app',
+        data: {
+            drawer: false,
+        },
         mixins: [mixinAuth, mixinUserInfo],
 
 
