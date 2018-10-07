@@ -1,6 +1,8 @@
 <html>
 
 <head>
+    <title>Armored Service</title>
+    <meta name="mobile-web-app-capable" content="yes">
     <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 
@@ -19,38 +21,52 @@
 </head>
 
 <body>
-    <v-app id="app">
-        <v-navigation-drawer app v-model="drawer"></v-navigation-drawer>
-        <v-toolbar color="primary" dark app>
+    <v-app id="app" app dark>
+        <v-navigation-drawer app clipped v-model="drawer">
+            <v-list class="pt-0" dense>
+                <v-divider></v-divider>
+                <v-list-tile v-for="item in drawerItems" :key="item.title" @click="item.action()">
+                    <v-list-tile-action>
+                        <v-icon>{{ item.icon }}</v-icon>
+                    </v-list-tile-action>
+
+                    <v-list-tile-content>
+                        <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                    </v-list-tile-content>
+                </v-list-tile>
+            </v-list>
+        </v-navigation-drawer>
+        <v-toolbar absolute clipped-left color="primary" dark app>
             <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-            <v-toolbar-title>Vue</v-toolbar-title>
+            <v-toolbar-title>Armored Service</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn flat @click="logout()">Logout</v-btn>
         </v-toolbar>
-        <v-content>
-            <v-container fluid>
-                <div v-if="!token">
-                    <v-form @submit.prevent="login(username,password)">
+        <div v-if="!token">
+            <v-content>
+                <v-container fluid>
+                    <v-dialog persistent v-model="dialog" width="500">
                         <v-card>
-                            <v-toolbar color="secondary" dark>
-                                <v-toolbar-title>Login</v-toolbar-title>
-                            </v-toolbar>
+                            <v-card-title class="headline grey darken-2" primary-title>
+                                Login
+                            </v-card-title>
                             <v-card-text>
                                 <v-text-field label="Username" prepend-icon="person" type="text" v-model="username"></v-text-field>
                                 <v-text-field label="Password" prepend-icon="lock" type="password" v-model="password"></v-text-field>
                             </v-card-text>
+                            <v-divider></v-divider>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn color="primary" type="submit">submit</v-btn>
+                                <v-btn color="primary" flat type="submit" @click="login(username, password)">Submit</v-btn>
                             </v-card-actions>
                         </v-card>
-                    </v-form>
-                </div>
-                <div v-if="token">
-                    <v-card>
-                        <mapbox />
-                    </v-card>
-                </div>
-            </v-container>
-        </v-content>
+                    </v-dialog>
+                </v-container>
+            </v-content>
+        </div>
+        <div v-if="token">
+            <mapbox />
+        </div>
     </v-app>
 </body>
 <script>
@@ -72,8 +88,7 @@
                         password
                     })
                     .then(response => {
-                        var token = this.token = response.data;
-                        localStorage.setItem('token', JSON.stringify(token));
+                        this.token = response.data;
                     }, error => {
                         console.log(error);
                         alert(error);
@@ -81,28 +96,39 @@
             },
             logout() {
                 this.token = null;
-                localStorage.removeItem('token');
             },
         },
-        mounted() {
+        created() {
             this.token = (localStorage.token) ? JSON.parse(localStorage.token) : null
-            axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
             axios.interceptors.response.use(null, function (error) {
                 if (error.response.status === 401) {
-                    this.token = '';
+                    this.token = null;
                 }
                 return Promise.reject(error);
+            });
+
+            this.$root.drawerItems.push({
+                title: 'Logout',
+                icon: 'question_answer',
+                action: () => this.logout()
             });
         },
         watch: {
             token: (val) => {
                 if (val) {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${val}`;
+                    localStorage.token = JSON.stringify(val);
                 } else {
                     axios.defaults.headers.common['Authorization'] = null;
+                    localStorage.removeItem('token');
                 }
             }
         },
+        computed: {
+            dialog: function () {
+                return (this.token) ? false : true
+            }
+        }
     }
 
     var mixinUserInfo = {
@@ -128,10 +154,8 @@
             }
         },
         methods: {
-            fitBounds(locations) {
-                if (!locations) return;
-                if (locations.length == 0) return;
-
+            fitBounds() {
+                var locations = this.locations;
                 var latitudes = _.map(locations, 'Latitude');
                 var longitudes = _.map(locations, 'Longitude');
                 this.mapbox.fitBounds([
@@ -196,13 +220,13 @@
                             ],
                             "text-offset": [0, 1],
                             "text-anchor": "top",
-                            "text-size": 8
+                            "text-size": 10
                         },
                         "paint": {
                             "icon-color": "#842",
-                            "text-color": '#222',
-                            "text-halo-color": "#eee",
-                            "text-halo-width": 1
+                            "text-color": '#ccc',
+                            // "text-halo-color": "#eee",
+                            // "text-halo-width": 1
                         }
                     });
 
@@ -245,10 +269,19 @@
                 }
             }
         },
+        created() {
+            this.$root.drawerItems.push({
+                title: 'Fit Bounds',
+                icon: 'dashboard',
+                action: () => {
+                    this.fitBounds()
+                }
+            });
+        },
         mounted() {
             mapbox = this.mapbox = new mapboxgl.Map({
                 container: this.$el,
-                style: 'mapbox://styles/mapbox/streets-v10/',
+                style: 'mapbox://styles/mapbox/dark-v9/',
                 center: [-98.5, 29.43],
                 zoom: 10
             });
@@ -262,7 +295,7 @@
                     });
             })
         },
-        template: '<div style="height: 400px"></div>',
+        template: '<div class="fill-height"></div>',
         watch: {
             locations: (val) => {}
         }
@@ -272,10 +305,9 @@
         el: '#app',
         data: {
             drawer: false,
+            drawerItems: []
         },
-        mixins: [mixinAuth, mixinUserInfo],
-
-
+        mixins: [mixinAuth],
     })
 </script>
 
