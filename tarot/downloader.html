@@ -1,0 +1,151 @@
+<html>
+
+<body>
+    <main>
+        <form>
+            <select v-model="name" @change="preview(name)">
+                <option v-for="deck in decks" :value="deck.value">{{ deck.title }}</option>
+            </select>
+            <button @click.prevent="downloadJSON">Download JSON</button>
+            <button @click.prevent="downloadZIP">Download ZIP</button>
+            <button @click.prevent="downloadAll">Download All</button>
+        </form>
+        <div>{{count}} {{total}}</div>
+        <img v-for='item in deck' :key='item' :src="item"><img>
+    </main>
+</body>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+<script src="https://unpkg.com/file-saver/dist/FileSaver.min.js"></script>
+<script src="https://unpkg.com/vue"></script>
+
+<script>
+    new Vue({
+        el: 'main',
+        data: {
+            decks: [],
+            name: 'universal_waite',
+            deck: [],
+            count: 0,
+            total: 0
+        },
+        computed: {
+            completed() {
+                return (this.deck.length > 0 && this.count == this.deck.length)
+            },
+        },
+        methods: {
+            getUrls(cards) {
+                urls = new Array(cards);
+                cards = (cards) ? cards : 78;
+                for (i = 0; i < cards; i++) {
+                    urls[i] = 'https://gfx.tarot.com/images/site/decks/' + this.name + '/full_size/' + i + '.jpg';
+                }
+                return urls;
+            },
+            preview() {
+                var deck = new Array(78);
+                urls = this.getUrls();
+                urls.forEach((url, i) => { deck[i] = url })
+                this.deck = deck;
+            },
+            downloadJSON() {
+                this.count = 0;
+
+                urls = this.getUrls();
+                var deck = new Array(urls.length);
+                urls.forEach((url, i) => {
+                    axios.get(urls[i], { responseType: 'arraybuffer' })
+                        .then(response => {
+                            this.deck[i] = 'data:image/png;base64,' + btoa(String.fromCharCode.apply(null, new Uint8Array(response.data)));
+                            this.count++;;
+                        })
+                })
+                const blob = new Blob([JSON.stringify(this.deck)], { type: 'text/json;charset=utf-8' })
+                saveAs(blob, this.name + '.json')
+            },
+            downloadZIP() {
+                this.count = 0;
+
+                var zip = new JSZip();
+                var urls = this.getUrls()
+                urls.forEach((url, i) => {
+                    axios.get(url, { responseType: 'blob' })
+                        .then(response => {
+                            zip.file(i + '.jpg', response.data, { binary: true });
+                            this.count++;
+
+                            if (this.count == urls.length) {
+                                zip.generateAsync({ type: 'blob' })
+                                    .then(blob => {
+                                        saveAs(blob, this.name + '.zip')
+                                    })
+
+                            }
+                        })
+                })
+            },
+
+            /* BREAK FOR MAX DOWNLOAD */
+            getPaths(path) {
+                var paths = new Array(78);
+
+                for (i = 0; i < 78; i++)
+                    paths[i] = `https://gfx.tarot.com/images/site/decks/${path}/full_size/${i}.jpg`;
+
+                return paths;
+            },
+            async downloadAll() {
+                var decks = this.decks.slice(0,3);
+                var zip = new JSZip();
+                this.count = 0;
+                this.total = decks.length * 78;
+                for (deck in decks) {
+                    for (i = 0; i < 78; i++) {
+                        var path = `https://gfx.tarot.com/images/site/decks/${deck.value}/full_size/${i}.jpg`;
+                        var response = await axios.get(path, { responseType: 'blob' });
+                        zip.file(`${deck.value}/${i}.jpg`, response.data, { binary: true });
+
+                        this.count++;
+                        this.$forceUpdate();
+                    }
+                }
+                console.log('Generating ZIP file... ')
+                zip.generateAsync({ type: 'blob' })
+                    .then(blob => {
+                        console.log('ZIP file created.')
+                        saveAs(blob, this.name + '.zip')
+                    })
+
+                // decks.forEach((deck) => {
+                //     var paths = this.getPaths(deck.value);
+                //     paths.forEach((url, i) => {
+                //         axios.get(url, { responseType: 'blob' })
+                //             .then(response => {
+                //                 zip.file(deck.value + '/' + i + '.jpg', response.data, { binary: true });
+                //                 this.count++;
+
+                //                 if (this.count == total) {
+                //                     console.log('Generating ZIP file... ')
+                //                     zip.generateAsync({ type: 'blob' })
+                //                         .then(blob => {
+                //                             console.log('ZIP file created.')
+                //                             saveAs(blob, this.name + '.zip')
+                //                         })
+                //                 }
+                //             })
+                //     })
+                // })
+            }
+        },
+        mounted() {
+            axios.get('decks.json').then(({ data }) => {
+                this.decks = data;
+                this.preview()
+            });
+        }
+    })
+</script>
+
+</html>

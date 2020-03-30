@@ -1,0 +1,29 @@
+<html>
+
+<body>
+    <div id="app">
+        <div v-for="card in deck" :key="card">
+            <img v-bind:src="'data:image/png;base64,' + card">
+        </div>
+    </div>
+</body>
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+<script src="https://unpkg.com/lodash"></script>
+<script src="https://unpkg.com/vue"></script>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            deck: []
+        },
+        created() {
+            axios.get('english-magic.json').then(response => {
+                this.deck = response.data
+            });
+        }
+    })
+
+</script>
+
+</html>
