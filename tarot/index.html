@@ -70,7 +70,25 @@
                                 <span style="font-size: 2em">{{ card.name }}</span>
                             </div>
                         </div>
-                        <div class="ui dividing large header">
+                        <div class="ui one column center aligned grid">
+                            <div class="column">
+                                <div class="ui two column grid">
+                                    <img class="column" :src="'decks/' + deckImages[92].path + '/' + card.idx + '.jpg'">
+                                    <img class="column" :src="'decks/' + deckImages[deckImagesIndex].path + '/' + card.idx + '.jpg'">
+                                </div>
+                            </div>
+                            <div class="column">
+                                <p v-html="card.desc"></p>
+                            </div>
+                            <div class="column">
+                                <h4>Light</h4>
+                                <p v-html="card.meaning_up"></p>
+                            
+                                <h4>Shadow</h4>
+                                <p v-html="card.meaning_rev"></p>
+                            </div>
+                        </div>
+                        <!-- <div class="ui dividing large header">
                         </div>
                         <div class="ui equal width center aligned stackable grid">
                             <div class="column" v-for="keyword in card.keywords" :key="keyword">
@@ -95,7 +113,7 @@
                                     <div class="item" v-for="item in card.meanings.shadow" :key="item">{{item}}</div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="ui center aligned grid">
                             <div class="ui button" onclick="$('.modal').modal('hide')">Close</div>
                         </div>
@@ -188,9 +206,18 @@
             }
         },
         created() {
-            axios.get('tarot_interpretations.json').then(({ data }) => {
-                this.deck = data.tarot_interpretations
+            //axios.get('cards/tarot_interpretations.json').then(({ data }) => {
+            axios.get('cards/card_data_v2.json').then(({ data }) => {
+                this.deck = data.cards
                 this.deck.forEach((card, idx) => card.idx = idx)
+
+                // this.deck = _(this.deck)
+                //     .filter(card => {
+                //         if (isNaN(card.rank)) return false;
+                //         return card.rank > 0 && card.rank <= 10
+                //     })
+                //     .orderBy('rank')
+                //     .value();
 
                 axios.get('decks/decks.json').then(({ data }) => {
                     this.deckImages = data

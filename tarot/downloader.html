@@ -140,7 +140,7 @@
             }
         },
         mounted() {
-            axios.get('decks.json').then(({ data }) => {
+            axios.get('decks/decks.json').then(({ data }) => {
                 this.decks = data;
                 this.preview()
             });
