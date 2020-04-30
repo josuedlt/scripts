@@ -10,6 +10,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="section" id="app">
         <div class="" v-for="(card, i) in hand" :key="i">
@@ -35,19 +36,15 @@
         },
         created() {
             axios.get('cards/riderwaite.json').then(({ data }) => {
-                var deck = this.deck = new Array(data.cards.length);
-                data.cards.forEach((c, i) => {
-                    deck[i] = {
-                        idx: i,
-                        name: c,
-                        meaning: data[c],
-                        imgSrc: `decks/smith-waite/${i}.jpg`,
-                        reversed: Math.random() > 0.5
-                    }
-                });
-
+                this.deck = _.map(data, (c, i) => ({
+                    idx: c.idx,
+                    name: c.name,
+                    meaning: c.meaning,
+                    imgSrc: `decks/smith-waite/${i}.jpg`,
+                    reversed: Math.random() > 0.5
+                }));
                 this.getHand()
-                setInterval(this.getHand, 15000)
+                setInterval(this.getHand(), 15000)
             })
         },
         methods: {

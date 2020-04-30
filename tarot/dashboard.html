@@ -1,0 +1,81 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://jenil.github.io/bulmaswatch/darkly/bulmaswatch.min.css" rel="stylesheet">
+
+    <script src="https://unpkg.com/zepto@latest/dist/zepto.min.js"></script>
+    <script src="https://unpkg.com/velocity-animate@1/velocity.min.js"></script>
+    <script src="https://unpkg.com/velocity-animate@1/velocity.ui.min.js"></script>
+</head>
+
+<body class="section"></body>
+
+<script>
+    class Tarot {
+        constructor() {
+            var ss = this.searchToObject(location.search)
+            ss.cardCount = (ss.cardCount) ? ss.cardCount : 1
+            ss.interval = (ss.interval) ? ss.interval * 1000 : 5000
+            ss.fadeRate = (ss.fadeRate) ? ss.fadeRate : 1000
+
+            $.get('cards/riderwaite.json', cards => {
+                this.showHand(cards, ss.cardCount, ss.fadeRate)
+                if (ss.interval) setInterval(() => this.showHand(cards, ss.cardCount, ss.fadeRate), ss.interval)
+            })
+
+        }
+
+        searchToObject(search) {
+            return search.substring(1).split("&").reduce(function (result, value) {
+                var parts = value.split('=');
+                if (parts[0]) result[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+                return result;
+            }, {})
+        }
+
+        shuffle(array) {
+            let counter = array.length;
+            while (counter > 0) {
+                let index = Math.floor(Math.random() * counter);
+                counter--;
+
+                let temp = array[counter];
+                array[counter] = array[index];
+                array[index] = temp;
+            }
+            return array;
+        }
+
+        showHand(cards, cardCount = 1, fadeRate = 400) {
+            $('body').children().remove();
+
+            this.shuffle(cards)
+                .splice(0, cardCount)
+                .forEach((c, i) =>
+                    setTimeout(() => {
+
+                        var $col1 = $('<figure>')
+                            .append($('<img>').attr('src', `decks/universal_waite/${c.idx}.jpg`))
+                            .css({ opacity: 0 }).velocity('transition.flipXIn', { duration: fadeRate })
+
+                        var $col2 = $('<div>')
+                            .append($('<p>').addClass('title').html(c.name))
+                            .append($('<p>').html(c.meaning))
+                            .css({ opacity: 0 }).velocity('transition.slideUpIn', { duration: fadeRate })
+
+                        var $grid = $('<div>')
+                            .addClass('columns')
+                            .append($col1.addClass('column is-narrow'))
+                            .append($col2.addClass('column'))
+                            .appendTo('body')
+
+
+                    }, i * fadeRate))
+        }
+    }
+
+    new Tarot();
+</script>
+
+</html>

@@ -1,0 +1,151 @@
+{
+    "sources": [
+        "http://www.soul-guidance.com/houseofthesun/treeoflifetraditional.htm"
+    ],
+    "worlds": [
+        {
+            "name": "Atziluth",
+            "description": "Atziluth is the World of Primal Concepts, Emanations, Radiations. It contains the unlimited divine energy in the form of primal archetypes. Here the Divine is present and is active. Here is the divine essence of all things and beings, the primal will, and pure consciousness. It is the eternal unchanging world. It is the world of unity. In this world the will to create is born. Here are the seeds, the essence, of all the worlds to follow. In man Atziluth brings forth thoughts and concepts, and the will. Atziluth corresponds to the element of Fire, the element that transforms everything into its essence."
+        },
+        {
+            "name": "Briah",
+            "description": "Briah is the World of Creation. The ideas, the concepts that arise in Atziluth now are being clothed with subtle substance. This is the act of creation. In Atziluth the Divine itself is present and 'acts'. In Briah the Divine works through the archangels who condense the archetypes and prepare them for further creation work by lower order beings. Leaving the divine world of Atziluth, in Briah duality arises, space-time, male-female and so on. In man, Briah corresponds to the Spirit. In Atziluth we had non-being, in Briah we get the sense of being. The condensation of energy in Briah makes this world correspond to the element of Air."
+        },
+        {
+            "name": "Yetzirah",
+            "description": "Yetzirah is the World of Form. It is the world of procreation and movement, of development. Here the Divine works through the Angels. The Angels give form to the energies of Briah. They each specialize in one particular aspect of the creation work. In man Yetzirah correponds to the Heart. Further condensation of the energies makes Yetzirah correspond to the element of Water."
+        },
+        {
+            "name": "Assiah",
+            "description": "Assiah is the World of Action. It is the world of happenings, appearances, phenomena, the world of becoming. It is our physical world, crystallized to a state of solidity, making Assiah correspond the element of Earth. With the term 'physical world' we also understand the spiritual energies pertaining to the laws of nature. In Assiah one expresses oneself as an individual being with a self consciousness. In the human body Assiah corresponds to the physical body."
+        }
+    ],
+    "pillars": [
+        {
+            "name": "Mildness",
+            "aka": [
+                "Pillar of Beauty",
+                "Pillar of Consciousness"
+            ],
+            "force": "neutral, perfect equilibrium",
+            "side": "center",
+            "tends": "harmony, balance, unity"
+        },
+        {
+            "name": "Mercy",
+            "aka": [
+                "Jachin",
+                "Pillar of Force",
+                "Pillar of Strength"
+            ],
+            "force": "outpouring male force, light",
+            "side": "right",
+            "tends": "mercy, compassion, letting things be",
+            "axiom": "Unbalanced Mercy is weakness and the fading out of the Will."
+        },
+        {
+            "name": "Severity",
+            "aka": [
+                "Boaz",
+                "Pillar of Form",
+                "Pillar of Judgement"
+            ],
+            "force": "receptive female force, dark",
+            "side": "left",
+            "tends": "discipline, control, dominance",
+            "axiom": "Unbalanced Severity is cruelty and the barrenness of Mind."
+        }
+    ],
+    "sephiroth": [
+        {
+            "idx": 1,
+            "sephirah": "Keter",
+            "translation": "Crown",
+            "pillar": "Mildness",
+            "world": "Atziluth",
+            "description": "Keter is the uppermost aspect of the Sefirot that can be contemplated by humans. Even so, this Sefirah is rarely discussed by the Kabbalists. Later traditions speak of it radiating 620 'pillars of light.'",
+            "notes": "Keter is man's connection to the divine, your essence of being."
+        },
+        {
+            "idx": 2,
+            "sephirah": "Hokhmah",
+            "translation": "Wisdom",
+            "pillar": "Mercy",
+            "world": "Atziluth",
+            "description": "Hokhmah represents the contemplative, synthetic aspects of God's thought. It is the primordial point of creation from which all knowable reality originates. There are 32 ways of Wisdom.",
+            "notes": "Hokhmah is the primal male energy, the will to create, a flash of light, an idea without boundaries"
+        },
+        {
+            "idx": 3,
+            "sephirah": "Binah",
+            "translation": "Understanding, knowledge, discernment",
+            "pillar": "Severity",
+            "world": "Atziluth",
+            "description": "Binah refers to the analytic, distinguishing aspects of God's thought. It is the uppermost feminine element in the Godhead, and is symbolized as the mother of the Shekhinah. Many of the symbols associated with Binah are therefore identical to those of the Shekhinah. Having received the seed from Hokhmah, Binah conceived and gave birth to the seven lower Sefirot. There are fifty 'Gates of Understanding.'",
+            "notes": "Binah is the primal femal energy, Great mother, birther of emotions, reasoning and ?"
+        },
+        {
+            "idx": 4,
+            "sephirah": "Hesed",
+            "translation": "Lovingkindness, compassion, greatness, grace",
+            "pillar": "Mercy",
+            "world": "Briah",
+            "description": "Hesed represents the generous, benevolent (masculine) side of God. There are 72 'bridges' of Hesed.",
+            "notes": "Unlimited benevolence, outpouring of energy, soul's desire to embrace all of creation and bestow upon it goodness, inner king-ruler"
+        },
+        {
+            "idx": 5,
+            "sephirah": "Gevurah",
+            "translation": "Strength, judgement, might, power, discipline",
+            "pillar": "Severity",
+            "world": "Briah",
+            "description": "Gevurah represents the fearsome powers of divine punishment and wrath in the world. This power is needed to maintain control over the universe. However the destructive forces necessary to keep order and exact punishment also contain the seeds of demonic Evil: the 'Other Side' (Sitra Ahra).",
+            "notes": "Break-down force, boundaries and restriction, punishment to maintain control, inner king-warrior"
+        },
+        {
+            "idx": 6,
+            "sephirah": "Tiferet",
+            "translation": "Beauty, glory",
+            "pillar": "Mildness",
+            "world": "Briah",
+            "description": "Tiferet represents the ideal balance of Justice and Mercy needed for proper running of the universe. This Sefirah unites all the upper nine powers. Tiferet is the offspring of Hokhmah and Binah.",
+            "notes": "The heart of the human body where the ego lies, sincerity and individuality, harmony and balance, sacrifice and transformation"
+        },
+        {
+            "idx": 7,
+            "sephirah": "Nezah",
+            "translation": "Victory, eternity, endurance",
+            "pillar": "Mercy",
+            "world": "Yetzirah",
+            "description": "Nezah represents God's active grace in the world.",
+            "notes": "Victory of achievement without regret, power or force of love, satisfaction and art, emotions and feelings that stimulate creativity, the artist"
+        },
+        {
+            "idx": 8,
+            "sephirah": "Hod",
+            "translation": "Splendour, majesty",
+            "pillar": "Severity",
+            "world": "Yetzirah",
+            "description": "Hod represents the lower channel through which God's judgment comes down to the world. It is also associated with the power of prophecy. Hod and Nezah are often treated as a complementary pair.",
+            "notes": "Practical emotional energies, stability and fixation by intellect, brings force into form, the scientist"
+        },
+        {
+            "idx": 9,
+            "sephirah": "Yesod",
+            "translation": "Foundation",
+            "pillar": "Mildness",
+            "world": "Yetzirah",
+            "description": "Yesod is the channel through which Tiferet strives to unite with the Shekhinah and pass on the creative and benevolent divine forces.",
+            "notes": "Yesod is the storehouse of images, the fertile ground where imagination, illusions and dreams inspire us to make things happen, stream of blessings and sexual energy, integration with life, the great subconscious"
+        },
+        {
+            "idx": 10,
+            "sephirah": "Malkuth",
+            "translation": "Kingship, God's presence, Shekhinah",
+            "pillar": "Mildness",
+            "world": "Yetzirah",
+            "description": "The Shekhinah is a Talmudic concept representing God's dwelling and immanence in the created world. It was equated with the 'Keneset Yisrael,' the personified spirit of the People of Israel. According to a Rabbinic tradition, the Shekhinah shares in the exiles of the Jewish people. Therefore, the redemption of the people of Israel is inextricably linked to the remedying of an alienation within God him/herself, introducing a bold new element into traditional Jewish Messianic eschatology. It is through the Shekhinah that humans can experience the Divine. The passivity of the Shekhinah is often emphasized (equated with its femininity), as the recipient of forces from the higher Sefirot.",
+            "notes": "The physical world, Divided into Air, Earth, Fire, Water"
+        }
+    ]
+}
