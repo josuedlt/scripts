@@ -1,0 +1,10 @@
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: OpenPGP.js v3.1.3
+Comment: https://openpgpjs.org
+Comment: This is a revocation certificate
+
+wmEEIBYKABMFAl697PwJEL747pm6YLexAh0AAACSogEA8SOSx2a/bE7DcFvA
+5gkt1jWBdyh8egO0Xu+Q3TDZhvgBAK8TZcbNrnWvotAkXNDbRPzSchW5pnhK
+8JpDniOzk4QP
+=RPCk
+-----END PGP PUBLIC KEY BLOCK-----
