@@ -1,0 +1,88 @@
+<html>
+
+<head>
+    <link href="https://jenil.github.io/bulmaswatch/darkly/bulmaswatch.min.css" rel="stylesheet">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src='https://unpkg.com/@zxing/library'></script>
+    <script src='https://bundle.run/rxjs'></script>
+</head>
+
+<body>
+    <div class="columns">
+        <div class="column">
+            <video id="video"></video>
+        </div>
+        <div class="column">
+            <img id="image">
+            <div class="header" id="text"></div>
+            <small id="format"></small>
+        </div>
+    </div>
+</body>
+<script>
+    var reader = new rxjs.Observable(o => {
+
+        // Configure barcode formats to decode
+        var hints = (new Map()).set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.AZTEC,
+            ZXing.BarcodeFormat.CODABAR,
+            ZXing.BarcodeFormat.CODE_39,
+            ZXing.BarcodeFormat.CODE_93,
+            ZXing.BarcodeFormat.CODE_128,
+            ZXing.BarcodeFormat.DATA_MATRIX,
+            ZXing.BarcodeFormat.EAN_8,
+            ZXing.BarcodeFormat.EAN_13,
+            ZXing.BarcodeFormat.ITF,
+            ZXing.BarcodeFormat.MAXICODE,
+            ZXing.BarcodeFormat.PDF_417,
+            ZXing.BarcodeFormat.QR_CODE,
+            ZXing.BarcodeFormat.RSS_14,
+            ZXing.BarcodeFormat.RSS_EXPANDED,
+            ZXing.BarcodeFormat.UPC_A,
+            ZXing.BarcodeFormat.UPC_E,
+            ZXing.BarcodeFormat.UPC_EAN_EXTENSION
+        ])
+
+        // Configure decoded text from reader
+        var r = new ZXing.BrowserMultiFormatReader(hints);
+        r.decodeFromInputVideoDeviceContinuously(undefined, 'video', (result, error) => {
+            if (result) o.next(result)
+        })
+
+    })
+
+    reader.subscribe(o => {
+        var canvas = document.createElement('canvas'),
+            ctx = canvas.getContext('2d'),
+            video = document.getElementById('video')
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight
+        ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight)
+
+        // Draw result lines
+        var points = o.resultPoints.map(i => [Math.round(i.x), Math.round(i.y) ])
+        ctx.lineWidth = "5"
+        ctx.strokeStyle = 'rgba(0,255,0,0.5)';
+        ctx.beginPath()
+        points.forEach(p => ctx.lineTo(p[0], p[1]))
+        ctx.lineTo(points[0][0], points[0][1])
+        ctx.stroke()
+
+        // Add text
+        ctx.font = "24px Arial";
+        ctx.fillStyle = 'rgba(0,255,0,0.5)';
+        ctx.fillText(o.text, points[0][0], points[0][1]-10);
+
+        var data = canvas.toDataURL('image/png')
+        document.getElementById('image').setAttribute('src', data)
+
+        document.getElementById('text').innerHTML = o.text;
+        document.getElementById('format').innerHTML = ZXing.BarcodeFormat[o.format];
+    })
+</script>
+
+</html>
