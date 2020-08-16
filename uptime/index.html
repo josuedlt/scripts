@@ -1,0 +1,95 @@
+<html manifest="default.appcache">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Uptime Logs</title>
+    <link href="bulmaswatch.min.css" rel="stylesheet">
+    <script src="vue.min.js"></script>
+    <style>
+        #status {
+            position: fixed;
+            width: 100%;
+            font: bold 1em sans-serif;
+            color: #FFF;
+            padding: 0.5em;
+            text-transform: uppercase;
+        }
+
+        #status.online {
+            background: green;
+        }
+
+        #status.offline {
+            background: red;
+        }
+
+        #log {
+            padding: 2.5em 0.5em 0.5em;
+            font: 1em sans-serif;
+        }
+
+        .online {
+            color: green;
+        }
+
+        .offline {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="content">
+        <div id="status" :class="status">
+            <span>{{ status }}</span>
+            <a style="float: right;" @click="reset">reset</a>
+        </div>
+        <div id="log">
+            <div v-for="l in log">
+                <span :class="l[1]">⁍ </span>
+                <span>{{ new Date(l[0]).toLocaleString() }} </span>
+                <span :class="l[1]">{{ l[1]}}</span>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            log: [],
+            status
+        },
+        methods: {
+            getStorage: (k) => JSON.parse(localStorage.getItem(k)),
+            setStorage: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+            reset: function (k) {
+                this.log = []
+                this.updateOnlineStatus()
+            },
+            updateOnlineStatus: function (event) {
+                this.status = document.title = navigator.onLine ? "online" : "offline"
+                // this.speak(this.status)
+
+                this.log.push([new Date(), this.status])
+                this.setStorage('log', this.log)
+            },
+            speak: (text) => {
+                var utterance = new SpeechSynthesisUtterance(text); 
+                window.speechSynthesis.speak(utterance);
+            }
+        },
+        created() {
+            window.addEventListener('online', this.updateOnlineStatus);
+            window.addEventListener('offline', this.updateOnlineStatus);
+
+            var log = this.getStorage('log')
+            this.log = (log) ? log : []
+            this.updateOnlineStatus()
+        }
+    })
+
+
+</script>
+
+</html>
