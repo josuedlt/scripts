@@ -4,45 +4,73 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPT4 Search Tool</title>
+    <link rel=icon href=medical-search-svgrepo-com.svg sizes="any" type="image/svg+xml">
 
-    <link href="https://jenil.github.io/bulmaswatch/darkly/bulmaswatch.min.css" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://jenil.github.io/bulmaswatch/darkly/bulmaswatch.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spinkit@2.0.1/spinkit.min.css">
     <script src="https://unpkg.com/axios"></script>
     <script src="https://unpkg.com/vue"></script>
+    <style type="text/css">
+        .centered {
+            position: fixed;
+            z-index: 100;
+            top: 50%;
+            left: 50%;
+            margin: -5em 0 0 -5em;
+            width: 10em;
+            height: 10em;
+            background-color: #48C
+        }
+    </style>
 </head>
 
 <body>
-    <div id="app" v-cloak>
-        <div class="section">
-            <h1 class="title">CPT4 Search Tool</h1>
-            <h2 class="subtitle">Search tool for Common Procedural Terminology Codes</h2>
-            <div class="content" v-if="Object.keys(dictionary).length > 0">
+    <div id="app">
+        <div class="sk-plane centered" v-if="records == 0"></div>
+
+        <div class="section" v-if="records > 0">
+            <img class="image is-32x32" style='float: left; margin-right: 1em' src="medical-search-svgrepo-com.svg">
+            <div class="title" v-html="title"></div>
+            <div class="subtitle">Search tool for Common Procedural Terminology codes</div>
+
+            <div class="notification">
                 <label>
                     <span>Type in CPT codes separated by a comma or <a class="link" @click="loadExample">load sample
-                        data</a>.</span>
-                    <input class="input" v-model="codes" @change="searchCodes">
+                            data</a>.</span>
+                    <input class="input" inputmode="numeric" v-model="codes" @change="searchCodes">
+                    <small>{{ records }} records loaded</small>
                 </label>
             </div>
-            <pre class="notification is-primary is-uppercase" v-html="message" v-if="message != ''"></pre>
-        </div>        
+            <div class="content" v-if="message != ''">
+                <pre class="is-uppercase" v-html="message"></pre>
+                <div class="button is-primary" @click="copyToClipboard">Copy to clipboard</div>
+            </div>
+        </div>
     </div>
 </body>
 <script>
     var app = new Vue({
         el: "#app",
         data: {
+            codes: '',
             dictionary: {},
             message: '',
-            codes: ''
+            title: 'CPT4 Lookup'
         },
         created() {
-            this.getDictionary()
-                .then(data => {
-                    this.dictionary = data
-                })
+            document.title = this.title
+            this.getDictionary().then(data => this.dictionary = data)
+        },
+        computed: {
+            records: function () { return Object.keys(this.dictionary).length }
         },
         methods: {
+            copyToClipboard: function () {
+                navigator.clipboard.writeText(this.message);
+            },
             getDictionary: async () => await axios.get('./data.json').then(res => res.data),
             loadExample: function () {
                 this.codes = '83036, 80061, 36415, 84153, 81003, 80050'
@@ -55,8 +83,8 @@
                 }
 
                 var list = this.codes.split(',').map(i => i.trim())
-                var procedures = list.map((p) => [p, this.dictionary[p] ?? "—"]);
-                procedures = procedures.map((p) => `${p[0]} - <b>${p[1]}</b><br />`).join('')
+                var procedures = list.map((p) => [p, this.dictionary[p] ?? "?"]);
+                procedures = procedures.map((p) => `${p[0]} ${p[1]}\n`).join('')
                 this.message = procedures
             }
         }

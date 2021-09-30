@@ -1,0 +1,13 @@
+{
+    "name": "CPT4 Lookup",
+    "short_name": "CPT4 Lookup",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#888",
+    "description": "A Common Procedural Terminology (CPT) code lookup utility.",
+    "icons": [{
+        "src": "medical-search-svgrepo-com.svg",
+        "sizes": "192x192",
+        "type": "image/svg+xml"
+    }]
+  }
