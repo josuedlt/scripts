@@ -9,9 +9,11 @@
     <link rel=icon href=medical-search-svgrepo-com.svg sizes="any" type="image/svg+xml">
 
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="https://jenil.github.io/bulmaswatch/darkly/bulmaswatch.min.css">
+    <link rel="stylesheet" href="https://jenil.github.io/bulmaswatch/cyborg/bulmaswatch.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spinkit@2.0.1/spinkit.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-c42qTSw/wPZ3/5LBzD+Bw5f7bSF2oxou6wEb+I/lqeaKV5FDIfMvvRp772y4jcJLKuGUOpbJMdg/BTl50fJYAw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://unpkg.com/axios"></script>
+    <script src="https://unpkg.com/bulma-toast"></script>
     <script src="https://unpkg.com/vue"></script>
     <style type="text/css">
         .centered {
@@ -41,7 +43,6 @@
                         <span>Type in CPT codes separated by a comma or <a class="link" @click="loadExample">load sample
                                 data</a>.</span>
                         <input class="input" inputmode="numeric" v-model="codes" @change="searchCodes">
-                        <small>{{ records }} records loaded</small>
                     </label>
                 </div>
                 <div class="content" v-if="message != ''">
@@ -53,6 +54,11 @@
     </div>
 </body>
 <script>
+    bulmaToast.setDefaults({
+        position: 'bottom-center',
+        animate: { in: 'bounceInUp', out: 'fadeOut' },
+    })
+
     var app = new Vue({
         el: "#app",
         data: {
@@ -63,7 +69,10 @@
         },
         created() {
             document.title = this.title
-            this.getDictionary().then(data => this.dictionary = data)
+            this.getDictionary().then(data => {
+                this.dictionary = data
+                bulmaToast.toast({ message: `${Object.keys(data).length} records loaded` })
+            })
         },
         computed: {
             records: function () { return Object.keys(this.dictionary).length }
@@ -71,6 +80,7 @@
         methods: {
             copyToClipboard: function () {
                 navigator.clipboard.writeText(this.message);
+                bulmaToast.toast({ message: 'Text was copied to clipboard.' })
             },
             getDictionary: async () => await axios.get('./data.json').then(res => res.data),
             loadExample: function () {
