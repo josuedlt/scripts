@@ -1,0 +1,14 @@
+{
+    "name": "Barcode Scanner",
+    "short_name": "Barcode Scanner",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#000",
+    "description": "A barcode scanning utility based on ZXing library.",
+    "orientation": "landscape",
+    "icons": [{
+        "src": "barcode-svgrepo-com.svg",
+        "sizes": "256x256",
+        "type": "image/svg+xml"
+    }]
+  }
