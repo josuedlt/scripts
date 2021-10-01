@@ -3,7 +3,7 @@
     "short_name": "CPT4 Lookup",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#888",
+    "background_color": "#000",
     "description": "A Common Procedural Terminology (CPT) code lookup utility.",
     "orientation": "portrait",
     "icons": [{
