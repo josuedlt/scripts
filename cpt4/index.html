@@ -22,31 +22,32 @@
             margin: -5em 0 0 -5em;
             width: 10em;
             height: 10em;
-            background-color: #48C
+            background-color: #888
         }
     </style>
 </head>
 
 <body>
     <div id="app">
-        <div class="sk-plane centered" v-if="records == 0"></div>
-
-        <div class="section" v-if="records > 0">
+        <div class="section">
             <img class="image is-32x32" style='float: left; margin-right: 1em' src="medical-search-svgrepo-com.svg">
             <div class="title" v-html="title"></div>
             <div class="subtitle">Search tool for Common Procedural Terminology codes</div>
 
-            <div class="notification">
-                <label>
-                    <span>Type in CPT codes separated by a comma or <a class="link" @click="loadExample">load sample
-                            data</a>.</span>
-                    <input class="input" inputmode="numeric" v-model="codes" @change="searchCodes">
-                    <small>{{ records }} records loaded</small>
-                </label>
-            </div>
-            <div class="content" v-if="message != ''">
-                <pre class="is-uppercase" v-html="message"></pre>
-                <div class="button is-primary" @click="copyToClipboard">Copy to clipboard</div>
+            <div class="sk-pulse centered" v-if="records == 0"></div>
+            <div v-if="records > 0">
+                <div class="notification">
+                    <label>
+                        <span>Type in CPT codes separated by a comma or <a class="link" @click="loadExample">load sample
+                                data</a>.</span>
+                        <input class="input" inputmode="numeric" v-model="codes" @change="searchCodes">
+                        <small>{{ records }} records loaded</small>
+                    </label>
+                </div>
+                <div class="content" v-if="message != ''">
+                    <pre class="is-uppercase" v-html="message"></pre>
+                    <div class="button is-primary" @click="copyToClipboard">Copy to clipboard</div>
+                </div>
             </div>
         </div>
     </div>
