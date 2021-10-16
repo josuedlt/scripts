@@ -1,12 +1,155 @@
-<script src="jdlt.geolocation.js"></script>
-<script>
-    var geo = new Geolocation()
-        .on('position', function (o) {
-            console.log('position', o);
-        }).on('state', function (o) {
-            console.log('state', o);
-        })
+<!DOCTYPE html>
+<html lang="en">
 
-    setTimeout(geo.start, 1000);
-    setTimeout(geo.stop,  5000);
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+
+    <style>
+        #map {
+            height: calc(100vh)
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-system-bar dark color="black" height="30">
+                <div v-if="state">
+                    <v-icon v-if="state.name == 'Locating'" :title="state.name">mdi-map-marker-question</v-icon>
+                    <span v-if="state.name == 'Locating'">Locating...</span>
+                    <v-icon v-if="state.name == 'New position'" :title="state.name">mdi-map-marker</v-icon>
+                    <v-icon v-if="state.name == 'Tracking'" :title="state.name">mdi-map-marker-radius</v-icon>
+                    <span v-if="position">
+                        <span
+                            v-html="position.latitude.toFixed(6) + ', ' + position.longitude.toFixed(6)"></span>
+                    </span>
+                </div>
+                <v-spacer></v-spacer>
+                <div v-if="position">
+                    <v-icon>mdi-crosshairs-gps</v-icon>
+                    <span v-html="position.timestamp.toLocaleString()"></span>
+                </div>
+            </v-system-bar>
+            <v-main>
+                <div id="map"></div>
+                <!-- <pre class="shade"
+                    style="position: fixed; bottom: 0; z-index: 100; background-color: #333c; color: white; font-size: 0.8em"
+                    v-html="position"></pre> -->
+            </v-main>
+        </v-app>
+    </div>
+</body>
+
+<script src="https://unpkg.com/vue"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="Geolocation.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data: {
+            geo: null,
+            position: '',
+            state: ''
+        },
+        created() {
+            this.geo = new Geolocation()
+                .on('position', p => this.position = p)
+                .on('state', s => this.state = s)
+                .start()
+        },
+        watch: {
+            position: (p) => {
+                fly(p)
+                mark(p);
+            }
+        }
+    })
+
+    mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+
+    var mapbox = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/satellite-streets-v10?optimize=true',
+        center: [-98.5, 29.43],
+        zoom: 10
+    });
+
+    const fly = (p) => mapbox.flyTo({
+        center: [p.longitude, p.latitude],
+        zoom: 18
+    })
+
+    const mark = (p) => {
+        geo_locations = {
+            'type': 'FeatureCollection',
+            'features': [{
+                'type': "Feature",
+                'properties': {
+                    'marker-symbol': 'marker'
+                },
+                'geometry': {
+                    'type': "Point",
+                    'coordinates': [p.longitude, p.latitude]
+                }
+            }]
+        };
+
+        // Add locations as a source
+        if (!mapbox.getSource('markers'))
+            mapbox.addSource('markers', {
+                'type': 'geojson',
+                'data': geo_locations
+            });
+        else
+            mapbox.getSource('markers').setData(geo_locations);
+
+        if (!mapbox.getLayer('markers-layer')) {
+            mapbox.addLayer({
+                "id": 'markers-layer',
+                "type": 'symbol',
+                "source": 'markers',
+                "layout": {
+                    "icon-image": "{marker-symbol}-15",
+                    "icon-size": 3,
+                    "text-field": "{title}",
+                    "text-font": [
+                        "Open Sans Semibold",
+                        "Arial Unicode MS Bold"
+                    ],
+                    //"text-offset": [0, 0.6],
+                    "text-anchor": "center",
+                    "text-size": 15
+                },
+                "paint": {
+                    "text-color": '#000',
+                    "text-halo-color": "#eee",
+                    "text-halo-width": 10
+                }
+            });
+        }
+
+        mapbox.on('click', 'markers-layer', function (e) {
+            var f = e.features[0];
+            new mapboxgl.Popup()
+                .setLngLat(f.geometry.coordinates)
+                //.setHTML(f.geometry.coordinates)
+                .setHTML(JSON.stringify(p, null, 4))
+                .addTo(mapbox);
+        });
+    }
+
 </script>
+
+</html>

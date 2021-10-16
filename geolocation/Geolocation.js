@@ -21,7 +21,7 @@ Geolocation = function () {
             accuracy: position.coords.accuracy,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-            timestamp: position.timestamp
+            timestamp: new Date(position.timestamp)
         };
 
         // fire
