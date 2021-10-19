@@ -26,13 +26,13 @@
         <v-app>
             <v-system-bar dark color="black" height="30">
                 <div v-if="state">
-                    <v-icon v-if="state.name == 'Locating'" :title="state.name">mdi-map-marker-question</v-icon>
-                    <span v-if="state.name == 'Locating'">Locating...</span>
+                    <v-icon v-if="state.name == 'Stopped'" :title="state.name">mdi-map-marker-off-outline</v-icon>
+                    <v-icon v-if="state.name == 'Locating'" :title="state.name">mdi-map-marker-outline</v-icon>
                     <v-icon v-if="state.name == 'New position'" :title="state.name">mdi-map-marker</v-icon>
                     <v-icon v-if="state.name == 'Tracking'" :title="state.name">mdi-map-marker-radius</v-icon>
+                    <span v-if="!position" v-html="state.name"></span>
                     <span v-if="position">
-                        <span
-                            v-html="position.latitude.toFixed(6) + ', ' + position.longitude.toFixed(6)"></span>
+                        <span v-html="position.latitude.toFixed(6) + ', ' + position.longitude.toFixed(6)"></span>
                     </span>
                 </div>
                 <v-spacer></v-spacer>
@@ -61,9 +61,11 @@
         data: {
             geo: null,
             position: '',
-            state: ''
+            state: '',
+            title: 'Geolocation Demo'
         },
         created() {
+            document.title = this.title
             this.geo = new Geolocation()
                 .on('position', p => this.position = p)
                 .on('state', s => this.state = s)
@@ -144,8 +146,7 @@
             var f = e.features[0];
             new mapboxgl.Popup()
                 .setLngLat(f.geometry.coordinates)
-                //.setHTML(f.geometry.coordinates)
-                .setHTML(JSON.stringify(p, null, 4))
+                .setHTML('Location: ' + f.geometry.coordinates.reverse().map(i => i.toFixed(6)).join(', '))
                 .addTo(mapbox);
         });
     }
