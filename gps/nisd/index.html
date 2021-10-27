@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Armored Service Demo</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.jsdelivr.net/npm/axios"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash"></script>
+
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.40.1/mapbox-gl.js'></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vuetify@2.x/dist/vuetify.js"></script>
+</head>
+
+<body style="margin: 0px">
+    <div id="app">
+        <v-app>
+            <v-system-bar dark height="30">
+                <div v-if="locations">
+                    <v-icon>mdi-office-building</v-icon>
+                    <span>{{ locations.length }}</span>
+                </div>
+                <div class="ml-4" v-if="drivers">
+                    <v-icon>mdi-crosshairs-gps</v-icon>
+                    <span>{{ drivers.length }}</span>
+                </div>
+                <v-spacer></v-spacer>
+                <a @click="fitToView(locations)">
+                    <v-icon>mdi-magnify-scan</v-icon>
+                </a>
+            </v-system-bar>
+            <v-main>
+                <div id="map" style="height: calc(100vh - 30px);"></div>
+            </v-main>
+        </v-app>
+    </div>
+</body>
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data: {
+            title: 'NISD Geolocation Demo',
+            drivers: [],
+            locations: [],
+            mapbox: null
+        },
+        methods: {
+            resetView: function () {
+                var mapbox = this.mapbox;
+                mapbox.easeTo({
+                    center: [-98.5, 29.43],
+                    zoom: 10
+                })
+            },
+            fitToView: function (locations) {
+                var mapbox = this.mapbox;
+                // Fit markers to view
+                var latitudes = _.map(locations, 'latitude');
+                var longitudes = _.map(locations, 'longitude');
+                mapbox.fitBounds([
+                    [_.min(longitudes), _.min(latitudes)],
+                    [_.max(longitudes), _.max(latitudes)]
+                ], {
+                    padding: 40
+                });
+            },
+            markLocations: function (locations) {
+                var mapbox = this.mapbox;
+
+                // Map markers to view
+                geo_locations = {
+                    'type': 'FeatureCollection',
+                    'features': _.map(locations, l => {
+                        return {
+                            'type': "Feature",
+                            'properties': {
+                                'title': l.name
+                            },
+                            'geometry': {
+                                'type': "Point",
+                                'coordinates': [l.longitude, l.latitude]
+                            }
+                        }
+                    })
+                };
+
+                // Add locations as a source
+                if (!mapbox.getSource('markers'))
+                    mapbox.addSource('markers', {
+                        'type': 'geojson',
+                        'data': geo_locations
+                    });
+                else
+                    mapbox.getSource('markers').setData(geo_locations);
+
+                // Add marker layer with new source
+                if (!mapbox.getLayer('markers-layer')) {
+                    mapbox.addLayer({
+                        "id": 'markers-layer',
+                        "type": 'symbol',
+                        "source": 'markers',
+                        "layout": {
+                            "text-field": "{title}",
+                            "text-font": [
+                                "Open Sans Semibold",
+                                "Arial Unicode MS Bold"
+                            ],
+                            //"text-offset": [0, 0.6],
+                            "text-anchor": "center",
+                            "text-size": 12
+                        },
+                        "paint": {
+                            "text-color": '#333',
+                            "text-halo-color": "#fff",
+                            "text-halo-width": 1
+                        }
+                    });
+
+                    //Trap click events on marker layer
+                    mapbox.on('click', 'markers-layer', function (e) {
+
+                        mapbox.flyTo({
+                            center: e.features[0].geometry.coordinates,
+                            zoom: 16
+                        });
+
+                        setTimeout(() => mapbox.fitToView(locations), 5000)
+                    });
+                }
+            },
+            dotLocations: function (locations) {
+                var mapbox = this.mapbox
+
+                geo_locations = {
+                    'type': 'FeatureCollection',
+                    'features': locations.map(p => {
+                        return {
+                            'type': "Feature",
+                            'geometry': {
+                                'type': "Point",
+                                'coordinates': [p.longitude, p.latitude]
+                            },
+                            'properties': {
+                                'name': p.name
+                            }
+                        }
+                    })
+                }
+
+                // Configure source
+                if (!mapbox.getSource('dot'))
+                    mapbox.addSource('dot', {
+                        'type': 'geojson',
+                        'data': geo_locations
+                    });
+                else
+                    mapbox.getSource('dot').setData(geo_locations);
+
+                // Configure layer
+                if (!mapbox.getLayer('dot-layer')) {
+                    mapbox.addLayer({
+                        "id": 'dot-layer',
+                        "type": 'symbol',
+                        "source": 'dot',
+                        "layout": {
+                            "icon-image": "car-15",
+                            "icon-size": 1
+                        }
+                    });
+
+                    // Trap click events on marker layer
+                    mapbox.on('click', 'dot-layer', function (e) {
+                        var f = e.features[0];
+                        new mapboxgl.Popup()
+                            .setLngLat(f.geometry.coordinates)
+                            .setHTML(f.properties.name)
+                            .addTo(mapbox);
+                    });
+                }
+            },
+        },
+        mounted() {
+            document.title = this.title
+
+            // Display base map
+            mapboxgl.accessToken = 'pk.eyJ1Ijoiam9zdWVkbHQiLCJhIjoiY2l5a3hwcGFzMDAxdjJ4czd0dW1nNnpvbiJ9.118F1NOgT72aFsmG99qPYQ';
+            var mapbox = this.mapbox = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/outdoors-v10',
+                center: [-98.5, 29.43],
+                zoom: 10
+            });
+
+            // Add zoom buttons and compass
+            const nav = new mapboxgl.NavigationControl();
+            mapbox.addControl(nav, "top-right");
+
+            // // Add geolocation button
+            // const geolocate = new mapboxgl.GeolocateControl({
+            //     positionOptions: { enableHighAccuracy: true },
+            //     trackUserLocation: true
+            // });
+            // mapbox.addControl(geolocate, "top-right")
+
+            mapbox.on('load', () => {
+                axios.get('locations.json').then(({ data }) => {
+                    this.locations = data
+                    this.fitToView(this.locations)
+                })
+
+                this.drivers = [
+                    { "latitude": 29.4912231, "longitude": -98.601794, "name": "Josue" },
+                    { "latitude": 29.5473922, "longitude": -98.661239, "name": "Aaron" },
+                    { "latitude": 29.5190232, "longitude": -98.774517, "name": "Garcia" },
+                    { "latitude": 29.4551552, "longitude": -98.628419, "name": "Gonzalez" },
+                    { "latitude": 29.4859765, "longitude": -98.626102, "name": "Fryar" },
+                    { "latitude": 29.6775393, "longitude": -98.662969, "name": "Schuling" },
+                ]
+
+                navigator.geolocation.watchPosition((position) => {
+                    this.drivers = this.drivers.filter(d => d.name != "Josue")
+                    this.drivers.push({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        name: 'Josue'
+                    })
+                });
+            })
+        },
+        watch: {
+            locations: function (locations) {
+                this.markLocations(locations)
+            },
+            drivers: function (locations) {
+                this.dotLocations(locations)
+            }
+        }
+    })
+</script>
+
+</html>
