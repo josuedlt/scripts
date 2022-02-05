@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="qr-code-scan-svgrepo-com.svg" sizes="any" type="image/svg+xml">
+    <!-- <link rel="manifest" href="manifest.json"> -->
+    <title>QR URL Redirector</title>
+    <style>
+        html {
+            background-color: #111;
+        }
+
+        #video_box {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 360px;
+            height: 360px;
+            margin-left: -180px;
+            margin-top: -180px;
+        }
+
+        #video_overlay {
+            position: absolute;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="video_box">
+        <div id="video_overlay">
+            <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+            <lottie-player src="https://assets7.lottiefiles.com/packages/lf20_6SsPj1.json" background="transparent"
+                speed="1" style="width: 360px; height: 360px;" loop autoplay></lottie-player>
+        </div>
+        <video id="video"></video>
+    </div>
+</body>
+<script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+<script>
+    var reader = new ZXing.BrowserQRCodeReader();
+    reader.decodeFromConstraints(
+        {
+            video: {
+                facingMode: "environment",
+                frameRate: 15,
+                height: 360,
+                width: 360
+            }
+        },
+        "video",
+        (result, error) => {
+            if (result) window.location.assign(result.text)
+        }
+    );
+</script>
+
+</html>
